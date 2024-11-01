@@ -38,3 +38,5 @@ end
 T_temp=array2table(X_temp);
 T_temp.Properties.VariableNames={'HOG_INVENTORY'};
 US_County_Spillover=[US_County_Spillover T_temp];
+
+save('Spillover_Exacerbation.mat','US_County_Spillover');
