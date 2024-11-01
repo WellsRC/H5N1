@@ -1,0 +1,83 @@
+clear;
+clc;
+
+load('Average_Risk_Dairy.mat','avg_overall_risk_dairy_farm_County');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Load Data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+load([pwd '/Data/Data_US_County.mat'],'US_County');
+
+Cattle_Out_All=US_County.CONNECT_DAIRY;
+Cattle_Out=zeros(height(US_County),1);
+for ss=1:height(US_County)
+    t_out_state=~strcmp(US_County.STATE_NAME{ss},US_County.STATE_NAME);
+    Cattle_Out(ss)=log(sum(Cattle_Out_All(ss,t_out_state)));
+end
+Cattle_Out(isinf(Cattle_Out) & Cattle_Out<0)=-6;
+County_Farms_All=US_County.TOTAL_DAIRY_OPERATIONS;
+Affected_County_Farms_All = US_County.DAIRY_HPAI_OUTBREAK_KNOWN;
+ur_level=0.05:0.05:0.95;
+
+
+Affected_County_Farms = US_County.DAIRY_HPAI_OUTBREAK_KNOWN;
+State_Level=unique(US_County.STATE_NAME(~isnan(US_County.DAIRY_HPAI_REMAIN_STATE)));
+
+Remainaing_Affected_State_Farms = zeros(size(State_Level));
+Remainaing_State_Farms = zeros(size(State_Level));
+state_weight_matrix=zeros(length(State_Level),height(US_County));
+
+for ss=1:length(State_Level)
+    t_find = ~isnan(US_County.DAIRY_HPAI_REMAIN_STATE) & strcmp(US_County.STATE_NAME,State_Level{ss});
+    Remainaing_Affected_State_Farms(ss)= unique(US_County.DAIRY_HPAI_REMAIN_STATE(t_find));
+    Remainaing_State_Farms(ss)= sum(US_County.TOTAL_DAIRY_OPERATIONS(t_find));
+    state_weight_matrix(ss,t_find)=US_County.STATE_REM_WEIGHT(t_find);
+end
+
+County_Farms=US_County.TOTAL_DAIRY_OPERATIONS;
+
+Tot_Affected_Farms=sum(Affected_County_Farms(~isnan(Affected_County_Farms)))+sum(Remainaing_Affected_State_Farms);
+
+
+MC_Samp=10^3;
+Prob_UR=zeros(size(avg_overall_risk_dairy_farm_County,1),length(ur_level));
+
+for uu=1:length(ur_level)
+        x0=linspace(-2,2,50001);
+        dx=x0(2)-x0(1);
+        fval=zeros(50001,1);
+        parfor xx=1:50001
+            fval(xx)=Objective_Function_Expontential_Risk(x0(xx),avg_overall_risk_dairy_farm_County,Cattle_Out,Tot_Affected_Farms,County_Farms,ur_level(uu));
+        end
+        lambda_r=min(10.^x0(fval==min(fval)));
+        n_risk_county=(avg_overall_risk_dairy_farm_County(:)-min(avg_overall_risk_dairy_farm_County(:)))./(max(avg_overall_risk_dairy_farm_County(:))-min(avg_overall_risk_dairy_farm_County(:)));
+        n_Cattle_Out=(Cattle_Out(:)-min(Cattle_Out(~isnan(avg_overall_risk_dairy_farm_County))))./(max(Cattle_Out(~isnan(avg_overall_risk_dairy_farm_County)))-min(Cattle_Out(~isnan(avg_overall_risk_dairy_farm_County))));
+
+        r=n_risk_county.^2+(1-n_Cattle_Out).^2;
+
+        p_risk=1-exp(-lambda_r.*r);
+        temp_MC=zeros(size(avg_overall_risk_dairy_farm_County,1),MC_Samp);
+        parfor mc=1:MC_Samp
+            MC_Affected_County_Farms=Affected_County_Farms;
+            MC_Affected_County_Farms(isnan(MC_Affected_County_Farms))=0;
+            for ss=1:length(Remainaing_Affected_State_Farms)
+                temp_farm=Remainaing_State_Farms(ss).*state_weight_matrix(ss,:);
+                p_temp=p_risk;
+                p_temp(temp_farm==0)=0;
+                for aa=1:Remainaing_Affected_State_Farms(ss)
+                    temp_w=temp_farm(:).*p_temp(:);
+                    temp_w=cumsum(temp_w)./sum(temp_w);
+                    rand_farm=rand(1);
+                    f_indx=find(rand_farm<=temp_w,1);
+                    MC_Affected_County_Farms(f_indx)=MC_Affected_County_Farms(f_indx)+1;
+                    temp_farm(f_indx)=temp_farm(f_indx)-1;
+                end
+            end
+            temp_MC(:,mc)=1-binocdf(MC_Affected_County_Farms,County_Farms,p_risk);
+        end    
+        Prob_UR(:,uu)=mean(temp_MC,2);
+end    
+
+Prob_UR(County_Farms==0,:)=NaN;
+
+save('Underreporting_Dairy_Farms.mat',"Prob_UR",'ur_level')
