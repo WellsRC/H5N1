@@ -20,47 +20,27 @@ S=S(~County_remove,:);
 
 NS=length(S);
 
-
-State_Name=unique({S.STUSPS});
-State_Risk=NaN.*zeros(size(State_Name));
-
 load([pwd '/Data/Data_US_County.mat'],'US_County');
 if(strcmp(Var_Plot,'Dairy'))
-    load('Average_Risk_Dairy.mat','avg_overall_risk_dairy_farm_County','avg_exposure_risk_dairy_farm_County','avg_susceptible_risk_dairy_farm_County');
+    load('Average_Risk_Dairy.mat','avg_overall_risk_dairy_farm_County','avg_exposure_risk_dairy_farm_County','avg_susceptible_risk_dairy_farm_County','avg_overall_risk_dairy_farm_State','State_Name');
     avg_overall_risk_farm_County=avg_overall_risk_dairy_farm_County;
     avg_exposure_risk_farm_County=avg_exposure_risk_dairy_farm_County;
     avg_susceptible_risk_farm_County=avg_susceptible_risk_dairy_farm_County;
-    for ss=1:length(State_Name)
-        t_state=strcmp(State_Name{ss},US_County.STUSPS);
-        c_r=avg_overall_risk_farm_County(t_state);
-        w_c=US_County.TOTAL_DAIRY_OPERATIONS(t_state);
-        t_inc=w_c>0 & ~isnan(c_r);
-        c_r=c_r(t_inc);
-        w_c=w_c(t_inc);
-        State_Risk(ss)=1-nthroot(prod((1-c_r).^w_c),sum(w_c));
-    end
+    avg_overall_risk_farm_State=avg_overall_risk_dairy_farm_State;
+
+    farm_type='dairy';
 elseif(strcmp(Var_Plot,'Poultry')) 
     load('Average_Risk_Poultry.mat','avg_overall_risk_poultry_farm_County','avg_exposure_risk_poultry_farm_County','avg_susceptible_risk_poultry_farm_County');
     avg_overall_risk_farm_County=avg_overall_risk_poultry_farm_County;
     avg_exposure_risk_farm_County=avg_exposure_risk_poultry_farm_County;
     avg_susceptible_risk_farm_County=avg_susceptible_risk_poultry_farm_County;
-
-
-    for ss=1:length(State_Name)
-        t_state=strcmp(State_Name{ss},US_County.STUSPS);
-        c_r=avg_overall_risk_farm_County(t_state);
-        w_c=US_County.POULTRY_OPR_w_INVENTORY(t_state);
-        t_inc=w_c>0 & ~isnan(c_r);
-        c_r=c_r(t_inc);
-        w_c=w_c(t_inc);
-        State_Risk(ss)=1-nthroot(prod((1-c_r).^w_c),sum(w_c));
-    end
+    farm_type='poultry';
 end
 
-state_nan=~isnan(State_Risk);
-State_Risk=State_Risk(state_nan);
+state_nan=~isnan(avg_overall_risk_farm_State);
+avg_overall_risk_farm_State=avg_overall_risk_farm_State(state_nan);
 State_Name=State_Name(state_nan);
-[State_Risk,Indx_Risk]=sort(State_Risk,'descend');
+[avg_overall_risk_farm_State,Indx_Risk]=sort(avg_overall_risk_farm_State,'descend');
 State_Name=State_Name(Indx_Risk);
 
 for vv=1:4
@@ -91,7 +71,7 @@ for vv=1:4
             states = shaperead('usastatelo', 'UseGeoCoords', true);
             geoshow(ax3, states,'Facecolor','none','LineWidth',0.5); hold on;
         case 4
-            ax4=subplot('Position',[0.55,0.08,0.44,0.4]);
+            ax4=subplot('Position',[0.55,0.20,0.44,0.28]);
     end
 
 
@@ -101,7 +81,7 @@ for vv=1:4
     switch vv
         case 1
             subplot('Position',[0.41,0.525,0.01,0.45]);
-            Title_Name={'County farms risk of','external','exposure to H5N1'};
+            Title_Name={['County ' farm_type ' farms risk of'],'external','exposure to H5N1'};
 
             C_Risk=[hex2rgb('#ffffff');
                     hex2rgb('##ffffcc');
@@ -116,7 +96,7 @@ for vv=1:4
             risk_measure=avg_exposure_risk_farm_County;
         case 2
             subplot('Position',[0.885,0.525,0.01,0.45]);
-            Title_Name={'Susecptibility of county','farms to H5N1'};
+            Title_Name={'Susecptibility of county ',[farm_type ' farms to H5N1']};
 
             C_Risk=[hex2rgb('#ffffff');
                     hex2rgb('#fff7fb');
@@ -132,7 +112,7 @@ for vv=1:4
             risk_measure=avg_susceptible_risk_farm_County;
         case 3
             subplot('Position',[0.41,0.025,0.01,0.45]);    
-            Title_Name={'County farms overall','risk to H5N1'};
+            Title_Name={['County ' farm_type ' farms overall'],'risk to H5N1'};
 
             C_Risk=[hex2rgb('#ffffff');
                     hex2rgb('##fff7f3');
@@ -158,7 +138,7 @@ for vv=1:4
                     hex2rgb('#7a0177');
                     hex2rgb('#49006a');];
 
-            risk_measure=State_Risk;
+            risk_measure=avg_overall_risk_farm_State;
     end
         t_upper=risk_measure>prctile(risk_measure,95);
         v_upper=prctile(risk_measure,95);
@@ -231,7 +211,7 @@ for vv=1:4
             box off;
             set(gca,'LineWidth',2,'tickdir','out','YTick',[0 1],'YTickLabel',{'Lowest','Highest'},'Fontsize',16,'XTick',[1:length(State_Name)],'XTickLabel',State_Name);
             xlabel('State','FontSize',18);
-            ylabel({'State farm overall','risk to H5N1'},'FontSize',18);
+            ylabel({['State ' farm_type ' farm'],'overall risk to H5N1'},'FontSize',18);
             xlim([0.5 length(State_Name)+0.5]);
             ylim([0 1.01])
             text(-0.15,1,'D','FontSize',32,'Units','normalized');
@@ -243,6 +223,6 @@ ax1.Position=[-0.075,0.425,0.6,0.6];
 ax2.Position=[0.4,0.425,0.6,0.6];
 ax3.Position=[-0.075,-0.075,0.6,0.6];
 
-print(gcf,['Preliminary_' Var_Plot '_Risk_Plot.png'],'-dpng','-r300');
+print(gcf,['Figure_' Var_Plot '_Risk_Plot.png'],'-dpng','-r300');
 end
 
