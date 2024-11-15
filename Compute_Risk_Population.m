@@ -48,7 +48,8 @@ for mm=1:size(bin_suc,1)
         t_inc=w_c>0 & ~isnan(c_r);
         c_r=c_r(t_inc);
         w_c=w_c(t_inc);
-        susceptible_risk_population_State_COVID(ss,mm)=1-nthroot(prod((1-c_r).^w_c),sum(w_c));
+        w_c=w_c./sum(w_c);
+        susceptible_risk_population_State_COVID(ss,mm)=1-exp(sum(w_c.*log(1-c_r)));
     end
 end
 
@@ -101,8 +102,8 @@ for mm=1:size(bin_suc,1)
         w_c=US_County.POPULATION_SIZE_2022(t_state);
         t_inc=w_c>0 & ~isnan(c_r);
         c_r=c_r(t_inc);
-        w_c=w_c(t_inc);
-        susceptible_risk_population_State_H1N1(ss,mm)=1-nthroot(prod((1-c_r).^w_c),sum(w_c));
+        w_c=w_c./sum(w_c);
+        susceptible_risk_population_State_H1N1(ss,mm)=1-exp(sum(w_c.*log(1-c_r)));
     end
 end
 

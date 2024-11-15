@@ -140,28 +140,44 @@ for vv=1:4
 
             risk_measure=avg_overall_risk_farm_State;
     end
+    
+    if(vv<4)
+
         t_upper=risk_measure>prctile(risk_measure,95);
         v_upper=prctile(risk_measure,95);
         t_lower=risk_measure<prctile(risk_measure,5);
         v_lower=prctile(risk_measure,5);
         risk_measure(t_lower)=v_lower;
         risk_measure(t_upper)=v_upper;
-        risk_measure=log(risk_measure);
-        risk_measure=(risk_measure-min(risk_measure))./(max(risk_measure)-min(risk_measure));
-        x_risk=linspace(0,1,size(C_Risk,1));
-        c_indx=[1:size(C_Risk,1)];
-    
-    if(vv<4)
+        risk_measure=risk_measure./v_lower;
+
+        if(ceil(max(risk_measure))>=10)
+            risk_measure=log10(risk_measure);
+            x_risk=linspace(0,max(risk_measure),size(C_Risk,1));
+            c_indx=linspace(0,max(risk_measure),251);
+            y_indx=[1:floor(max(risk_measure(risk_measure>0)))];
+        else
+            x_risk=linspace(1,(max(risk_measure)),size(C_Risk,1));
+            c_indx=linspace(1,(max(risk_measure)),251);
+            y_indx=[2:ceil(max(risk_measure))];
+        end
+
         xlim([0 1]);
         ylim([0 max(c_indx)]);    
         ymin=1;
         dy=2/(1+sqrt(5));
         for ii=1:length(c_indx)
-            patch([0 0 dy dy],c_indx(ii)-[1 0 0 1],C_Risk(ii,:),'LineStyle','none');
+            patch([0 0 dy dy],c_indx(ii)-[1 0 0 1],interp1(x_risk,C_Risk,c_indx(ii)),'LineStyle','none');
         end
         
-        text(ymin,0,'Lowest','Fontsize',16);
-        text(ymin,max(c_indx),'Highest','Fontsize',16);
+        text(ymin+2.5,0,{'Baseline','lowest'},'Fontsize',16,'HorizontalAlignment','center');
+        for yy=1:length(y_indx)
+            if(min(y_indx)==2)
+                text(ymin,y_indx(yy),[num2str(y_indx(yy))],'Fontsize',16);
+            else
+                text(ymin,y_indx(yy),['10^' num2str(y_indx(yy))],'Fontsize',16);
+            end
+        end
         text(ymin+2,max(c_indx)./2,Title_Name,'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
         
         axis off;  
@@ -177,15 +193,33 @@ for vv=1:4
             end
         end
     else
-        CC_Risk=ones(length(State_Name),3);
+        risk_measure=risk_measure./min(risk_measure);
+
+        if(ceil(max(risk_measure))>=10)
+            x_risk=linspace(0,(max(log10(risk_measure))),size(C_Risk,1));
+            CC_Risk=ones(length(State_Name),3);
         
-        for ii=1:length(State_Name)
-            if(~isnan(risk_measure(ii)))
-                CC_Risk(ii,:)=interp1(x_risk,C_Risk,risk_measure(ii));
-            else
-                CC_Risk(ii,:)=[0.7 0.7 0.7];
+            for ii=1:length(State_Name)
+                if(~isnan(risk_measure(ii)))
+                    CC_Risk(ii,:)=interp1(x_risk,C_Risk,log10(risk_measure(ii)));
+                else
+                    CC_Risk(ii,:)=[0.7 0.7 0.7];
+                end
+            end
+        else
+            x_risk=linspace(1,(max(risk_measure)),size(C_Risk,1));
+            CC_Risk=ones(length(State_Name),3);
+        
+            for ii=1:length(State_Name)
+                if(~isnan(risk_measure(ii)))
+                    CC_Risk(ii,:)=interp1(x_risk,C_Risk,risk_measure(ii));
+                else
+                    CC_Risk(ii,:)=[0.7 0.7 0.7];
+                end
             end
         end
+
+        
     end 
         
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -209,11 +243,16 @@ for vv=1:4
                 b.CData(ss,:) =CC_Risk(ss,:);
             end
             box off;
-            set(gca,'LineWidth',2,'tickdir','out','YTick',[0 1],'YTickLabel',{'Lowest','Highest'},'Fontsize',16,'XTick',[1:length(State_Name)],'XTickLabel',State_Name);
+            set(gca,'LineWidth',2,'tickdir','out','Fontsize',16,'XTick',[1:length(State_Name)],'XTickLabel',State_Name);
+            if(max(risk_measure)>=10)
+                set(gca,'yscale','log');
+                ylim([0.5 10.^ceil(max(log10(risk_measure)))]);
+            else                
+                ylim([0.5 ceil(max((risk_measure)))]);
+            end
             xlabel('State','FontSize',18);
             ylabel({['State ' farm_type ' farm'],'overall risk to H5N1'},'FontSize',18);
             xlim([0.5 length(State_Name)+0.5]);
-            ylim([0 1.01])
             text(-0.15,1,'D','FontSize',32,'Units','normalized');
     end
 end
