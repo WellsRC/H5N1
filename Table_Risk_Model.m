@@ -3,8 +3,6 @@ function T=Table_Risk_Model(Var_Table)
 if(strcmp(Var_Table,'Dairy'))
     load('Dairy_Models_Fit.mat',"par_est","w_AIC","Dairy_Model");
 
-    Table_Summary=Dairy_Model;
-
     % Exposure_H5N1=unique(Table_Summary.Model_H5N1);
     % Susceptible_H5N1=unique(Table_Summary.Model_Farm);
     % Susceptible_Stratification_H5N1=unique(Table_Summary.Model_Stratified_Operations);
@@ -68,8 +66,7 @@ if(strcmp(Var_Table,'Dairy'))
     end
 elseif(strcmp(Var_Table,'Poultry'))
     load('Poultry_Models_Fit.mat',"par_est","w_AIC","Poultry_Model");
-    Table_Summary=Poultry_Model;
-
+    
     Parameter_Full=zeros(16,length(w_AIC));
     Indicator_Full=zeros(16,length(w_AIC));
 
@@ -115,17 +112,109 @@ elseif(strcmp(Var_Table,'Poultry'))
         
         Parameter_Full(logic_par(1:end-1),mm)=x_temp;
     end
+elseif(strcmp(Var_Table,'Population_COVID'))
+    load('Population_Models_Fit_COVID.mat','par_est_COVID', 'Population_Model_COVID', 'w_AIC_COVID');
+
+
+    w_AIC=w_AIC_COVID;
+    par_est=par_est_COVID;
+
+    % Inclusion_Weight=cell(length(Exposure_H5N1)+length(Susceptible_H5N1)+length(Susceptible_Stratification_H5N1),1);
+    Parameter_Full=zeros(12,length(w_AIC));
+    Indicator_Full=zeros(12,length(w_AIC));
+    % Weighted_Uncertainty=cell(length(Exposure_H5N1)+length(Susceptible_H5N1)+length(Susceptible_Stratification_H5N1),1);
+    
+    Parameter_Name=cell(12,2);
+    Parameter_Name{1,1}='Susceptibility';
+    Parameter_Name{1,2}='Intercept';
+    Parameter_Name{2,2}='Education';
+    Parameter_Name{3,2}='Gini index';
+    Parameter_Name{4,2}='Income';
+    Parameter_Name{5,2}='Population density';
+    Parameter_Name{6,2}='Elderly population';
+    Parameter_Name{7,2}='Population under 15';
+    Parameter_Name{8,1}='Exposure';
+    Parameter_Name{8,2}='Intercept';
+    Parameter_Name{9,2}='Stringeny index';
+    Parameter_Name{10,2}='Connectivity';
+    Parameter_Name{11,2}='Population size';
+    Parameter_Name{12,2}='Urban population';
+
+
+    for mm=1:height(Population_Model_COVID)
+        [~,~,~,~,~,X_County,~,~,~,logic_par] = Population_Covariates(Population_Model_COVID.Model_COVID_Exposure{mm},Population_Model_COVID.Model_COVID_Suceptibility{mm});
+        Indicator_Full(:,mm)=double(logic_par(1:end-1));
+        x=par_est{mm};
+        beta_x=x(1:(1+size(X_County,1)));
+        if(length(beta_x)>1)
+            beta_x(2:end)=10.^beta_x(2:end);
+        end
+        beta_y=x((1+length(beta_x)):(end-1));
+        if(length(beta_y)>1)
+            beta_y(2:end)=10.^beta_y(2:end);
+        end
+        x_temp=[beta_x(:); beta_y(:)];
+        
+        Parameter_Full(logic_par(1:end-1),mm)=x_temp;
+    
+    end
+elseif(strcmp(Var_Table,'Population_H1N1'))
+    load('Population_Models_Fit_H1N1.mat','par_est_H1N1', 'Population_Model_H1N1', 'w_AIC_H1N1');
+
+
+    w_AIC=w_AIC_H1N1;
+    par_est=par_est_H1N1;
+
+    % Inclusion_Weight=cell(length(Exposure_H5N1)+length(Susceptible_H5N1)+length(Susceptible_Stratification_H5N1),1);
+    Parameter_Full=zeros(11,length(w_AIC));
+    Indicator_Full=zeros(11,length(w_AIC));
+    % Weighted_Uncertainty=cell(length(Exposure_H5N1)+length(Susceptible_H5N1)+length(Susceptible_Stratification_H5N1),1);
+    
+     Parameter_Name=cell(11,2);
+    Parameter_Name{1,1}='Susceptibility';
+    Parameter_Name{1,2}='Intercept';
+    Parameter_Name{2,2}='Education';
+    Parameter_Name{3,2}='Gini index';
+    Parameter_Name{4,2}='Income';
+    Parameter_Name{5,2}='Population density';
+    Parameter_Name{6,2}='Elderly population';
+    Parameter_Name{7,2}='Population under 15';
+    Parameter_Name{8,1}='Exposure';
+    Parameter_Name{8,2}='Intercept';
+    Parameter_Name{9,2}='Connectivity';
+    Parameter_Name{10,2}='Population size';
+    Parameter_Name{11,2}='Urban population';
+
+
+    for mm=1:height(Population_Model_H1N1)
+        [X_County,~,~,~,logic_par,~,~,~,~,~] = Population_Covariates(Population_Model_H1N1.Model_H1N1_Exposure{mm},Population_Model_H1N1.Model_H1N1_Suceptibility{mm});
+        Indicator_Full(:,mm)=double(logic_par(1:end-1));
+        x=par_est{mm};
+        beta_x=x(1:(1+size(X_County,1)));
+        if(length(beta_x)>1)
+            beta_x(2:end)=10.^beta_x(2:end);
+        end
+        beta_y=x((1+length(beta_x)):(end-1));
+        if(length(beta_y)>1)
+            beta_y(2:end)=10.^beta_y(2:end);
+        end
+        x_temp=[beta_x(:); beta_y(:)];
+        
+        Parameter_Full(logic_par(1:end-1),mm)=x_temp;
+    
+    end
 end
+
 
 Avg_Parameter=Parameter_Full*w_AIC;
 
 Model_Inclusion=Indicator_Full*w_AIC;
 
 
-r=rand(10^6,1);
+r=rand(5.*10^6,1);
 wc=cumsum(w_AIC);
-indx_m=zeros(10^6,1);
-for ii=1:10^6
+indx_m=zeros(5.*10^6,1);
+for ii=1:5.*10^6
     indx_m(ii)=find(r(ii)<=wc,1);
 end
 
@@ -133,7 +222,7 @@ Dist_Parameter=Parameter_Full(:,indx_m);
 
 Lower_Bound=prctile(Dist_Parameter,2.5,2);
 Upper_Bound=prctile(Dist_Parameter,97.5,2);
-T=table(Parameter_Name,Model_Inclusion,Avg_Parameter,Lower_Bound,Upper_Bound);
+T=table(Parameter_Name,Avg_Parameter,Lower_Bound,Upper_Bound,Model_Inclusion);
 
 writetable(T,[Var_Table '_Risk_Model_Summary.csv']);
 

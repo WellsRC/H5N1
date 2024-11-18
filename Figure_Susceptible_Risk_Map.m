@@ -34,7 +34,7 @@ if(strcmp(Var_Plot,'COVID'))
     avg_susceptible_risk_total_State=avg_susceptible_risk_population_State_COVID;
 
 elseif(strcmp(Var_Plot,'H1N1'))
-    load('Average_Risk_Population_COVID.mat','avg_susceptible_risk_population_County_H1N1','avg_susceptible_risk_population_State_H1N1','State_Name');
+    load('Average_Risk_Population_H1N1.mat','avg_susceptible_risk_population_County_H1N1','avg_susceptible_risk_population_State_H1N1','State_Name');
     avg_susceptible_risk_total_County=avg_susceptible_risk_population_County_H1N1;
     avg_susceptible_risk_total_State=avg_susceptible_risk_population_State_H1N1;
 end
@@ -47,6 +47,8 @@ State_Name=State_Name(state_nan);
 [avg_susceptible_risk_total_State,Indx_Risk]=sort(avg_susceptible_risk_total_State,'descend');
 State_Name=State_Name(Indx_Risk);
 
+
+State_Name(strcmp(State_Name,'District of Columbia'))='D.C.';
 figure('units','normalized','outerposition',[0 0.075 1 0.5]);
  ax1=usamap('conus');
 
@@ -57,15 +59,15 @@ states = shaperead('usastatelo', 'UseGeoCoords', true);
 geoshow(ax1, states,'Facecolor','none','LineWidth',0.5); hold on;
        
 C_Risk=[hex2rgb('#ffffff');
-        hex2rgb('#fff7ec');
-        hex2rgb('#fee8c8');
-        hex2rgb('#fdd49e');
-        hex2rgb('#fdbb84');
-        hex2rgb('#fc8d59');
-        hex2rgb('#ef6548');
-        hex2rgb('#d7301f');
-        hex2rgb('#b30000');
-        hex2rgb('#7f0000');];
+        hex2rgb('#fff7fb');
+        hex2rgb('#ece7f2');
+        hex2rgb('#d0d1e6');
+        hex2rgb('#a6bddb');
+        hex2rgb('#74a9cf');
+        hex2rgb('#3690c0');
+        hex2rgb('#0570b0');
+        hex2rgb('#045a8d');
+        hex2rgb('#023858');];
 
 risk_measure=avg_susceptible_risk_total_County;
 t_upper=risk_measure>prctile(risk_measure,95);
@@ -92,7 +94,7 @@ end
         
 text(ymin,0,'Lowest','Fontsize',16);
 text(ymin,max(c_indx),'Highest','Fontsize',16);
-text(ymin+2,max(c_indx)./2,{'Risk of spillover','within dairy farming counties'},'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
+text(ymin+2,max(c_indx)./2,{'Susceptibility','to H5N1 outbreaks'},'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
 
 axis off;  
 
@@ -142,7 +144,7 @@ end
 box off;
 set(gca,'LineWidth',2,'tickdir','out','YTick',[0 1],'YTickLabel',{'Lowest','Highest'},'Fontsize',16,'XTick',[1:length(State_Name)],'XTickLabel',State_Name);
 xlabel('State','FontSize',18);
-ylabel({'State spillover risk'},'FontSize',18);
+ylabel({'State susceptbility','to H5N1 outbreaks'},'FontSize',18);
 xlim([0.5 length(State_Name)+0.5]);
 ylim([0 1.01])
 
