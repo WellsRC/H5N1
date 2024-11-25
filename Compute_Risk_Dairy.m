@@ -13,7 +13,6 @@ overall_risk_dairy_farm_State=zeros(length(State_Name),length(par_est));
 exposure_risk_dairy_farm_State=zeros(length(State_Name),length(par_est));
 susceptible_risk_dairy_farm_State=zeros(length(State_Name),length(par_est));
 spillover_risk_dairy_farm_State=zeros(length(State_Name),length(par_est));
-spillover_risk_scenario_dairy_farm_State=zeros(21,length(State_Name),length(par_est));
 
 for mm=1:height(Dairy_Model)
     [X_County,Y_County,County_Farms,Affected_County_Farms,~,~,~,~,~,Dairy_Network,~] = Dairy_Covariates(Dairy_Model.Model_H5N1{mm},Dairy_Model.Model_Farm{mm},Dairy_Model.Model_Stratified_Operations{mm});
@@ -70,8 +69,6 @@ for mm=1:height(Dairy_Model)
         c_r=c_r(t_inc);
         w_c=w_c(t_inc);
         susceptible_risk_dairy_farm_State(ss,mm)=1-nthroot(prod((1-c_r).^w_c),sum(w_c));
-
-        spillover_risk_scenario_dairy_farm_State(:,ss,mm)=nbinpdf(0:20,r_nbin,1-overall_risk_dairy_farm_State(ss,mm));
     end
     
     spillover_risk_dairy_farm_State(:,mm)=1-nbincdf(0,r_nbin,1-overall_risk_dairy_farm_State(:,mm));
@@ -93,16 +90,9 @@ avg_exposure_risk_dairy_farm_State=exposure_risk_dairy_farm_State*w_AIC;
 avg_susceptible_risk_dairy_farm_State=susceptible_risk_dairy_farm_State*w_AIC;
 avg_spillover_risk_dairy_farm_State=spillover_risk_dairy_farm_State*w_AIC;
 
-avg_spillover_risk_scenario_dairy_farm_State=zeros(21,length(State_Name));
-for ii=1:21
-    for ss=1:length(State_Name)
-        avg_spillover_risk_scenario_dairy_farm_State(ii,ss)=squeeze(spillover_risk_scenario_dairy_farm_State(ii,ss,:))'*w_AIC;
-    end
-end
-
 avg_overall_risk_dairy_farm_County(County_Farms==0)=NaN;
 avg_exposure_risk_dairy_farm_County(County_Farms==0)=NaN;
 avg_susceptible_risk_dairy_farm_County(County_Farms==0)=NaN;
 avg_spillover_risk_dairy_farm_County(County_Farms==0)=NaN;
 
-save('Average_Risk_Dairy.mat','avg_spillover_risk_scenario_dairy_farm_State','spillover_risk_scenario_dairy_farm_State','avg_overall_risk_dairy_farm_County','avg_exposure_risk_dairy_farm_County','avg_susceptible_risk_dairy_farm_County','overall_risk_dairy_farm_County','exposure_risk_dairy_farm_County','susceptible_risk_dairy_farm_County','w_AIC','avg_spillover_risk_dairy_farm_County','spillover_risk_dairy_farm_County','avg_overall_risk_dairy_farm_State','avg_exposure_risk_dairy_farm_State','avg_susceptible_risk_dairy_farm_State','overall_risk_dairy_farm_State','exposure_risk_dairy_farm_State','susceptible_risk_dairy_farm_State','w_AIC','avg_spillover_risk_dairy_farm_State','spillover_risk_dairy_farm_State','State_Name');
+save('Average_Risk_Dairy.mat','avg_overall_risk_dairy_farm_County','avg_exposure_risk_dairy_farm_County','avg_susceptible_risk_dairy_farm_County','overall_risk_dairy_farm_County','exposure_risk_dairy_farm_County','susceptible_risk_dairy_farm_County','w_AIC','avg_spillover_risk_dairy_farm_County','spillover_risk_dairy_farm_County','avg_overall_risk_dairy_farm_State','avg_exposure_risk_dairy_farm_State','avg_susceptible_risk_dairy_farm_State','overall_risk_dairy_farm_State','exposure_risk_dairy_farm_State','susceptible_risk_dairy_farm_State','w_AIC','avg_spillover_risk_dairy_farm_State','spillover_risk_dairy_farm_State','State_Name');

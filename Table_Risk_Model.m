@@ -67,36 +67,32 @@ if(strcmp(Var_Table,'Dairy'))
 elseif(strcmp(Var_Table,'Poultry'))
     load('Poultry_Models_Fit.mat',"par_est","w_AIC","Poultry_Model");
     
-    Parameter_Full=zeros(16,length(w_AIC));
-    Indicator_Full=zeros(16,length(w_AIC));
+    Parameter_Full=zeros(14,length(w_AIC));
+    Indicator_Full=zeros(14,length(w_AIC));
 
-    Parameter_Name=cell(16,3);
+    Parameter_Name=cell(14,3);
 
     Parameter_Name{1,1}='Susceptibility';
     Parameter_Name{1,2}='Intercept';
-    Parameter_Name{2,2}='Poultry_Operations';
-    Parameter_Name{3,2}='Turkey_Operations';
-    Parameter_Name{4,2}='Total Inventory:';
-    Parameter_Name{5,2}='Stratified inventory';
-    Parameter_Name{5,3}='Layer invenotry';
-    Parameter_Name{6,3}='Broiler and Other inventory';
+    Parameter_Name{2,2}='Turkey_Operations';
+    Parameter_Name{3,2}='Broiler_Operations';
+    Parameter_Name{4,2}='Layer_Operations';
+    Parameter_Name{5,2}='Pullet_Operations';
+    Parameter_Name{6,2}='Total Inventory:';
     Parameter_Name{7,2}='Stratified inventory';
-    Parameter_Name{7,3}='Broiler invenotry';
-    Parameter_Name{8,3}='Layer and Other inventory';
-    Parameter_Name{9,2}='Stratified inventory';
-    Parameter_Name{9,3}='Other invenotry';
-    Parameter_Name{10,3}='Layer inventory';
-    Parameter_Name{11,3}='Broiler inventory';
-    Parameter_Name{12,1}='Exposure';
-    Parameter_Name{12,2}='Intercept';
-    Parameter_Name{13,2}='H5N1 surviellance in migratory birds';
-    Parameter_Name{14,2}='Migratory bird intensity';
-    Parameter_Name{15,2}='Binary indicator of H5N1 in migratory birds';
-    Parameter_Name{16,2}='Combination of binary indicator of H5N1 in migratory birds and their intensity';
+    Parameter_Name{7,3}='Pullet invenotry';
+    Parameter_Name{8,3}='Layer inventory';
+    Parameter_Name{9,3}='Broiler inventory';
+    Parameter_Name{10,1}='Exposure';
+    Parameter_Name{10,2}='Intercept';
+    Parameter_Name{11,2}='H5N1 surviellance in migratory birds';
+    Parameter_Name{12,2}='Migratory bird intensity';
+    Parameter_Name{13,2}='Binary indicator of H5N1 in migratory birds';
+    Parameter_Name{14,2}='Combination of binary indicator of H5N1 in migratory birds and their intensity';
 
    
     for mm=1:height(Poultry_Model)
-        [X_County,~,~,~,~,logic_par] = Poultry_Covariates(Poultry_Model.Model_H5N1{mm},Poultry_Model.Model_Farm{mm},Poultry_Model.Model_Stratified_Chicken_Inventory{mm});
+        [X_County,~,~,~,~,~,~,~,~,~,~,~,~,~,~,logic_par] = Poultry_Covariates(Poultry_Model.Model_H5N1{mm},Poultry_Model.Model_Farm{mm},Poultry_Model.Model_Stratified_Chicken_Inventory{mm});
         Indicator_Full(:,mm)=double(logic_par(1:end-1));
         
         x=par_est{mm};

@@ -1,4 +1,4 @@
-function [X_County,Y_County,County_Farms,Affected_County_Farms,County_Spillover,Remaining_State_Spillover,Remainaing_Affected_State_Farms,Remainaing_State_Farms,state_weight_matrix,Dairy_Network,logic_par] = Dairy_Covariates(H5N1_Variable,Farm_Variables,Stratified_Operations_Variables)
+function [X_County,Y_County,County_Farms,Affected_County_Farms,State_Spillover_Matrix,State_Spillover_Events,Remainaing_Affected_State_Farms,Remainaing_Total_State_Farms,state_weight_hpai_matrix,Dairy_Network,logic_par] = Dairy_Covariates(H5N1_Variable,Farm_Variables,Stratified_Operations_Variables)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load Data
@@ -9,31 +9,43 @@ logic_par(25)=true; % Hyper-paramter
 logic_par(1)=true; % Constant
 logic_par(20)=true; % Constant
 
-load([pwd '/Data/Data_US_County.mat'],'US_County','US_County_Dairy_to_Human');
+load([pwd '/Data/Data_US_County.mat'],'US_County');
 
-County_Spillover=table2array(US_County_Dairy_to_Human(:,7:1006));
-
-temp_Spillover=table2array(US_County_Dairy_to_Human(:,1007:end));
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% HPAI Outbreaks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+County_Farms=US_County.TOTAL_DAIRY_OPERATIONS;
 Affected_County_Farms = US_County.DAIRY_HPAI_OUTBREAK_KNOWN;
+Dairy_HPAI_Remain_State_Level=unique(US_County.STATE_NAME(US_County.DAIRY_HPAI_OUTBREAK_UNKNOWN>0));
+Remainaing_Affected_State_Farms = zeros(size(Dairy_HPAI_Remain_State_Level));
+Remainaing_Total_State_Farms = zeros(size(Dairy_HPAI_Remain_State_Level));
+state_weight_hpai_matrix=zeros(length(Dairy_HPAI_Remain_State_Level),height(US_County));
 
-State_Level=unique(US_County.STATE_NAME(~isnan(US_County.DAIRY_HPAI_REMAIN_STATE)));
-
-Remainaing_Affected_State_Farms = zeros(size(State_Level));
-Remainaing_State_Farms = zeros(size(State_Level));
-Remaining_State_Spillover=zeros(length(State_Level),size(temp_Spillover,2));
-state_weight_matrix=zeros(length(State_Level),height(US_County));
-
-for ss=1:length(State_Level)
-    t_find = ~isnan(US_County.DAIRY_HPAI_REMAIN_STATE) & strcmp(US_County.STATE_NAME,State_Level{ss});
-    Remainaing_Affected_State_Farms(ss)= unique(US_County.DAIRY_HPAI_REMAIN_STATE(t_find));
-    Remainaing_State_Farms(ss)= sum(US_County.TOTAL_DAIRY_OPERATIONS(t_find));
-    state_weight_matrix(ss,t_find)=US_County.STATE_REM_WEIGHT(t_find);
-    temp_mat=temp_Spillover(t_find,:);
-    Remaining_State_Spillover(ss,:)=temp_mat(1,:);
+for ss=1:length(Dairy_HPAI_Remain_State_Level)
+    t_find = strcmp(US_County.STATE_NAME,Dairy_HPAI_Remain_State_Level{ss});
+    Remainaing_Affected_State_Farms(ss)= sum(US_County.DAIRY_HPAI_OUTBREAK_UNKNOWN(t_find));
+    Remainaing_Total_State_Farms(ss)= sum(US_County.TOTAL_DAIRY_OPERATIONS(t_find));
+    state_weight_hpai_matrix(ss,t_find)=US_County.TOTAL_DAIRY_OPERATIONS(t_find)./sum(US_County.TOTAL_DAIRY_OPERATIONS(t_find));
 end
 
-County_Farms=US_County.TOTAL_DAIRY_OPERATIONS;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+% Spillover
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Dairy_Spillover_State=unique(US_County.STATE_NAME(US_County.SPILLOVER_DAIRY>0));
+State_Spillover_Events=zeros(size(Dairy_Spillover_State));
+State_Spillover_Matrix=zeros(length(Dairy_Spillover_State),height(US_County));
+
+for ss=1:length(Dairy_Spillover_State)
+    t_state=strcmp(Dairy_Spillover_State{ss},US_County.STATE_NAME);
+    State_Spillover_Events(ss)=sum(US_County.SPILLOVER_DAIRY(t_state)); 
+    State_Spillover_Matrix(ss,t_state)=US_County.TOTAL_DAIRY_OPERATIONS(t_state)./sum(US_County.TOTAL_DAIRY_OPERATIONS(t_state));
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+% Exposure 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 
 
 Y_County=zeros(length(H5N1_Variable),height(US_County));
@@ -53,6 +65,10 @@ for yy=1:length(H5N1_Variable)
     end
 end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+% Suseptbility  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 if(strcmp(Stratified_Operations_Variables,'All'))
     X_County=zeros(length(Farm_Variables)+7,height(US_County));
 elseif(~isempty(Stratified_Operations_Variables))
@@ -75,6 +91,7 @@ for ff=1:length(Farm_Variables)
        Dairy_Network=Dairy_Network-diag(diag(Dairy_Network));
        logic_par(4)=true;
     end
+
 end
 
 if strcmp(Stratified_Operations_Variables,'All')

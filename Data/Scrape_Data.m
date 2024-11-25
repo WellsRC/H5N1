@@ -122,31 +122,23 @@ X_temp=zeros(height(US_County),1);
 
 for cc=1:height(US_County)
     t_find=strcmpi(Data.State,US_County.STATE_NAME{cc}) & strcmpi(Data.County,US_County.NAME{cc}) & Data.CountySuppressed==0;
-    t_supp=strcmpi(Data.State,US_County.STATE_NAME{cc}) & Data.CountySuppressed==1 & US_County.TOTAL_DAIRY_OPERATIONS(cc)>0;
-    if(sum(t_find)>0)
-        X_temp(cc)=sum(t_find);
-    elseif(sum(t_supp)>0)
-        X_temp(cc)=NaN;
-    end
+    X_temp(cc)=sum(t_find);
 end
 T_temp=array2table(X_temp);
 T_temp.Properties.VariableNames={'DAIRY_HPAI_OUTBREAK_KNOWN'};
 US_County=[US_County T_temp];
 
 
-U_temp=NaN.*zeros(height(US_County),2);
+U_temp=zeros(height(US_County),1);
 
 for cc=1:height(US_County)
-    if(isnan(X_temp(cc)))
-        t_find=strcmpi(Data.State,US_County.STATE_NAME{cc}) & Data.CountySuppressed==1;
-        t_opr=strcmpi(US_County.STATE_NAME,US_County.STATE_NAME{cc}) & isnan(X_temp);
-        temp_TOTAL=sum(US_County.TOTAL_DAIRY_OPERATIONS(t_opr));
-        U_temp(cc,1)=sum(t_find);
-        U_temp(cc,2)=US_County.TOTAL_DAIRY_OPERATIONS(cc)./temp_TOTAL;
-    end
+    t_find=strcmpi(Data.State,US_County.STATE_NAME{cc}) & Data.CountySuppressed==1;
+    t_opr=strcmpi(US_County.STATE_NAME,US_County.STATE_NAME{cc});
+    temp_TOTAL=sum(US_County.TOTAL_DAIRY_OPERATIONS(t_opr));
+    U_temp(cc,1)=sum(t_find).*US_County.TOTAL_DAIRY_OPERATIONS(cc)./temp_TOTAL;
 end
 T_temp=array2table(U_temp);
-T_temp.Properties.VariableNames={'DAIRY_HPAI_REMAIN_STATE','STATE_REM_WEIGHT'};
+T_temp.Properties.VariableNames={'DAIRY_HPAI_OUTBREAK_UNKNOWN'};
 US_County=[US_County T_temp];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -943,58 +935,39 @@ US_County=[US_County T_temp];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Data=readtable([pwd '\H5N1_Outbreaks\H5N1_State_Human.csv']);
 Data=Data(Data.Dairy>0,:);
-N_Samp=10^3;
-Spillover=zeros(height(US_County),N_Samp);
-Spillover(~isnan(US_County.DAIRY_HPAI_REMAIN_STATE),:)=NaN;
-Spillover_Remaining_State=zeros(height(US_County),N_Samp);
-Spillover_Remaining_State(isnan(US_County.DAIRY_HPAI_REMAIN_STATE),:)=NaN;
+Spillover=zeros(height(US_County),1);
 
 for ii=1:height(Data)
-    t_state=strcmpi(Data.StateName{ii},US_County.STATE_NAME) & ~isnan(US_County.DAIRY_HPAI_OUTBREAK_KNOWN);
-    w_county=US_County.DAIRY_HPAI_OUTBREAK_KNOWN;
-    t_state_unknown=strcmpi(Data.StateName{ii},US_County.STATE_NAME) & ~isnan(US_County.DAIRY_HPAI_REMAIN_STATE);
-    w_county(~t_state)=0;
-    w_county=cumsum(w_county)./(sum(w_county)+sum(unique(US_County.DAIRY_HPAI_REMAIN_STATE(t_state_unknown))));
-    for nn=1:Data.Dairy(ii)
-        for ss=1:N_Samp
-            indx_f=find(rand(1)<=w_county,1);
-            if(~isempty(indx_f))
-                Spillover(indx_f,ss)=Spillover(indx_f,ss)+1;
-            else
-                Spillover_Remaining_State(t_state_unknown,ss)=Spillover_Remaining_State(t_state_unknown,ss)+1;
-            end
-        end
-    end
+    t_state=strcmpi(Data.StateName{ii},US_County.STATE_NAME) & (US_County.DAIRY_HPAI_OUTBREAK_UNKNOWN+US_County.DAIRY_HPAI_OUTBREAK_KNOWN>0);
+    w_county=US_County.DAIRY_HPAI_OUTBREAK_UNKNOWN+US_County.DAIRY_HPAI_OUTBREAK_KNOWN;
+    
+    Spillover(t_state)=Data.Dairy(ii).*w_county(t_state)./sum(w_county(t_state));
 end
 
-Samples=[array2table(Spillover) array2table(Spillover_Remaining_State)];
-US_County_Dairy_to_Human=[US_County_Dairy_to_Human Samples];
+T_temp=[array2table(Spillover)];
+T_temp.Properties.VariableNames={'SPILLOVER_DAIRY'};
+US_County=[US_County T_temp];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % H5N1 Cases Among Humans: Poultry Connected
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Data=readtable([pwd '\H5N1_Outbreaks\H5N1_State_Human.csv']);
 Data=Data(Data.Poultry>0,:);
-N_Samp=10^3;
-Spillover=zeros(height(US_County),N_Samp);
+Spillover=zeros(height(US_County),1);
 
+
+OB=US_County.POULTRY_HPAI_OUTBREAK+US_County.PULLET_HPAI_OUTBREAK+US_County.BROILER_HPAI_OUTBREAK+US_County.LAYER_HPAI_OUTBREAK+US_County.TURKEY_HPAI_OUTBREAK;
 for ii=1:height(Data)
-    t_state=strcmpi(Data.StateName{ii},US_County.STATE_NAME);
-    w_county=US_County.POULTRY_HPAI_OUTBREAK;
-    w_county(~t_state)=0;
-    w_county=cumsum(w_county)./sum(w_county);
-    for nn=1:Data.Poultry(ii)
-        for ss=1:N_Samp
-            indx_f=find(rand(1)<=w_county,1);
-            Spillover(indx_f,ss)=Spillover(indx_f,ss)+1;
-        end
-    end
+    t_state=strcmpi(Data.StateName{ii},US_County.STATE_NAME) & OB>0;
+    w_county=OB;    
+    Spillover(t_state)=Data.Poultry(ii).*w_county(t_state)./sum(w_county(t_state));
 end
 
-Samples=array2table(Spillover);
-US_County_Poultry_to_Human=[US_County_Poultry_to_Human Samples];
+T_temp=[array2table(Spillover)];
+T_temp.Properties.VariableNames={'SPILLOVER_POULTRY'};
+US_County=[US_County T_temp];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SAVE FILE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-save('Data_US_County.mat','US_County','US_County_Dairy_to_Human','US_County_Poultry_to_Human');
+save('Data_US_County.mat','US_County');

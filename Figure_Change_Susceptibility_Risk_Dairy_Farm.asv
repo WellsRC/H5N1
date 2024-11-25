@@ -8,17 +8,15 @@ red_con=1;
 load(['Average_Risk_Dairy_Reduction_Connectivity=' num2str(red_con.*100) '.mat'],'avg_overall_risk_dairy_farm_State','avg_overall_risk_dairy_farm_County','State_Name');
 red_connectivity_avg_overall_risk_dairy_farm_County=avg_overall_risk_dairy_farm_County;
 
-delta_avg_overall_risk_dairy_farm_State=1-red_connectivity_avg_overall_risk_dairy_farm_State./baseline_avg_overall_risk_dairy_farm_State;
+delta_avg_overall_risk_dairy_farm_County=1-red_connectivity_avg_overall_risk_dairy_farm_County./baseline_avg_overall_risk_dairy_farm_County;
 
 
 red_con_v=[0.1:0.1:1];
-red_connectivity_avg_overall_risk_dairy_farm_State=zeros(length(red_con_v),length(State_Name));
+red_connectivity_avg_overall_risk_dairy_farm_State=zeros(length(State_Name),length(red_con_v));
 for ii=1:length(red_con_v)
     load(['Average_Risk_Dairy_Reduction_Connectivity=' num2str(red_con_v(ii).*100) '.mat'],'avg_overall_risk_dairy_farm_State','State_Name');
-    red_connectivity_avg_overall_risk_dairy_farm_State(ii,:)=1-avg_overall_risk_dairy_farm_State./baseline_avg_overall_risk_dairy_farm_State;
+    red_connectivity_avg_overall_risk_dairy_farm_State(:,ii)=1-avg_overall_risk_dairy_farm_State./baseline_avg_overall_risk_dairy_farm_State;
 end
-
-delta_overall_risk_dairy_farm_County=1-red_connectivity_avg_overall_risk_dairy_farm_County./baseline_avg_overall_risk_dairy_farm_County;
 
 % Plot_Variable
 close all;
@@ -53,7 +51,7 @@ hex2rgb('#238b45');
 hex2rgb('#006d2c');
 hex2rgb('#00441b');];
 
-figure('units','normalized','outerposition',[0 0.075 1 0.5]);
+figure('units','normalized','outerposition',[0 0.075 1 0.55]);
  ax1=usamap('conus');
 
 framem off; gridm off; mlabel off; plabel off;
@@ -63,36 +61,49 @@ states = shaperead('usastatelo', 'UseGeoCoords', true);
 geoshow(ax1, states,'Facecolor','none','LineWidth',0.5); hold on;
        
 
-risk_measure=delta_overall_risk_dairy_farm_County;
+risk_measure=delta_avg_overall_risk_dairy_farm_County;
 t_upper=risk_measure>prctile(risk_measure,95);
 v_upper=prctile(risk_measure,95);
 t_lower=risk_measure<prctile(risk_measure,5);
 v_lower=prctile(risk_measure,5);
 risk_measure(t_lower)=v_lower;
 risk_measure(t_upper)=v_upper;
-risk_measure=log(risk_measure);
-risk_measure=(risk_measure-min(risk_measure))./(max(risk_measure)-min(risk_measure));
-x_risk=linspace(0,1,size(C_Risk,1));
-c_indx=[1:size(C_Risk,1)];
-    
+risk_measure=risk_measure./v_lower;
 
-subplot('Position',[0.38,0.05,0.01,0.93]);
+if(ceil(max(risk_measure))>=10)
+    risk_measure=log10(risk_measure);
+    x_risk=linspace(0,max(risk_measure),size(C_Risk,1));
+    c_indx=linspace(0,max(risk_measure),251);
+    y_indx=[1:floor(max(risk_measure(risk_measure>0)))];
+else
+    x_risk=linspace(1,(max(risk_measure)),size(C_Risk,1));
+    c_indx=linspace(1,(max(risk_measure)),251);
+    y_indx=[2:ceil(max(risk_measure))];
+end
+
+subplot('Position',[0.38,0.05,0.01,0.9]);
 
 xlim([0 1]);
 ylim([0 max(c_indx)]);    
 ymin=1;
 dy=2/(1+sqrt(5));
 for ii=1:length(c_indx)
-    patch([0 0 dy dy],c_indx(ii)-[1 0 0 1],C_Risk(ii,:),'LineStyle','none');
+    patch([0 0 dy dy],c_indx(ii)-[1 0 0 1],interp1(x_risk,C_Risk,c_indx(ii)),'LineStyle','none');
 end
-        
-text(ymin,0,'Lowest','Fontsize',16);
-text(ymin,max(c_indx),'Highest','Fontsize',16);
-text(ymin+2,max(c_indx)./2,{'Probability of underreporting','among dairy farming counties'},'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
+
+text(ymin+2.5,0,{'Baseline','lowest'},'Fontsize',16,'HorizontalAlignment','center');
+for yy=1:length(y_indx)
+    if(min(y_indx)==2)
+        text(ymin,y_indx(yy),[num2str(y_indx(yy))],'Fontsize',16);
+    else
+        text(ymin,y_indx(yy),['10^' num2str(y_indx(yy))],'Fontsize',16);
+    end
+end
+text(ymin+4.5,max(c_indx)./2,{'Fold-increase in' ,'reduction of overall risk'},'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
 
 axis off;  
 
-text(-37,0.98,'A','FontSize',32,'Units','normalized');
+text(-37.3,1.01,'A','FontSize',32,'Units','normalized');
 CC_Risk=ones(length(S),3);
         
 for ii=1:length(S)
@@ -115,242 +126,65 @@ geoshow(ax1, states,'Facecolor','none','LineWidth',1.5); hold on;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%555
 % State-level
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-PR_UR=zeros(length(State_Name),length(ur_level));
-for uu=1:length(ur_level)
-    Underreporting_County=Prob_UR(:,uu);
-    for ss=1:length(State_Name)
-        t_state=strcmp(State_Name{ss},US_County.STATE_NAME);
-        c_r=Underreporting_County(t_state);
-        w_c=US_County.TOTAL_DAIRY_OPERATIONS(t_state);
-        t_inc=w_c>0 & ~isnan(c_r);
-        c_r=c_r(t_inc);
-        w_c=w_c(t_inc);
-        PR_UR(ss,uu)=sum(w_c(:).*c_r(:))./sum(w_c(:));
-    end
-end
-state_nan=~isnan(mean(PR_UR,2));
-PR_UR=PR_UR(state_nan,:);
+state_nan=~isnan(mean(red_connectivity_avg_overall_risk_dairy_farm_State,2));
+red_connectivity_avg_overall_risk_dairy_farm_State=red_connectivity_avg_overall_risk_dairy_farm_State(state_nan,:);
 State_Name=State_Name(state_nan);
 
 State_Risk=zeros(length(State_Name),1);
 for ss=1:length(State_Name)
-    State_Risk(ss)=PR_UR(ss,:)*ur_level(:);
+    State_Risk(ss)=red_connectivity_avg_overall_risk_dairy_farm_State(ss,:)*red_con_v(:);
 end
 
 [~,Indx_Risk]=sort(State_Risk,'descend');
 State_Name=State_Name(Indx_Risk);
-PR_UR=PR_UR(Indx_Risk,:);
+red_connectivity_avg_overall_risk_dairy_farm_State=red_connectivity_avg_overall_risk_dairy_farm_State(Indx_Risk,:);
 
+red_connectivity_avg_overall_risk_dairy_farm_State=log10(red_connectivity_avg_overall_risk_dairy_farm_State./min(red_connectivity_avg_overall_risk_dairy_farm_State(:)));
 
-subplot('Position',[0.52,0.4,0.47,0.57]);
+subplot('Position',[0.52,0.445,0.47,0.55]);
 
-for uu=1:length(ur_level)
+for uu=1:length(red_con_v)
     for ss=1:length(State_Name)
-        patch(ss+[-0.5 -0.5 0.5 0.5],100.*(ur_level(uu)+[-0.025 0.025 0.025 -0.025]),interp1(linspace(min(PR_UR(:)),max(PR_UR(:)),size(C_Risk,1)),C_Risk,PR_UR(ss,uu)),'LineStyle','none');
+        patch(ss+[-0.5 -0.5 0.5 0.5],100.*(red_con_v(uu)+[-0.05 0.05 0.05 -0.05]),interp1(linspace(0,max(red_connectivity_avg_overall_risk_dairy_farm_State(:)),size(C_Risk,1)),C_Risk,red_connectivity_avg_overall_risk_dairy_farm_State(ss,uu)),'LineStyle','none');
     end
 end
 
 xlim([0.5 length(State_Name)+0.5])
-ylim([2.5 97.5])
-set(gca,'XTick',[1:length(State_Name)],'XTickLabel',State_Name,'YTick',100.*ur_level(1:3:end),'Fontsize',14,'LineWidth',2,'TickDir','out', 'YDir','reverse');
+ylim([5 105])
+set(gca,'XTick',[1:length(State_Name)],'XTickLabel',State_Name,'YTick',100.*red_con_v,'Fontsize',14,'LineWidth',2,'TickDir','out', 'YDir','reverse');
 ytickformat('percentage');
 
-ylabel({'National','underreporting rate'},'Fontsize',18)
-xlabel('State','Fontsize',18)
+ylabel({'Reduction in','interstate connectivity'},'Fontsize',18)
+xl=xlabel('State','Fontsize',18);
+xl.Position=xl.Position+[0 2 0];
 
-text(-0.15,0.97,'B','FontSize',32,'Units','normalized');
-
-ax1.Position=[-0.445,-0.2,1.3,1.3];
-
+text(-0.15,0.95,'B','FontSize',32,'Units','normalized');
 
 
+subplot('Position',[0.52,0.09,0.47,0.04]);
 
-
-
-
-
-
-
-[delta_avg_overall_risk_dairy_farm_State,Indx_Risk]=sort(delta_avg_overall_risk_dairy_farm_State,'descend');
-
-State_Name=State_Name(Indx_Risk);
-
-n_nan = ~isnan(delta_avg_overall_risk_dairy_farm_State);
-State_Name=State_Name(n_nan);
-delta_avg_overall_risk_dairy_farm_State=delta_avg_overall_risk_dairy_farm_State(n_nan);
-
-figure('units','normalized','outerposition',[0 0.075 1 1]);
-ax1=usamap('conus');
-
-framem off; gridm off; mlabel off; plabel off;
-ax1.Position=[-0.3,0.9,0.6,0.6];
-
-states = shaperead('usastatelo', 'UseGeoCoords', true);
-geoshow(ax1, states,'Facecolor','none','LineWidth',0.5); hold on;
-
-subplot('Position',[0.41,0.525,0.01,0.45]);
-Title_Name={'County farms reduction of','susceptibility to H5N1'};
-
-risk_measure=delta_susceptible_risk_farm_County;
-
-risk_measure=(risk_measure-min(risk_measure))./(max(risk_measure)-min(risk_measure));
-x_risk=linspace(0,1,size(C_Risk,1));
-c_indx=[1:size(C_Risk,1)];
-
-xlim([0 1]);
-ylim([0 max(c_indx)]);    
+ylim([0 1]);
+xlim([0 max(c_indx)]);    
 ymin=1;
 dy=2/(1+sqrt(5));
 for ii=1:length(c_indx)
-    patch([0 0 dy dy],c_indx(ii)-[1 0 0 1],C_Risk(ii,:),'LineStyle','none');
+    patch(c_indx(ii)-[1 0 0 1],[0 0 dy dy],interp1(x_risk,C_Risk,c_indx(ii)),'LineStyle','none');
 end
 
-text(ymin,0,'Lowest','Fontsize',16);
-text(ymin,max(c_indx),'Highest','Fontsize',16);
-text(ymin+2,max(c_indx)./2,Title_Name,'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
+text(0,ymin-2.5,{'Baseline','lowest'},'Fontsize',16,'HorizontalAlignment','center');
+for yy=1:length(y_indx)
+    if(min(y_indx)==2)
+        text(y_indx(yy),ymin,[num2str(y_indx(yy))],'Fontsize',16);
+    else
+        text(y_indx(yy),ymin,['10^' num2str(y_indx(yy))],'Fontsize',16);
+    end
+end
+text(max(c_indx)./2,ymin+4.5,{'Fold-increase in reduction of overall risk'},'HorizontalAlignment','center','Fontsize',18);
 
 axis off;  
 
-text(-40,1,char(65),'FontSize',32,'Units','normalized');
-CC_Risk=ones(length(S),3);
+ax1.Position=[-0.405,-0.15,1.2,1.2];
 
-for ii=1:length(S)
-    if(~isnan(risk_measure(ii)))
-        CC_Risk(ii,:)=interp1(x_risk,C_Risk,risk_measure(ii));
-    else
-        CC_Risk(ii,:)=[0.7 0.7 0.7];
-    end
+
+print(gcf,['Supplementary_Interstate_Transporation_Dairy.png'],'-dpng','-r300');
 end
-
-CM=makesymbolspec('Polygon',{'INDEX',[1 NS],'FaceColor',CC_Risk});
-
-geoshow(ax1,S,'SymbolSpec',CM,'LineStyle','None'); 
-geoshow(ax1, states,'Facecolor','none','LineWidth',1.5); hold on;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-% Remove model
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-ax2=usamap('conus');
-            
-framem off; gridm off; mlabel off; plabel off;
-ax2.Position=[1.7,0.4,0.6,0.6];
-
-states = shaperead('usastatelo', 'UseGeoCoords', true);
-geoshow(ax2, states,'Facecolor','none','LineWidth',0.5); hold on;
-
-
-geoshow(ax2,S,'SymbolSpec',CM,'LineStyle','None'); 
-geoshow(ax2, states,'Facecolor','none','LineWidth',1.5); hold on;
-
-subplot('Position',[0.885,0.525,0.01,0.45]);
-Title_Name={'County farms reduction of','susceptibility to H5N1'};
-
-C_Risk=[hex2rgb('#ffffff');
-        hex2rgb('#f7fcfd');
-hex2rgb('#e5f5f9');
-hex2rgb('#ccece6');
-hex2rgb('#99d8c9');
-hex2rgb('#66c2a4');
-hex2rgb('#41ae76');
-hex2rgb('#238b45');
-hex2rgb('#006d2c');
-hex2rgb('#00441b');];
-risk_measure=delta_overall_risk_dairy_farm_County;
-
-risk_measure=(risk_measure-min(risk_measure))./(max(risk_measure)-min(risk_measure));
-x_risk=linspace(0,1,size(C_Risk,1));
-c_indx=[1:size(C_Risk,1)];
-
-xlim([0 1]);
-ylim([0 max(c_indx)]);    
-ymin=1;
-dy=2/(1+sqrt(5));
-for ii=1:length(c_indx)
-    patch([0 0 dy dy],c_indx(ii)-[1 0 0 1],C_Risk(ii,:),'LineStyle','none');
-end
-
-text(ymin,0,'Lowest','Fontsize',16);
-text(ymin,max(c_indx),'Highest','Fontsize',16);
-text(ymin+2,max(c_indx)./2,Title_Name,'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
-
-axis off;  
-
-text(-40,1,char(66),'FontSize',32,'Units','normalized');
-CC_Risk=ones(length(S),3);
-
-for ii=1:length(S)
-    if(~isnan(risk_measure(ii)))
-        CC_Risk(ii,:)=interp1(x_risk,C_Risk,risk_measure(ii));
-    else
-        CC_Risk(ii,:)=[0.7 0.7 0.7];
-    end
-end
-
-CM=makesymbolspec('Polygon',{'INDEX',[1 NS],'FaceColor',CC_Risk});
-
-geoshow(ax2,S,'SymbolSpec',CM,'LineStyle','None'); 
-geoshow(ax2, states,'Facecolor','none','LineWidth',1.5); hold on;
-
-ax3=subplot('Position',[0.09,0.08,0.37,0.4]);
-
-CC_Risk=ones(length(State_Name),3);
-        
-risk_measure=delta_avg_overall_risk_dairy_farm_State;
-
-for ii=1:length(State_Name)
-    if(~isnan(risk_measure(ii)))
-        CC_Risk(ii,:)=interp1(x_risk,C_Risk,risk_measure(ii));
-    else
-        CC_Risk(ii,:)=[0.7 0.7 0.7];
-    end
-end
-
-b=bar([1:length(State_Name)],risk_measure);
-b.FaceColor = 'flat';
-for ss=1:length(State_Name)
-    b.CData(ss,:) =CC_Risk(ss,:);
-end
-box off;
-set(gca,'LineWidth',2,'tickdir','out','YTick',[0 1],'YTickLabel',{'Lowest','Highest'},'Fontsize',16,'XTick',[1:length(State_Name)],'XTickLabel',State_Name);
-xlabel('State','FontSize',18);
-ylabel({'State farm reduction','of susceptibility to H5N1'},'FontSize',18);
-xlim([0.5 length(State_Name)+0.5]);
-ylim([0 1.01])
-
-
-ax4=subplot('Position',[0.58,0.08,0.37,0.4]);
-
-
-CC_Risk=ones(length(State_Name),3);
-        
-
-
-risk_measure=State_Sucsceptibe_Baseline-State_Sucsceptibe_Red_Connectivity;
-risk_measure=(risk_measure-min(risk_measure))./(max(risk_measure)-min(risk_measure));
-
-for ii=1:length(State_Name)
-    if(~isnan(risk_measure(ii)))
-        CC_Risk(ii,:)=interp1(x_risk,C_Risk,risk_measure(ii));
-    else
-        CC_Risk(ii,:)=[0.7 0.7 0.7];
-    end
-end
-
-b=bar([1:length(State_Name)],risk_measure);
-b.FaceColor = 'flat';
-for ss=1:length(State_Name)
-    b.CData(ss,:) =CC_Risk(ss,:);
-end
-box off;
-set(gca,'LineWidth',2,'tickdir','out','YTick',[0 1],'YTickLabel',{'Lowest','Highest'},'Fontsize',16,'XTick',[1:length(State_Name)],'XTickLabel',State_Name);
-xlabel('State','FontSize',18);
-ylabel({'State farm reduction','of susceptibility to H5N1'},'FontSize',18);
-xlim([0.5 length(State_Name)+0.5]);
-ylim([0 1.01])
-
-
-ax1.Position=[-0.075,0.425,0.6,0.6];
-ax2.Position=[0.4,0.425,0.6,0.6];
-end
-

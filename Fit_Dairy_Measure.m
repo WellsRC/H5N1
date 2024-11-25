@@ -1,6 +1,6 @@
 clear;
 clc;
-parpool(24);
+% parpool(24);
 % Define the variables to loop through
 H5N1_Variable_v={'Migratory_Birds_H5N1','Migratory_Bird_Density','Detection_H5N1_Birds','Detection_H5N1_Bird_Density'};
 Farm_Variables_v={'Inventory','Poultry_Operations','Connectivity'};
@@ -49,7 +49,7 @@ for ss=0:8
             Stratified_Operations_Variables={};
         end
     
-        [X_County,Y_County,County_Farms,Affected_County_Farms,County_Spillover,Remaining_State_Spillover,Remainaing_Affected_State_Farms,Remainaing_State_Farms,state_weight_matrix,Dairy_Network,logic_par] = Dairy_Covariates(H5N1_Variable,Farm_Variables,Stratified_Operations_Variables);
+        [X_County,Y_County,County_Farms,Affected_County_Farms,State_Spillover_Matrix,State_Spillover_Events,Remainaing_Affected_State_Farms,Remainaing_Total_State_Farms,state_weight_hpai_matrix,Dairy_Network,logic_par]= Dairy_Covariates(H5N1_Variable,Farm_Variables,Stratified_Operations_Variables);
         logic_temp{mm}=logic_par;
         if(~isempty(x0_pot))
             xt=max(abs(x0_pot(:,~logic_par)),[],2);
@@ -60,7 +60,7 @@ for ss=0:8
             x0=[];
         end
 
-        [par_est{mm},L(mm),AIC(mm)]=Optimize_Dairy_Farm_Risk(X_County,Y_County,County_Farms,Affected_County_Farms,County_Spillover,Remaining_State_Spillover,Remainaing_Affected_State_Farms,Remainaing_State_Farms,state_weight_matrix,Dairy_Network,x0);
+        [par_est{mm},L(mm),AIC(mm)]=Optimize_Dairy_Farm_Risk(X_County,Y_County,County_Farms,Affected_County_Farms,State_Spillover_Matrix,State_Spillover_Events,Remainaing_Affected_State_Farms,Remainaing_Total_State_Farms,state_weight_hpai_matrix,Dairy_Network,x0);
         Model_H5N1{mm}=H5N1_Variable;
         Model_Farm{mm}=Farm_Variables;
         Model_Stratified_Operations{mm}=Stratified_Operations_Variables;
@@ -70,7 +70,6 @@ for ss=0:8
         Sub_Model_Fit(mm,logic_temp{mm})=par_est{mm};
     end
 
-    save('Dairy_Models_Fit_Temp.mat','par_est',"L",'AIC','Model_H5N1','Model_Stratified_Operations',"Model_Farm");
 end
 dAIC=AIC-min(AIC);
 w_AIC=exp(-dAIC./2)./sum(exp(-dAIC./2));

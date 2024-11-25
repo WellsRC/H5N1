@@ -1,0 +1,33 @@
+clear;
+clc;
+
+temp_dir=pwd;
+temp_dir=temp_dir(1:(length(temp_dir)-length('Data\Influenza_Testing')));
+US_County=readgeotable([temp_dir '/Shapefile/cb_2021_us_county_500k.shp']);
+
+US_County=US_County(:,[2 3 6 7 10 9 12 13]);
+Var_Name=US_County.Properties.VariableNames;
+Var_Name{end-1}='AREA_LAND';
+Var_Name{end}='AREA_WATER';
+US_County.Properties.VariableNames=Var_Name;
+
+[US_County,Indx]=sortrows(US_County,[1 2]);
+
+County_remove=strcmp("HI",US_County.STUSPS) | strcmp("AS",US_County.STUSPS) | strcmp("GU",US_County.STUSPS) | strcmp("MP",US_County.STUSPS) | strcmp("PR",US_County.STUSPS) | strcmp("VI",US_County.STUSPS);
+US_County=US_County(~County_remove,:);
+
+PHL=readtable("WHO_NREVSS_Public_Health_Labs.csv");
+CL=readtable("WHO_NREVSS_Clinical_Labs.csv");
+
+States=unique(US_County.STATE_NAME);
+
+Tests_State=zeros(length(States),2);
+
+for ss=1:length(States)
+    t_us=strcmp(States{ss},US_County.STATE_NAME);
+
+    t_phl=strcmp(States{ss},PHL.REGION);
+    t_cl=strcmp(States{ss},CL.REGION);
+
+    Tests_State(ss,1)=sum(CL.TOTALSPECIMENS)
+end

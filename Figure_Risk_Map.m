@@ -30,10 +30,18 @@ if(strcmp(Var_Plot,'Dairy'))
 
     farm_type='dairy';
 elseif(strcmp(Var_Plot,'Poultry')) 
-    load('Average_Risk_Poultry.mat','avg_overall_risk_poultry_farm_County','avg_exposure_risk_poultry_farm_County','avg_susceptible_risk_poultry_farm_County');
+    load('Average_Risk_Poultry.mat','avg_overall_risk_poultry_farm_County','avg_exposure_risk_poultry_farm_County','avg_susceptible_risk_poultry_farm_County','avg_overall_risk_poultry_farm_State','State_Name');
     avg_overall_risk_farm_County=avg_overall_risk_poultry_farm_County;
     avg_exposure_risk_farm_County=avg_exposure_risk_poultry_farm_County;
     avg_susceptible_risk_farm_County=avg_susceptible_risk_poultry_farm_County;
+    avg_overall_risk_farm_State=avg_overall_risk_poultry_farm_State;
+    farm_type='poultry';
+elseif(strcmp(Var_Plot,'Poultry_Alternative')) 
+    load('Average_Risk_Poultry_Alternative.mat','avg_overall_risk_poultry_farm_County','avg_exposure_risk_poultry_farm_County','avg_susceptible_risk_poultry_farm_County','avg_overall_risk_poultry_farm_State','State_Name');
+    avg_overall_risk_farm_County=avg_overall_risk_poultry_farm_County;
+    avg_exposure_risk_farm_County=avg_exposure_risk_poultry_farm_County;
+    avg_susceptible_risk_farm_County=avg_susceptible_risk_poultry_farm_County;
+    avg_overall_risk_farm_State=avg_overall_risk_poultry_farm_State;
     farm_type='poultry';
 end
 
@@ -81,7 +89,7 @@ for vv=1:4
     switch vv
         case 1
             subplot('Position',[0.41,0.525,0.01,0.45]);
-            Title_Name={['County ' farm_type ' farms risk of'],'external','exposure to H5N1'};
+            Title_Name={['Fold-increase of county ' farm_type ' farms'],' risk of exposure to H5N1'};
 
             C_Risk=[hex2rgb('#ffffff');
                     hex2rgb('##ffffcc');
@@ -96,7 +104,7 @@ for vv=1:4
             risk_measure=avg_exposure_risk_farm_County;
         case 2
             subplot('Position',[0.885,0.525,0.01,0.45]);
-            Title_Name={'Susecptibility of county ',[farm_type ' farms to H5N1']};
+            Title_Name={'Fold-increase susecptibility of',['county ' farm_type ' farms to H5N1']};
 
             C_Risk=[hex2rgb('#ffffff');
                     hex2rgb('#fff7fb');
@@ -112,7 +120,7 @@ for vv=1:4
             risk_measure=avg_susceptible_risk_farm_County;
         case 3
             subplot('Position',[0.41,0.025,0.01,0.45]);    
-            Title_Name={['County ' farm_type ' farms overall'],'risk to H5N1'};
+            Title_Name={['Fold-increase of county ' farm_type ],'farms overall risk to H5N1'};
 
             C_Risk=[hex2rgb('#ffffff');
                     hex2rgb('##fff7f3');
@@ -157,20 +165,24 @@ for vv=1:4
             c_indx=linspace(0,max(risk_measure),251);
             y_indx=[1:floor(max(risk_measure(risk_measure>0)))];
         else
-            x_risk=linspace(1,(max(risk_measure)),size(C_Risk,1));
-            c_indx=linspace(1,(max(risk_measure)),251);
-            y_indx=[2:ceil(max(risk_measure))];
+            x_risk=linspace(1,max(max(risk_measure),2),size(C_Risk,1));
+            c_indx=linspace(1,max(max(risk_measure),2),251);
+            y_indx=[2:ceil(10.*max(risk_measure))./10];
         end
 
         xlim([0 1]);
-        ylim([0 max(c_indx)]);    
+        ylim([min(c_indx) max(c_indx)]);    
         ymin=1;
         dy=2/(1+sqrt(5));
         for ii=1:length(c_indx)
-            patch([0 0 dy dy],c_indx(ii)-[1 0 0 1],interp1(x_risk,C_Risk,c_indx(ii)),'LineStyle','none');
+            patch([0 0 dy dy],c_indx(ii)+[1 0 0 1],interp1(x_risk,C_Risk,c_indx(ii)),'LineStyle','none');
         end
         
-        text(ymin+2.5,0,{'Baseline','lowest'},'Fontsize',16,'HorizontalAlignment','center');
+        if(min(y_indx)==2)
+            text(ymin+2.5,1,{'Baseline','lowest'},'Fontsize',16,'HorizontalAlignment','center');
+        else
+            text(ymin+2.5,0,{'Baseline','lowest'},'Fontsize',16,'HorizontalAlignment','center');
+        end
         for yy=1:length(y_indx)
             if(min(y_indx)==2)
                 text(ymin,y_indx(yy),[num2str(y_indx(yy))],'Fontsize',16);
@@ -178,7 +190,7 @@ for vv=1:4
                 text(ymin,y_indx(yy),['10^' num2str(y_indx(yy))],'Fontsize',16);
             end
         end
-        text(ymin+2,max(c_indx)./2,Title_Name,'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
+        text(ymin+4.5,[min(c_indx)+max(c_indx)]./2,Title_Name,'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
         
         axis off;  
     
@@ -251,7 +263,7 @@ for vv=1:4
                 ylim([0.5 ceil(max((risk_measure)))]);
             end
             xlabel('State','FontSize',18);
-            ylabel({['State ' farm_type ' farm'],'overall risk to H5N1'},'FontSize',18);
+            ylabel({['Fold-increase in state'],[farm_type 'farm overall risk to H5N1']},'FontSize',18);
             xlim([0.5 length(State_Name)+0.5]);
             text(-0.15,1,'D','FontSize',32,'Units','normalized');
     end

@@ -77,7 +77,7 @@ for vv=1:4
     switch vv
         case 1
             subplot('Position',[0.41,0.525,0.01,0.45]);
-            Title_Name={'County farms risk of','external','exposure to H5N1'};
+            Title_Name={'County swine farms',' risk of external','exposure to H5N1'};
 
             C_Risk=[hex2rgb('#ffffff');
                     hex2rgb('##ffffcc');
@@ -92,7 +92,7 @@ for vv=1:4
             risk_measure=avg_exposure_risk_farm_County;
         case 2
             subplot('Position',[0.885,0.525,0.01,0.45]);
-            Title_Name={'Susecptibility of county','farms to H5N1'};
+            Title_Name={'Susecptibility of county','swine farms to H5N1'};
 
             C_Risk=[hex2rgb('#ffffff');
                     hex2rgb('#fff7fb');
@@ -108,7 +108,7 @@ for vv=1:4
             risk_measure=avg_susceptible_risk_farm_County;
         case 3
             subplot('Position',[0.41,0.025,0.01,0.45]);    
-            Title_Name={'County farms overall','risk to H5N1'};
+            Title_Name={'County swine farms overall','risk to H5N1'};
 
             C_Risk=[hex2rgb('#ffffff');
                     hex2rgb('##fff7f3');
@@ -134,7 +134,7 @@ for vv=1:4
                     hex2rgb('#ae017e');
                     hex2rgb('#7a0177');
                     hex2rgb('#49006a');];
-
+            Title_Name={'County exacerbation of','spillover from slaughter houses'};
             risk_measure=SH;
     end
     if(vv<4)
@@ -144,11 +144,16 @@ for vv=1:4
         v_lower=prctile(risk_measure,5);
         risk_measure(t_lower)=v_lower;
         risk_measure(t_upper)=v_upper;
-        risk_measure=log(risk_measure);
-    end
+        risk_measure=(risk_measure)./min(risk_measure);
+
+        x_risk=linspace(1,max(risk_measure),size(C_Risk,1));
+        c_indx=[1:size(C_Risk,1)];
+    else
         risk_measure=(risk_measure-min(risk_measure))./(max(risk_measure)-min(risk_measure));
+
         x_risk=linspace(0,1,size(C_Risk,1));
         c_indx=[1:size(C_Risk,1)];
+    end
     
         xlim([0 1]);
         ylim([0 max(c_indx)]);    
@@ -202,5 +207,5 @@ ax2.Position=[0.4,0.425,0.6,0.6];
 ax3.Position=[-0.075,-0.075,0.6,0.6];
 ax4.Position=[0.4,-0.075,0.6,0.6];
 
-print(gcf,['Preliminary_Exacerbate_Spillover_Plot.png'],'-dpng','-r300');
+print(gcf,['Exacerbate_Spillover_Plot.png'],'-dpng','-r300');
 end

@@ -1,4 +1,4 @@
-function F = Objective_Function_Dairy_Farm(x,X_County,Y_County,County_Farms,Affected_County_Farms,County_Spillover,Remaining_State_Spillover,Remainaing_Affected_State_Farms,Remainaing_State_Farms,state_weight_matrix,Dairy_Network)
+function F = Objective_Function_Dairy_Farm(x,X_County,Y_County,County_Farms,Affected_County_Farms,State_Spillover_Matrix,State_Spillover_Events,Remainaing_Affected_State_Farms,Remainaing_Total_State_Farms,state_weight_hpai_matrix,Dairy_Network)
 
 beta_x=x(1:(1+size(X_County,1)));
 if(length(beta_x)>1)
@@ -25,23 +25,24 @@ r_farm_County(County_Farms==0)=0;
 
 r_farm_state=zeros(size(Remainaing_Affected_State_Farms));
 for ss=1:length(r_farm_state)
-    temp_county=nthroot((1-r_farm_County).^(Remainaing_State_Farms(ss).*state_weight_matrix(ss,:)),Remainaing_State_Farms(ss));
-    r_farm_state(ss)=1-prod(temp_county);
+    temp_county=state_weight_hpai_matrix(ss,:).*log((1-r_farm_County)); 
+    temp_state=exp(sum(temp_county));
+    r_farm_state(ss)=1-temp_state;
 end
 
-L_Spillover=nbinpdf(County_Spillover,r_nbin,repmat(1-r_farm_County(:),1,size(County_Spillover,2)));
-L_Spillover=mean(L_Spillover,2);
+L_Spillover_State=zeros(size(State_Spillover_Events));
+for ss=1:length(State_Spillover_Events)
+    temp_county=State_Spillover_Matrix(ss,:).*log((1-r_farm_County)); 
+    temp_state=exp(sum(temp_county));
+    r_spillover_state=1-temp_state;
+    L_Spillover_State(ss)=nbinpdf(round(State_Spillover_Events(ss)),r_nbin,1-r_spillover_state);
+end
 
 L_County=Affected_County_Farms(:).*log(r_farm_County(:))+(County_Farms(:)-Affected_County_Farms(:)).*log(1-r_farm_County(:));
-
 L_County=L_County(County_Farms>0 & ~isnan(Affected_County_Farms));
-L_Spillover=L_Spillover(County_Farms>0 & ~isnan(Affected_County_Farms));
+L_State=Remainaing_Affected_State_Farms(:).*log(r_farm_state(:))+(Remainaing_Total_State_Farms(:)-Remainaing_Affected_State_Farms(:)).*log(1-r_farm_state(:));
 
 
-L_State=Remainaing_Affected_State_Farms(:).*log(r_farm_state(:))+(Remainaing_State_Farms(:)-Remainaing_Affected_State_Farms(:)).*log(1-r_farm_state(:));
-L_Spillover_State=nbinpdf(Remaining_State_Spillover,r_nbin,repmat(1-r_farm_state(:),1,size(Remaining_State_Spillover,2)));
-L_Spillover_State=mean(L_Spillover_State,2);
-
-F=-sum(L_County)-sum(L_Spillover)-sum(L_State)-sum(L_Spillover_State);
+F=-sum(L_County)-sum(L_State)-sum(L_Spillover_State);
 end
 

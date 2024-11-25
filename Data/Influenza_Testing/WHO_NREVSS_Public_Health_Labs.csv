@@ -1,0 +1,57 @@
+"*Beginning for the 2015-16 season, reports from public health and clinical laboratories are presented separately in the weekly influenza update, FluView.  Data presented from public health laboratories include the weekly total number of specimens tested, the number of positive influenza tests, and the number by influenza virus type, subtype, and influenza B lineage."
+REGION TYPE,REGION,SEASON_DESCRIPTION,TOTAL SPECIMENS,A (2009 H1N1),A (H3),A (Subtyping not Performed),B,BVic,BYam,H3N2v,A (H5)
+States,Alabama,Season 2023-24 ,497,28,9,2,0,13,0,0,0
+States,Alaska,Season 2023-24 ,91,9,1,3,4,0,0,0,0
+States,Arizona,Season 2023-24 ,3519,536,159,11,5,220,0,0,0
+States,Arkansas,Season 2023-24 ,1945,49,193,205,6,36,0,0,0
+States,California,Season 2023-24 ,9817,1810,1050,164,108,338,0,0,0
+States,Colorado,Season 2023-24 ,1634,460,412,18,14,303,0,1,11
+States,Connecticut,Season 2023-24 ,3854,584,438,94,4,190,0,0,0
+States,Delaware,Season 2023-24 ,2391,328,195,76,20,172,0,0,0
+States,District of Columbia,Season 2023-24 ,2134,409,340,43,5,201,0,0,0
+States,Florida,Season 2023-24 ,2552,747,468,23,12,365,0,0,0
+States,Georgia,Season 2023-24 ,3427,624,362,288,24,480,0,0,0
+States,Hawaii,Season 2023-24 ,2816,416,461,17,5,172,0,0,0
+States,Idaho,Season 2023-24 ,819,333,65,10,2,185,0,0,0
+States,Illinois,Season 2023-24 ,4937,190,95,150,41,88,0,0,0
+States,Indiana,Season 2023-24 ,359,51,64,5,1,50,0,0,0
+States,Iowa,Season 2023-24 ,785,223,196,16,5,245,0,0,0
+States,Kansas,Season 2023-24 ,485,11,12,8,3,15,0,0,0
+States,Kentucky,Season 2023-24 ,1151,265,208,0,1,175,0,0,0
+States,Louisiana,Season 2023-24 ,3132,190,21,13,18,146,0,0,0
+States,Maine,Season 2023-24 ,797,520,99,3,1,121,0,0,0
+States,Maryland,Season 2023-24 ,2836,310,358,542,65,447,0,0,0
+States,Massachusetts,Season 2023-24 ,1044,376,228,5,5,1,0,0,0
+States,Michigan,Season 2023-24 ,2028,516,267,8,13,222,0,0,1
+States,Minnesota,Season 2023-24 ,3313,959,450,387,26,531,0,2,0
+States,Mississippi,Season 2023-24 ,227,26,24,7,4,15,0,0,0
+States,Missouri,Season 2023-24 ,929,253,126,26,3,40,0,0,1
+States,Montana,Season 2023-24 ,558,171,140,1,1,148,0,0,0
+States,Nebraska,Season 2023-24 ,608,67,21,23,22,95,0,0,0
+States,Nevada,Season 2023-24 ,10010,324,160,1539,525,137,0,0,0
+States,New Hampshire,Season 2023-24 ,1643,527,143,172,16,41,0,0,0
+States,New Jersey,Season 2023-24 ,779,164,72,15,38,4,0,0,0
+States,New Mexico,Season 2023-24 ,2751,445,162,17,4,260,0,0,0
+States,New York,Season 2023-24 ,12323,704,253,290,45,92,0,0,0
+States,North Carolina,Season 2023-24 ,493,150,32,5,0,30,0,0,0
+States,North Dakota,Season 2023-24 ,676,207,77,12,7,188,0,0,0
+States,Ohio,Season 2023-24 ,1132,532,341,3,4,174,0,0,0
+States,Oklahoma,Season 2023-24 ,261,7,9,2,0,6,0,0,0
+States,Oregon,Season 2023-24 ,6339,245,110,20,2,132,0,0,0
+States,Pennsylvania,Season 2023-24 ,16752,515,188,58,10,163,0,0,0
+States,Rhode Island,Season 2023-24 ,4184,181,47,247,31,80,0,0,0
+States,South Carolina,Season 2023-24 ,917,269,29,24,17,246,0,0,0
+States,South Dakota,Season 2023-24 ,673,135,154,29,12,259,0,0,0
+States,Tennessee,Season 2023-24 ,555,77,73,5,4,65,0,0,0
+States,Texas,Season 2023-24 ,4049,338,165,14,9,296,0,0,0
+States,Utah,Season 2023-24 ,1224,365,153,0,1,220,0,0,0
+States,Vermont,Season 2023-24 ,443,197,116,13,1,43,0,0,0
+States,Virginia,Season 2023-24 ,1332,155,76,12,1,47,0,0,0
+States,Washington,Season 2023-24 ,1960,317,99,48,13,56,0,0,0
+States,West Virginia,Season 2023-24 ,964,327,205,12,14,223,0,0,0
+States,Wisconsin,Season 2023-24 ,3561,463,306,70,10,183,0,0,0
+States,Wyoming,Season 2023-24 ,654,38,8,45,21,23,0,0,0
+States,American Samoa,Season 2023-24 ,X,X,X,X,X,X,X,X,X
+States,Puerto Rico,Season 2023-24 ,434,185,48,4,0,53,0,0,0
+States,Virgin Islands,Season 2023-24 ,X,X,X,X,X,X,X,X,X
+States,New York City,Season 2023-24 ,X,X,X,X,X,X,X,X,X

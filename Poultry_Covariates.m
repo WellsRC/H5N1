@@ -1,4 +1,4 @@
-function [X_County,Y_County,County_Farms,Affected_County_Farms,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,Spillover,indx,logic_par] = Poultry_Covariates(H5N1_Variable,Farm_Variables,Stratified_Inventory_Variables)
+function [X_County,Y_County,County_Farms,Affected_County_Farms,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,State_Spillover_Matrix,State_Spillover_Events,indx,logic_par] = Poultry_Covariates(H5N1_Variable,Farm_Variables,Stratified_Inventory_Variables)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load Data
@@ -9,10 +9,12 @@ logic_par(15)=true; % Hyper-paramter
 logic_par(1)=true; % Constant
 logic_par(10)=true; % Constant
 
-load([pwd '/Data/Data_US_County.mat'],'US_County','US_County_Poultry_to_Human');
+load([pwd '/Data/Data_US_County.mat'],'US_County');
 
-Spillover=table2array(US_County_Poultry_to_Human(:,7:end));
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+% HPAI Outbreaks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Affected_County_Farms = US_County.POULTRY_HPAI_OUTBREAK;
 County_Farms=US_County.POULTRY_OPR_w_INVENTORY;
 
@@ -25,6 +27,25 @@ HPAI_Pullet_Farms=US_County.PULLET_HPAI_OUTBREAK;
 HPAI_Layer_Farms=US_County.LAYER_HPAI_OUTBREAK;
 HPAI_Turkey_Farms=US_County.TURKEY_HPAI_OUTBREAK;
 HPAI_Broiler_Farms=US_County.BROILER_HPAI_OUTBREAK;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+% Spillover
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Poultry_Spillover_State=unique(US_County.STATE_NAME(US_County.SPILLOVER_DAIRY>0));
+State_Spillover_Events=zeros(size(Poultry_Spillover_State));
+State_Spillover_Matrix=zeros(length(Poultry_Spillover_State),height(US_County));
+
+for ss=1:length(Poultry_Spillover_State)
+    t_state=strcmp(Poultry_Spillover_State{ss},US_County.STATE_NAME);
+    State_Spillover_Events(ss)=sum(US_County.SPILLOVER_POULTRY(t_state)); 
+    State_Spillover_Matrix(ss,t_state)=US_County.POULTRY_OPR_w_INVENTORY(t_state)./sum(US_County.POULTRY_OPR_w_INVENTORY(t_state));
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+% Exposure 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 
 indx.Pullet=[];
 indx.Layer=[];
@@ -47,6 +68,10 @@ for yy=1:length(H5N1_Variable)
         logic_par(14)=true;
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+% Suseptbility  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 
 if(strcmp(Stratified_Inventory_Variables,'All'))
     X_County=zeros(length(Farm_Variables)+3,height(US_County));
