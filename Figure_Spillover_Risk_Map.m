@@ -19,30 +19,27 @@ S=S(~County_remove,:);
 
 NS=length(S);
 
-load('Total_Spillover_Risk_County.mat','avg_spillover_risk_total_County','avg_spillover_risk_total_State','State_Name');
 
 % load([pwd '/Data/Data_US_County.mat'],'US_County');
 if(strcmp(Var_Plot,'H1N1'))
-    load('Average_Risk_Population_H1N1.mat','avg_susceptible_risk_population_County_H1N1','avg_susceptible_risk_population_State_H1N1','State_Name');
-    avg_susceptible_risk_population_County=avg_susceptible_risk_population_County_H1N1;
-    avg_susceptible_risk_population_State=avg_susceptible_risk_population_State_H1N1;
+    load('Total_Spillover_Risk_County_H1N1.mat','avg_spillover_risk_total_County','avg_spillover_risk_total_State','State_Name','avg_localized_transmission_risk_total_State','avg_localized_transmission_risk_total_County');
 elseif(strcmp(Var_Plot,'COVID'))
-    load('Average_Risk_Population_COVID.mat','avg_susceptible_risk_population_County_COVID','avg_susceptible_risk_population_State_COVID','State_Name');
-    avg_susceptible_risk_population_County=avg_susceptible_risk_population_County_COVID;
-    avg_susceptible_risk_population_State=avg_susceptible_risk_population_State_COVID;
+    load('Total_Spillover_Risk_County_COVID.mat','avg_spillover_risk_total_County','avg_spillover_risk_total_State','State_Name','avg_localized_transmission_risk_total_State','avg_localized_transmission_risk_total_County');
 end
 
-state_nan=~isnan(avg_spillover_risk_total_State);
+state_nan=~isnan(avg_spillover_risk_total_State);  % use avg_spillover_risk_total_State as this will remove the regions where we are not assess for BOTH sets of analysis
 avg_spillover_risk_total_State=avg_spillover_risk_total_State(state_nan);
-State_Name=State_Name(state_nan);
-avg_susceptible_risk_population_State=avg_susceptible_risk_population_State(state_nan);
+State_Name_Spill=State_Name(state_nan);
+
+avg_localized_transmission_risk_total_State=avg_localized_transmission_risk_total_State(state_nan);
+State_Name_LT=State_Name(state_nan);
 
 [avg_spillover_risk_total_State,Indx_Risk]=sort(avg_spillover_risk_total_State,'descend');
-State_Name=State_Name(Indx_Risk);
-avg_susceptible_risk_population_State=avg_susceptible_risk_population_State(Indx_Risk);
+State_Name_Spill=State_Name_Spill(Indx_Risk);
 
-[avg_combinied_spillover_risk_total_State,Indx_Risk]=sort(avg_spillover_risk_total_State(:).*avg_susceptible_risk_population_State(:),'descend');
-State_Name_Combined=State_Name(Indx_Risk);
+
+[avg_localized_transmission_risk_total_State,Indx_Risk]=sort(avg_localized_transmission_risk_total_State,'descend');
+State_Name_LT=State_Name_LT(Indx_Risk);
 
 
 
@@ -93,16 +90,17 @@ hex2rgb('#67000d');];
             
             risk_measure=avg_spillover_risk_total_County;
         case 2
+            State_Name=State_Name_Spill;
             risk_measure=avg_spillover_risk_total_State;
         case 3
             subplot('Position',[0.41,0.025,0.01,0.45]);    
             Title_Name={['Fold-increase of spillover'],'from poultry and dairy farms'};
 
 
-            risk_measure=avg_spillover_risk_total_County.*avg_susceptible_risk_population_County;
+            risk_measure=avg_localized_transmission_risk_total_County;
         case 4
-
-            risk_measure=avg_combinied_spillover_risk_total_State;
+            State_Name=State_Name_LT;
+            risk_measure=avg_localized_transmission_risk_total_State;
     end
     
     if(vv==1)||(vv==3)
@@ -190,9 +188,10 @@ hex2rgb('#67000d');];
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% Plot uptake
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-    CM=makesymbolspec('Polygon',{'INDEX',[1 NS],'FaceColor',CC_Risk});
+    
     switch vv
         case 1
+            CM=makesymbolspec('Polygon',{'INDEX',[1 NS],'FaceColor',CC_Risk});
             geoshow(ax1,S,'SymbolSpec',CM,'LineStyle','None'); 
             geoshow(ax1, states,'Facecolor','none','LineWidth',1.5); hold on;
         case 2
@@ -214,16 +213,17 @@ hex2rgb('#67000d');];
             xlim([0.5 length(State_Name)+0.5]);
             text(-0.15,1,'B','FontSize',32,'Units','normalized');
         case 3
+            CM=makesymbolspec('Polygon',{'INDEX',[1 NS],'FaceColor',CC_Risk});
             geoshow(ax3,S,'SymbolSpec',CM,'LineStyle','None'); 
             geoshow(ax3, states,'Facecolor','none','LineWidth',1.5); hold on;
         case 4
-            b=bar([1:length(State_Name_Combined)],risk_measure);
+            b=bar([1:length(State_Name)],risk_measure);
             b.FaceColor = 'flat';
-            for ss=1:length(State_Name_Combined)
+            for ss=1:length(State_Name)
                 b.CData(ss,:) =CC_Risk(ss,:);
             end
             box off;
-            set(gca,'LineWidth',2,'tickdir','out','Fontsize',16,'XTick',[1:length(State_Name_Combined)],'XTickLabel',State_Name_Combined);
+            set(gca,'LineWidth',2,'tickdir','out','Fontsize',16,'XTick',[1:length(State_Name)],'XTickLabel',State_Name);
             if(max(risk_measure)>=10)
                 set(gca,'yscale','log');
                 ylim([0.5 10.^ceil(max(log10(risk_measure)))]);
@@ -232,7 +232,7 @@ hex2rgb('#67000d');];
             end
             xlabel('State','FontSize',18);
             ylabel({['Fold-increase in state'],['overall spillover risk']},'FontSize',18);
-            xlim([0.5 length(State_Name_Combined)+0.5]);
+            xlim([0.5 length(State_Name)+0.5]);
             text(-0.15,1,'D','FontSize',32,'Units','normalized');
     end
 end

@@ -6,13 +6,13 @@ clc;
 % Load Data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 load('Average_Risk_Population_H1N1.mat','avg_susceptible_risk_population_County_H1N1','avg_susceptible_risk_population_State_H1N1');
-load('Average_Risk_Dairy.mat','avg_spillover_risk_dairy_farm_County','avg_spillover_risk_dairy_farm_State','State_Name');
+load('Total_Spillover_Risk_County_H1N1.mat','avg_spillover_risk_total_County','avg_spillover_risk_total_State','State_Name');
 load([pwd '/Data/Influenza_Testing/State_Level_Influenza_Testing.mat'])
 load([pwd '/Data/Data_US_County.mat'],'US_County');
 
 State_Surveillance=NaN.*zeros(size(State_Name));
 
-County_Surveillance=avg_susceptible_risk_population_County_H1N1.*avg_spillover_risk_dairy_farm_County.^(US_County_Influenza_Test.TEST_PER_CAPITA);
+County_Surveillance=(avg_susceptible_risk_population_County_H1N1.*avg_spillover_risk_total_County).^(US_County_Influenza_Test.TEST_PER_CAPITA);
 
 
 for ss=1:length(State_Name)
@@ -29,4 +29,4 @@ for ss=1:length(State_Name)
     end
 end
 
-save('Surveillance_H5N1_Population.mat','County_Surveillance','State_Surveillance','State_Name');
+save('Surveillance_H5N1_Population_H1N1.mat','County_Surveillance','State_Surveillance','State_Name');

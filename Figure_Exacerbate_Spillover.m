@@ -27,7 +27,6 @@ State_Risk=NaN.*zeros(size(State_Name));
 
 load([pwd '/Data/Spillover_Exacerbation.mat'],'US_County_Spillover');
 SH=US_County_Spillover.SLAUGHTERHOUSE;
-SH=1-exp(-0.16.*SH);
 load('Average_Risk_Swine.mat','avg_overall_risk_swine_farm_County','avg_exposure_risk_swine_farm_County','avg_susceptible_risk_swine_farm_County');
 avg_overall_risk_farm_County=avg_overall_risk_swine_farm_County;
 avg_exposure_risk_farm_County=avg_exposure_risk_swine_farm_County;
@@ -77,7 +76,7 @@ for vv=1:4
     switch vv
         case 1
             subplot('Position',[0.41,0.525,0.01,0.45]);
-            Title_Name={'County swine farms',' risk of external','exposure to H5N1'};
+            Title_Name={['Fold-increase of county swine farms'],' risk of exposure to H5N1'};
 
             C_Risk=[hex2rgb('#ffffff');
                     hex2rgb('##ffffcc');
@@ -92,7 +91,7 @@ for vv=1:4
             risk_measure=avg_exposure_risk_farm_County;
         case 2
             subplot('Position',[0.885,0.525,0.01,0.45]);
-            Title_Name={'Susecptibility of county','swine farms to H5N1'};
+            Title_Name={'Fold-increase susecptibility of',['county swine farms to H5N1']};
 
             C_Risk=[hex2rgb('#ffffff');
                     hex2rgb('#fff7fb');
@@ -108,7 +107,7 @@ for vv=1:4
             risk_measure=avg_susceptible_risk_farm_County;
         case 3
             subplot('Position',[0.41,0.025,0.01,0.45]);    
-            Title_Name={'County swine farms overall','risk to H5N1'};
+            Title_Name={['Fold-increase of county swine' ],'farms overall risk to H5N1'};
 
             C_Risk=[hex2rgb('#ffffff');
                     hex2rgb('##fff7f3');
@@ -134,7 +133,7 @@ for vv=1:4
                     hex2rgb('#ae017e');
                     hex2rgb('#7a0177');
                     hex2rgb('#49006a');];
-            Title_Name={'County exacerbation of','spillover from slaughter houses'};
+            Title_Name={'Number of','slaughterhouses'};
             risk_measure=SH;
     end
     if(vv<4)
@@ -144,28 +143,40 @@ for vv=1:4
         v_lower=prctile(risk_measure,5);
         risk_measure(t_lower)=v_lower;
         risk_measure(t_upper)=v_upper;
-        risk_measure=(risk_measure)./min(risk_measure);
+        risk_measure=risk_measure./v_lower;
 
-        x_risk=linspace(1,max(risk_measure),size(C_Risk,1));
-        c_indx=[1:size(C_Risk,1)];
-    else
-        risk_measure=(risk_measure-min(risk_measure))./(max(risk_measure)-min(risk_measure));
+        if(ceil(max(risk_measure))>=10)
+            risk_measure=log10(risk_measure);
+            x_risk=linspace(0,max(risk_measure),size(C_Risk,1));
+            c_indx=linspace(0,max(risk_measure),251);
+            y_indx=[1:floor(max(risk_measure(risk_measure>0)))];
+        else
+            x_risk=linspace(1,max(max(risk_measure),2),size(C_Risk,1));
+            c_indx=linspace(1,max(max(risk_measure),2),251);
+            y_indx=[2:ceil(10.*max(risk_measure))./10];
+        end
 
-        x_risk=linspace(0,1,size(C_Risk,1));
-        c_indx=[1:size(C_Risk,1)];
-    end
-    
         xlim([0 1]);
-        ylim([0 max(c_indx)]);    
+        ylim([min(c_indx) max(c_indx)]);    
         ymin=1;
         dy=2/(1+sqrt(5));
         for ii=1:length(c_indx)
-            patch([0 0 dy dy],c_indx(ii)-[1 0 0 1],C_Risk(ii,:),'LineStyle','none');
+            patch([0 0 dy dy],c_indx(ii)+[1 0 0 1],interp1(x_risk,C_Risk,c_indx(ii)),'LineStyle','none');
         end
         
-        text(ymin,0,'Lowest','Fontsize',16);
-        text(ymin,max(c_indx),'Highest','Fontsize',16);
-        text(ymin+2,max(c_indx)./2,Title_Name,'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
+        if(min(y_indx)==2)
+            text(ymin+2.5,1,{'Baseline','lowest'},'Fontsize',16,'HorizontalAlignment','center');
+        else
+            text(ymin+2.5,0,{'Baseline','lowest'},'Fontsize',16,'HorizontalAlignment','center');
+        end
+        for yy=1:length(y_indx)
+            if(min(y_indx)==2)
+                text(ymin,y_indx(yy),[num2str(y_indx(yy))],'Fontsize',16);
+            else
+                text(ymin,y_indx(yy),['10^' num2str(y_indx(yy))],'Fontsize',16);
+            end
+        end
+        text(ymin+4.5,[min(c_indx)+max(c_indx)]./2,Title_Name,'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
         
         axis off;  
     
@@ -179,6 +190,37 @@ for vv=1:4
                 CC_Risk(ii,:)=[0.7 0.7 0.7];
             end
         end
+    else
+        x_risk=linspace(0,max(max(risk_measure),2),size(C_Risk,1));
+        c_indx=linspace(0,max(max(risk_measure),2),251);
+        y_indx=flip([max(risk_measure):-5:2]);
+
+        xlim([0 1]);
+        ylim([min(c_indx) max(c_indx)]);    
+        ymin=1;
+        dy=2/(1+sqrt(5));
+        for ii=1:length(c_indx)
+            patch([0 0 dy dy],c_indx(ii)+[1 0 0 1],interp1(x_risk,C_Risk,c_indx(ii)),'LineStyle','none');
+        end
+        text(ymin,0,'0','Fontsize',16,'HorizontalAlignment','center');
+        for yy=1:length(y_indx)
+           text(ymin,y_indx(yy),[num2str(y_indx(yy))],'Fontsize',16);
+        end
+        text(ymin+4.5,[min(c_indx)+max(c_indx)]./2,Title_Name,'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
+        
+        axis off;  
+    
+        text(-40,1,char(64+vv),'FontSize',32,'Units','normalized');
+        CC_Risk=ones(length(S),3);
+        
+        for ii=1:length(S)
+            if(~isnan(risk_measure(ii)))
+                CC_Risk(ii,:)=interp1(x_risk,C_Risk,risk_measure(ii));
+            else
+                CC_Risk(ii,:)=[0.7 0.7 0.7];
+            end
+        end
+    end
     
         
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

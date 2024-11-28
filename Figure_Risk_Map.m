@@ -29,6 +29,14 @@ if(strcmp(Var_Plot,'Dairy'))
     avg_overall_risk_farm_State=avg_overall_risk_dairy_farm_State;
 
     farm_type='dairy';
+elseif(strcmp(Var_Plot,'Dairy_Reduction'))
+    load('Average_Risk_Dairy_Reduction_Connectivity=100.mat','avg_overall_risk_dairy_farm_County','avg_exposure_risk_dairy_farm_County','avg_susceptible_risk_dairy_farm_County','avg_overall_risk_dairy_farm_State','State_Name');
+    avg_overall_risk_farm_County=avg_overall_risk_dairy_farm_County;
+    avg_exposure_risk_farm_County=avg_exposure_risk_dairy_farm_County;
+    avg_susceptible_risk_farm_County=avg_susceptible_risk_dairy_farm_County;
+    avg_overall_risk_farm_State=avg_overall_risk_dairy_farm_State;
+
+    farm_type='dairy';
 elseif(strcmp(Var_Plot,'Poultry')) 
     load('Average_Risk_Poultry.mat','avg_overall_risk_poultry_farm_County','avg_exposure_risk_poultry_farm_County','avg_susceptible_risk_poultry_farm_County','avg_overall_risk_poultry_farm_State','State_Name');
     avg_overall_risk_farm_County=avg_overall_risk_poultry_farm_County;
@@ -167,7 +175,7 @@ for vv=1:4
         else
             x_risk=linspace(1,max(max(risk_measure),2),size(C_Risk,1));
             c_indx=linspace(1,max(max(risk_measure),2),251);
-            y_indx=[2:ceil(10.*max(risk_measure))./10];
+            y_indx=[2:ceil(max(risk_measure))];
         end
 
         xlim([0 1]);
