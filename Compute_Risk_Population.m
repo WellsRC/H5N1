@@ -30,15 +30,16 @@ for mm=1:size(bin_suc,1)
         Suceptibility_Variables={};
     end
     % Obtain the covariates and data needed for the model
-    [~,~,~,~,~,X_County_COVID,Y_County_COVID,Deaths_County_COVID,Population_COVID,~] = Population_Covariates(Exposure_Variables,Suceptibility_Variables);
+    [X_County_H5N1,Y_County_H5N1,Population_H5N1,logic_par_H5N1] = Population_Covariates_H5N1(Exposure_Variables,Suceptibility_Variables);
+    logic_par_H5N1=[logic_par_H5N1(1:8) false(1) logic_par_H5N1(9:end)];
 
     x=par_est_COVID{mm};
-    beta_x=x(1:(1+size(X_County_COVID,1)));
+    beta_x=x(1:(1+size(X_County_H5N1,1)));
 
     beta_y=x((1+length(beta_x)):(end-1));
 
     sigma_ln=10.^x(end);
-    susceptible_risk_population_County_COVID(:,mm) = Risk_Assesment_Farms(beta_x,X_County_COVID);                
+    susceptible_risk_population_County_COVID(:,mm) = Risk_Assesment_Farms(beta_x,X_County_H5N1);                
 
     for ss=1:length(State_Name)
         t_state=strcmp(State_Name{ss},US_County.STATE_NAME);
@@ -85,15 +86,16 @@ for mm=1:size(bin_suc,1)
         Suceptibility_Variables={};
     end
     % Obtain the covariates and data needed for the model
-    [~,~,~,~,~,X_County_H1N1,Y_County_H1N1,Deaths_County_H1N1,Population_H1N1,~] = Population_Covariates(Exposure_Variables,Suceptibility_Variables);
-
+    
+    [X_County_H5N1,Y_County_H5N1,Population_H5N1,logic_par_H5N1] = Population_Covariates_H5N1(Exposure_Variables,Suceptibility_Variables);
+    
     x=par_est_H1N1{mm};
-    beta_x=x(1:(1+size(X_County_H1N1,1)));
+    beta_x=x(1:(1+size(X_County_H5N1,1)));
 
     beta_y=x((1+length(beta_x)):(end-1));
 
     sigma_ln=10.^x(end);
-    susceptible_risk_population_County_H1N1(:,mm) = Risk_Assesment_Farms(beta_x,X_County_H1N1);                
+    susceptible_risk_population_County_H1N1(:,mm) = Risk_Assesment_Farms(beta_x,X_County_H5N1);                
 
     for ss=1:length(State_Name)
         t_state=strcmp(State_Name{ss},US_County.STATE_NAME);

@@ -19,7 +19,7 @@ S=S(~County_remove,:);
 
 NS=length(S);
 
-load('Surveillance_H5N1_Population.mat','County_Surveillance','State_Surveillance','State_Name');
+load('Surveillance_H5N1_Population_H1N1.mat','County_Surveillance','State_Surveillance','State_Name');
 
 
 state_nan=~isnan(State_Surveillance);
