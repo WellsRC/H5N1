@@ -40,10 +40,8 @@ for ss=1:length(State_Name)
     w_c=US_County.POPULATION_SIZE_2022(t_state);
     t_inc=w_c>0 & ~isnan(c_r);
     c_r=c_r(t_inc);
-    w_c=w_c(t_inc);
-    w_c=w_c./sum(w_c);
     if(~isempty(c_r))
-        avg_localized_transmission_risk_total_State(ss)=1-exp(sum(w_c.*log(1-c_r)));
+        avg_localized_transmission_risk_total_State(ss)=1-prod((1-c_r));
     end
 end
 
@@ -94,10 +92,8 @@ for ss=1:length(State_Name)
     w_c=US_County.POPULATION_SIZE_2022(t_state);
     t_inc=w_c>0 & ~isnan(c_r);
     c_r=c_r(t_inc);
-    w_c=w_c(t_inc);
-    w_c=w_c./sum(w_c);
     if(~isempty(c_r))
-        avg_localized_transmission_risk_total_State(ss)=1-exp(sum(w_c.*log(1-c_r)));
+        avg_localized_transmission_risk_total_State(ss)=1-prod((1-c_r));
     end
 end
 

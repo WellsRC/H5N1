@@ -47,22 +47,19 @@ for mm=1:length(w_AIC)
         w_c=US_County.POULTRY_OPR_w_INVENTORY(t_state);
         t_inc=w_c>0 & ~isnan(c_r);
         c_r=c_r(t_inc);
-        w_c=w_c(t_inc);
-        overall_risk_poultry_farm_State(ss,mm)=1-nthroot(prod((1-c_r).^w_c),sum(w_c));
+        overall_risk_poultry_farm_State(ss,mm)=1-prod((1-c_r));
 
         c_r=exposure_risk_poultry_farm_County(t_state,mm);
         w_c=US_County.POULTRY_OPR_w_INVENTORY(t_state);
         t_inc=w_c>0 & ~isnan(c_r);
         c_r=c_r(t_inc);
-        w_c=w_c(t_inc);
-        exposure_risk_poultry_farm_State(ss,mm)=1-nthroot(prod((1-c_r).^w_c),sum(w_c));
+        exposure_risk_poultry_farm_State(ss,mm)=1-prod((1-c_r));
 
         c_r=susceptible_risk_poultry_farm_County(t_state,mm);
         w_c=US_County.POULTRY_OPR_w_INVENTORY(t_state);
         t_inc=w_c>0 & ~isnan(c_r);
         c_r=c_r(t_inc);
-        w_c=w_c(t_inc);
-        susceptible_risk_poultry_farm_State(ss,mm)=1-nthroot(prod((1-c_r).^w_c),sum(w_c));
+        susceptible_risk_poultry_farm_State(ss,mm)=1-prod((1-c_r));
     end
     
     spillover_risk_poultry_farm_State(:,mm)=1-nbincdf(0,r_nbin,1-overall_risk_poultry_farm_State(:,mm));
