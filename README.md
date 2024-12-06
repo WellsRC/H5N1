@@ -11,9 +11,40 @@ Chad R. Wells <sup>1</sup>,✝ , Michael Cairo <sup>1,2</sup>, Sarah Galvani-Tow
 ✝Corresponding authors: abhishek.pandey@yale.edu and chad.richard.wells@gmail.com <br />
 
 ## Data
-
+Contains the raw data files that were downlaoded and the scripts used to scrape and aggregate it into a single structure at the county-level for use in the analysis
+### Swine
+Infer_Hog_County.m - Script used to infer the hog inventory for counties in which values were supressed to maintain farm anonymity <br />
+Inferred_Hogs_Inventory_County_2022.csv - The inferred and raw data for hog inventory <br />
+County_Level_Hog_Inventory_2022.csv - The raw hog inventory data for counties <br />
+County_Level_Operations_Inventory_2022.csv - The raw data for hog operations with inventory stratefied by numebr of head for counties <br />
+### Slaughterhouse
+County_FIPS_Slaughterhouse.m - Script used to pull the location of the slaughterhouses <br />
+geoCode.m - Looks up the geographical coordinates of an address (https://www.mathworks.com/matlabcentral/fileexchange/37860-geocode) <br />
+ZIP-COUNTY-FIPS_2017-06.csv - Used in the mapping of zip code to county fips <br />
+slaughter_productionData.xlsx - Location/address of slaughterhouses <br />
+Location_Slaughterhouse.mat - The county fips of the slaughter houses obtained from County_FIPS_Slaughterhouse.m <br />
+### Rural_Population
+### Influenza_Testing
+### Household_Income
+### H5N1_Outbreaks
+### H1N1
+### Gini_Index
+### Flyway
+### Education
+### Dairy_Network
+### Dairy
+### COVID-19
+### Bird_Stopover
+Stopover_Data.m - Scrapes the stopover data from the tif files <br /> 
+County_Level_Stopover.mat - The county level data obtained from Stopover_Data.m <br />
+spring_stopover_2500_v9_265_class.tif - Tif file for spring (DOI:10.6084/m9.figshare.24438280.v2)
+fall_stopover_2500_v9_265_class.tif - Tif file for fall (DOI:10.6084/m9.figshare.24438280.v2) <br />
+### Age_Sex
+ACSST5Y2010.S0101-Data.csv - County-level age and sex demographics obtained from the US Cenesus Bureau for 2010 <br />
+ACSST5Y2020.S0101-Data.csv - County-level age and sex demographics obtained from the US Cenesus Bureau for 2020 <br />
+ACSST5Y2022.S0101-Data.csv - County-level age and sex demographics obtained from the US Cenesus Bureau for 2022 <br />
 ## Shapefile
-
+Contains the files for the shapefile used in the analysis and the generation of the figures
 ## Fitting
 
 ## Computation
