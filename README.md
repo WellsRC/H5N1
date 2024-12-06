@@ -23,15 +23,38 @@ geoCode.m - Looks up the geographical coordinates of an address (https://www.mat
 ZIP-COUNTY-FIPS_2017-06.csv - Used in the mapping of zip code to county fips <br />
 slaughter_productionData.xlsx - Location/address of slaughterhouses <br />
 Location_Slaughterhouse.mat - The county fips of the slaughter houses obtained from County_FIPS_Slaughterhouse.m <br />
+### Poultry
+Infer_County_Chicken_Inventory.m -  Script used to infer the poultry inventory for counties in which values were supressed to maintain farm anonymity <br />
+Inferred_Rooster_Inventory_County_2022.csv -  The inferred and raw data for rooster inventory <br />
+Inferred_Pullet_Inventory_County_2022.csv -  The inferred and raw data for pullet inventory <br />
+Inferred_Layers_Inventory_County_2022.csv -  The inferred and raw data for layer inventory <br />
+Inferred_Broiler_Inventory_County_2022.csv -  The inferred and raw data for broiler inventory <br />
+County_Turkey_Farms_with_Inventory_2022.sv - County-level raw data for the numebr of turkey operations with invenotry <br />
+County_Operations_with_Inventory_Poultry_2022.sv - County-level raw data for the numebr of poultry operations with invenotry <br />
+County_Operations_with_Inventory_Layer_Chickens_2022.sv - County-level raw data for the numebr of layer operations with invenotry stratiied by the number of head<br />
+County_Level_Pullet_Operations_with_Inventory_2022.sv - County-level raw data for the numebr of pullet operations with invenotry <br />
+County_Level_Layer_Operations_with_Inventory_2022.sv - County-level raw data for the numebr of layer operations with invenotry <br />
+County_Level_Broiler_Operations_with_Inventory_2022.sv - County-level raw data for the numebr of broiler operations with invenotry <br />
+County_Chicken_Roosters_Inventory_2022.csv - The raw data for rooster inventory <br />
+County_Chicken_Pullets_Inventory_2022.csv - The raw data for pullet inventory <br />
+County_Chicken_Layers_Inventory_2022.csv - The raw data for layer inventory <br />
+County_Chicken_Broiler_Inventory_2022.csv - The raw data for broiler inventory <br />
 ### Rural_Population
 ### Influenza_Testing
+Scrape_State_Testing.m - Script used to scrape state-level testing data for influenza <br />
+State_Level_Influenza_Testing.mat - The state-level testing data <br />
+WHO_NREVSS_Clinical_Labs.csv - State-level testing among clinical labs <br />
+WHO_NREVSS_Public_Health_Labs.csv - State-level testing among public health labs <br />
 ### Household_Income
+ACSST5Y2010.S1901-Data.csv - County-level household income demographics obtained from the US Cenesus Bureau for 2010 <br />
+ACSST5Y2020.S1901-Data.csv - County-level household income demographics obtained from the US Cenesus Bureau for 2020 <br />
+ACSST5Y2022.S1901-Data.csv - County-level household income demographics obtained from the US Cenesus Bureau for 2022 <br />
 ### H5N1_Outbreaks
-Event_4451.pdf - Raw data specifying county-level information for H5N1 outbreaks among  dairy cattle
-HPAI Detections in Wild Birds.csv - H5N1 surviellane among wild birds
-H5N1_State_Human.csv - H5N1 spillover events linked to dairy and poultry
-HPAI_Poulty_Farms.xlsx - H5N1 outbreaks among poultry farms
-HPAI_Dairy_Farms.xlsx - H5N1 outbreaks among dairy farms
+Event_4451.pdf - Raw data specifying county-level information for H5N1 outbreaks among  dairy cattle  <br />
+HPAI Detections in Wild Birds.csv - H5N1 surviellane among wild birds  <br />
+H5N1_State_Human.csv - H5N1 spillover events linked to dairy and poultry  <br />
+HPAI_Poulty_Farms.xlsx - H5N1 outbreaks among poultry farms  <br />
+HPAI_Dairy_Farms.xlsx - H5N1 outbreaks among dairy farms  <br />
 ### H1N1
 h1n1-070609.xlsx - H1N1 county-level incidence data
 ### Gini_Index
