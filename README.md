@@ -92,6 +92,7 @@ County_Level_Operations_Inventory_2022.csv - The raw data for hog operations wit
 ## Shapefile
 Contains the files for the shapefile used in the analysis and the generation of the figures
 ## Fitting
+Risk_Assesment_Farms.m - Logistic risk function used in the models
 ### Poultry
 Fit_Poultry_Measure.m - Fits all of the poultry models <br />
 Optimize_Poultry_Farm_Risk.m - Runs the optimization for a specified poultry model <br />
@@ -109,7 +110,24 @@ Population_Covariates_H5N1.m - Populatino covariates for 2022 <br />
 Optimize_Population_Farm_Risk.m - Runs the optimization for a specified human population model <br /> 
 Objective_Function_Population.m - Objective function to be optimzied for the human population model <br />
 ## Risk computation
-
-## Figures
+Compute_Risk_Swine.m - Computes the risk for swine based on the inference from poultry and dairy cattle <br />
+Swine_Covariates.m - Covariates for the swine model <br />
+Compute_Underreporting.m - Computes the probability of underreporting at the county-level <br />
+Compute_Surveillance.m - Computes the likelihood of a H5N1 case going undetected within a county  <br /> 
+Compute_Risk_Poultry.m - Computes the risks for counties with poultry operations <br />
+Compute_Risk_Dairy.m - Computes the risks for counties with dairy operations <br />
+Compute_Risk_Population.m - Computes the risks for counties for H5N1 outreaks among humans based on inference using H1N1 and COVID-19 data <br />
+Compute_Overall_Spillover_Risk.m - Computes the risk of spillover from either poultry or dairy cattle <br />
+Compute_Risk_Dairy_Reduced_Connectivity.m - Computes the risks for counties with dairy operations for a specified level of reduction in dairy cattle transportation <br />
+## Figures and Tables
+Table_Risk_Model.m - Outputs the AIC model weighted output for the specified model <br /> 
+Figure_Change_Susceptibility_Risk_Dairy_Farm.m - Plots the the relative reduction dairy cattle transportation <br /> 
+Figure_Exacerbate_Spillover.m - Plots the risk assocaited with swine and the number of slaughterhouses in a county <br /> 
+Figure_Risk_Map.m - Plots the risks for poultry, dairy, and the scenario for reduction in dairy cattle transportation <br /> 
+Figure_Spillover_Risk_Map.m - Plots the results for spillover risk and subsequent localcised transmission <br /> 
+Figure_Surveillance_Map.m - Plots the likelihood of a H5N1 case going undetected  <br />
+Figure_Susceptible_Risk_Map.m - Plots the susceptiblity of countrys for H5N1 outbreaks among humans  <br />
+Figure_Underreporting_Map.m - Plots the results for underreporting among dairy cattle operations   <br />
+Supplementary_Figure_Spillover_Risk_Map.m - Plots the results for spillvoer from a specified farm type <br />
 
  
