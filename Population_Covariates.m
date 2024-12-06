@@ -92,25 +92,25 @@ for yy=1:length(Suceptibility_Variables)
         X_County_COVID(yy,:)=log(US_County.POPULATION_SIZE_2020./double(US_County.AREA_LAND));
         logic_par_COVID(5)=true;
     elseif(strcmp(Suceptibility_Variables{yy},'Eldery'))
-        temp_p=US_County.AGE_65_OLDER_2010./100;
+        temp_p=US_County.AGE_65_OLDER_2010;
         temp_p(temp_p==0)=10.^(-16);
         temp_p(temp_p==1)=1-10.^(-16);
         X_County_H1N1(yy,:)=log(temp_p./(1-temp_p));
         logic_par_H1N1(6)=true;
 
-        temp_p=US_County.AGE_65_OLDER_2020./100;
+        temp_p=US_County.AGE_65_OLDER_2020;
         temp_p(temp_p==0)=10.^(-16);
         temp_p(temp_p==1)=1-10.^(-16);
         X_County_COVID(yy,:)=log(temp_p./(1-temp_p));
         logic_par_COVID(6)=true;
     elseif(strcmp(Suceptibility_Variables{yy},'Under_15'))
-        temp_p=US_County.AGE_UNDER_15_2010./100;
+        temp_p=US_County.AGE_UNDER_15_2010;
         temp_p(temp_p==0)=10.^(-16);
         temp_p(temp_p==1)=1-10.^(-16);
         X_County_H1N1(yy,:)=log(temp_p./(1-temp_p));
         logic_par_H1N1(7)=true;
 
-        temp_p=US_County.AGE_UNDER_15_2020./100;
+        temp_p=US_County.AGE_UNDER_15_2020;
         temp_p(temp_p==0)=10.^(-16);
         temp_p(temp_p==1)=1-10.^(-16);
         X_County_COVID(yy,:)=log(temp_p./(1-temp_p));

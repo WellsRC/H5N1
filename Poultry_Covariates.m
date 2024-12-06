@@ -39,7 +39,7 @@ State_Spillover_Matrix=zeros(length(Poultry_Spillover_State),height(US_County));
 for ss=1:length(Poultry_Spillover_State)
     t_state=strcmp(Poultry_Spillover_State{ss},US_County.STATE_NAME);
     State_Spillover_Events(ss)=sum(US_County.SPILLOVER_POULTRY(t_state)); 
-    State_Spillover_Matrix(ss,t_state)=US_County.POULTRY_OPR_w_INVENTORY(t_state)./sum(US_County.POULTRY_OPR_w_INVENTORY(t_state));
+    State_Spillover_Matrix(ss,t_state)=1; 
 end
 
 

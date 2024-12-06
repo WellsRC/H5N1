@@ -51,13 +51,13 @@ for yy=1:length(Suceptibility_Variables)
         X_County_H5N1(yy,:)=log(US_County.POPULATION_SIZE_2022./double(US_County.AREA_LAND));
         logic_par_H5N1(5)=true;
     elseif(strcmp(Suceptibility_Variables{yy},'Eldery'))
-        temp_p=US_County.AGE_65_OLDER_2022./100;
+        temp_p=US_County.AGE_65_OLDER_2022;
         temp_p(temp_p==0)=10.^(-16);
         temp_p(temp_p==1)=1-10.^(-16);
         X_County_H5N1(yy,:)=log(temp_p./(1-temp_p));
         logic_par_H5N1(6)=true;
     elseif(strcmp(Suceptibility_Variables{yy},'Under_15'))
-        temp_p=US_County.AGE_UNDER_15_2022./100;
+        temp_p=US_County.AGE_UNDER_15_2022;
         temp_p(temp_p==0)=10.^(-16);
         temp_p(temp_p==1)=1-10.^(-16);
         X_County_H5N1(yy,:)=log(temp_p./(1-temp_p));

@@ -638,6 +638,13 @@ for ii=1:4
     X_temp(t_need,ii)=predict(mdl_fit,X(t_need,:));
 end
 
+for cc=1:height(US_County)
+    x_temp=X_temp(cc,2)+X_temp(cc,3)+X_temp(cc,4);
+    X_temp(cc,2)=X_temp(cc,2)./x_temp;
+    X_temp(cc,3)=X_temp(cc,3)./x_temp;
+    X_temp(cc,4)=X_temp(cc,4)./x_temp;
+end
+
 T_temp=array2table(X_temp);
 T_temp.Properties.VariableNames={'POPULATION_SIZE_2010','AGE_UNDER_15_2010','AGE_15_64_2010','AGE_65_OLDER_2010'};
 US_County=[US_County T_temp];
@@ -681,6 +688,13 @@ for ii=1:4
     t_need=~isnan(sum(X,2)) & isnan(Y);
     mdl_fit=fitlm(X(t_nan,:),Y(t_nan));
     X_temp(t_need,ii)=predict(mdl_fit,X(t_need,:));
+end
+
+for cc=1:height(US_County)
+    x_temp=X_temp(cc,2)+X_temp(cc,3)+X_temp(cc,4);
+    X_temp(cc,2)=X_temp(cc,2)./x_temp;
+    X_temp(cc,3)=X_temp(cc,3)./x_temp;
+    X_temp(cc,4)=X_temp(cc,4)./x_temp;
 end
 
 T_temp=array2table(X_temp);
@@ -739,6 +753,13 @@ t_nan=~isnan(sum(X,2)) & ~isnan(Y);
 t_need=~isnan(sum(X,2)) & isnan(Y);
 mdl_fit=fitlm(X(t_nan,:),Y(t_nan));
 X_temp(t_need,4)=predict(mdl_fit,X(t_need,:));
+
+for cc=1:height(US_County)
+    x_temp=X_temp(cc,2)+X_temp(cc,3)+X_temp(cc,4);
+    X_temp(cc,2)=X_temp(cc,2)./x_temp;
+    X_temp(cc,3)=X_temp(cc,3)./x_temp;
+    X_temp(cc,4)=X_temp(cc,4)./x_temp;
+end
 
 T_temp=array2table(X_temp);
 T_temp.Properties.VariableNames={'POPULATION_SIZE_2022','AGE_UNDER_15_2022','AGE_15_64_2022','AGE_65_OLDER_2022'};

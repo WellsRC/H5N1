@@ -25,7 +25,7 @@ for ss=1:length(Dairy_HPAI_Remain_State_Level)
     t_find = strcmp(US_County.STATE_NAME,Dairy_HPAI_Remain_State_Level{ss});
     Remainaing_Affected_State_Farms(ss)= sum(US_County.DAIRY_HPAI_OUTBREAK_UNKNOWN(t_find));
     Remainaing_Total_State_Farms(ss)= sum(US_County.TOTAL_DAIRY_OPERATIONS(t_find));
-    state_weight_hpai_matrix(ss,t_find)=US_County.TOTAL_DAIRY_OPERATIONS(t_find)./sum(US_County.TOTAL_DAIRY_OPERATIONS(t_find));
+    state_weight_hpai_matrix(ss,t_find)=1;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
@@ -39,7 +39,7 @@ State_Spillover_Matrix=zeros(length(Dairy_Spillover_State),height(US_County));
 for ss=1:length(Dairy_Spillover_State)
     t_state=strcmp(Dairy_Spillover_State{ss},US_County.STATE_NAME);
     State_Spillover_Events(ss)=sum(US_County.SPILLOVER_DAIRY(t_state)); 
-    State_Spillover_Matrix(ss,t_state)=US_County.TOTAL_DAIRY_OPERATIONS(t_state)./sum(US_County.TOTAL_DAIRY_OPERATIONS(t_state));
+    State_Spillover_Matrix(ss,t_state)=1;
 end
 
 
