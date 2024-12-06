@@ -92,8 +92,23 @@ County_Level_Operations_Inventory_2022.csv - The raw data for hog operations wit
 ## Shapefile
 Contains the files for the shapefile used in the analysis and the generation of the figures
 ## Fitting
-
-## Computation
+### Poultry
+Fit_Poultry_Measure.m - Fits all of the poultry models <br />
+Optimize_Poultry_Farm_Risk.m - Runs the optimization for a specified poultry model <br />
+Objective_Function_Poultry_Farm.m - Objective function to be optimzied for the poultry model <br />
+Poultry_Covariates.m - Covariates for the poultry models <br />
+### Dairy
+Fit_Dairy_Measure.m - Fits all of the dairy models <br />
+Optimize_Dairy_Farm_Risk.m - Runs the optimization for a specified dairy model <br />
+Objective_Function_Dairy_Farm.m - Objective function to be optimzied for the dairy model <br />
+Dairy_Covariates.m - Covariates for the dairy models <br />
+### Humans
+Fit_Population_Measure.m - Fits all of the human population models <br />
+Population_Covariates.m - Populatino covariates for 2010 and 2020 <br />
+Population_Covariates_H5N1.m - Populatino covariates for 2022 <br />
+Optimize_Population_Farm_Risk.m - Runs the optimization for a specified human population model <br /> 
+Objective_Function_Population.m - Objective function to be optimzied for the human population model <br />
+## Risk computation
 
 ## Figures
 
