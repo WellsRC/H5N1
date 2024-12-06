@@ -44,13 +44,6 @@ elseif(strcmp(Var_Plot,'Poultry'))
     avg_susceptible_risk_farm_County=avg_susceptible_risk_poultry_farm_County;
     avg_overall_risk_farm_State=avg_overall_risk_poultry_farm_State;
     farm_type='poultry';
-elseif(strcmp(Var_Plot,'Poultry_Alternative')) 
-    load('Average_Risk_Poultry_Alternative.mat','avg_overall_risk_poultry_farm_County','avg_exposure_risk_poultry_farm_County','avg_susceptible_risk_poultry_farm_County','avg_overall_risk_poultry_farm_State','State_Name');
-    avg_overall_risk_farm_County=avg_overall_risk_poultry_farm_County;
-    avg_exposure_risk_farm_County=avg_exposure_risk_poultry_farm_County;
-    avg_susceptible_risk_farm_County=avg_susceptible_risk_poultry_farm_County;
-    avg_overall_risk_farm_State=avg_overall_risk_poultry_farm_State;
-    farm_type='poultry';
 end
 
 state_nan=~isnan(avg_overall_risk_farm_State);
