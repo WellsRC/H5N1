@@ -37,12 +37,16 @@ elseif(strcmp(Var_Plot,'H1N1'))
     load('Average_Risk_Population_H1N1.mat','avg_susceptible_risk_population_County_H1N1','avg_susceptible_risk_population_State_H1N1','State_Name');
     avg_susceptible_risk_total_County=avg_susceptible_risk_population_County_H1N1;
     avg_susceptible_risk_total_State=avg_susceptible_risk_population_State_H1N1;
-else
-    load('Average_Risk_Population_COVID.mat','avg_susceptible_risk_population_County_COVID','avg_susceptible_risk_population_State_COVID');
+elseif(strcmp(Var_Plot,'Combined_H1N1'))
+    load('Average_Risk_Population_Combined_H1N1.mat','avg_susceptible_risk_population_County_Combined_H1N1','avg_susceptible_risk_population_State_Combined_H1N1');
 
-    load('Average_Risk_Population_H1N1.mat','avg_susceptible_risk_population_County_H1N1','avg_susceptible_risk_population_State_H1N1','State_Name');
-    avg_susceptible_risk_total_County=sqrt(avg_susceptible_risk_population_County_COVID.*avg_susceptible_risk_population_County_H1N1);
-    avg_susceptible_risk_total_State=sqrt(avg_susceptible_risk_population_State_COVID.*avg_susceptible_risk_population_State_H1N1);
+    avg_susceptible_risk_total_County=avg_susceptible_risk_population_County_Combined_H1N1;
+    avg_susceptible_risk_total_State=avg_susceptible_risk_population_State_Combined_H1N1;
+elseif(strcmp(Var_Plot,'Combined_COVID'))
+    load('Average_Risk_Population_Combined_COVID.mat','avg_susceptible_risk_population_County_Combined_COVID','avg_susceptible_risk_population_State_Combined_COVID');
+
+    avg_susceptible_risk_total_County=avg_susceptible_risk_population_County_Combined_COVID;
+    avg_susceptible_risk_total_State=avg_susceptible_risk_population_State_Combined_COVID;
 end
 
 

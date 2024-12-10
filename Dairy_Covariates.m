@@ -32,7 +32,9 @@ end
 % Spillover
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Dairy_Spillover_State=unique(US_County.STATE_NAME(US_County.SPILLOVER_DAIRY>0));
+Dairy_Spillover_State=unique(US_County.STATE_NAME);
+state_remove=strcmp(Dairy_Spillover_State,"Alaska") | strcmp(Dairy_Spillover_State,"District of Columbia");
+Dairy_Spillover_State=Dairy_Spillover_State(~state_remove);
 State_Spillover_Events=zeros(size(Dairy_Spillover_State));
 State_Spillover_Matrix=zeros(length(Dairy_Spillover_State),height(US_County));
 

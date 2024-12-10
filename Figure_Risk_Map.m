@@ -1,4 +1,4 @@
-function  Figure_Risk_Map(Var_Plot)
+function  Table_out=Figure_Risk_Map(Var_Plot)
 % Plot_Variable
 close all;
 states = shaperead('usastatelo', 'UseGeoCoords', true);
@@ -206,6 +206,10 @@ for vv=1:4
             end
         end
     else
+        state_filter=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
+            State_Name=State_Name(~state_filter);
+            risk_measure=risk_measure(~state_filter);
+
         risk_measure=risk_measure./min(risk_measure);
 
         if(ceil(max(risk_measure))>=10)
@@ -267,6 +271,11 @@ for vv=1:4
             ylabel({['Fold-increase in state'],[farm_type 'farm overall risk to H5N1']},'FontSize',18);
             xlim([0.5 length(State_Name)+0.5]);
             text(-0.15,1,'D','FontSize',32,'Units','normalized');
+
+
+            Rank_Risk=[1:length(State_Name)]';
+            risk_output=round(risk_measure,2);
+            Table_out=table(Rank_Risk,State_Name,risk_output);
     end
 end
 

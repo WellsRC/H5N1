@@ -218,7 +218,8 @@ Dist_Parameter=Parameter_Full(:,indx_m);
 
 Lower_Bound=prctile(Dist_Parameter,2.5,2);
 Upper_Bound=prctile(Dist_Parameter,97.5,2);
-T=table(Parameter_Name,Avg_Parameter,Lower_Bound,Upper_Bound,Model_Inclusion);
+Median_Parameter=prctile(Dist_Parameter,50,2);
+T=table(Parameter_Name,Median_Parameter,Lower_Bound,Upper_Bound,Model_Inclusion);
 
 writetable(T,[Var_Table '_Risk_Model_Summary.csv']);
 

@@ -1,4 +1,4 @@
-function  Figure_Spillover_Risk_Map(Var_Plot)
+function  [Table_out_SP,Table_out_LT]=Figure_Spillover_Risk_Map(Var_Plot)
 close all;
 states = shaperead('usastatelo', 'UseGeoCoords', true);
 S=shaperead([pwd '/Shapefile/cb_2021_us_county_500k.shp'],'UseGeoCoords',true);
@@ -25,6 +25,10 @@ if(strcmp(Var_Plot,'H1N1'))
     load('Total_Spillover_Risk_County_H1N1.mat','avg_spillover_risk_total_County','avg_spillover_risk_total_State','State_Name','avg_localized_transmission_risk_total_State','avg_localized_transmission_risk_total_County');
 elseif(strcmp(Var_Plot,'COVID'))
     load('Total_Spillover_Risk_County_COVID.mat','avg_spillover_risk_total_County','avg_spillover_risk_total_State','State_Name','avg_localized_transmission_risk_total_State','avg_localized_transmission_risk_total_County');
+elseif(strcmp(Var_Plot,'H1N1_Reduction'))
+    load('Total_Spillover_Risk_County_H1N1_Dairy_Reduction_Connectivity.mat','avg_spillover_risk_total_County','avg_spillover_risk_total_State','State_Name','avg_localized_transmission_risk_total_State','avg_localized_transmission_risk_total_County');
+elseif(strcmp(Var_Plot,'COVID_Reduction'))
+    load('Total_Spillover_Risk_County_COVID_Dairy_Reduction_Connectivity.mat','avg_spillover_risk_total_County','avg_spillover_risk_total_State','State_Name','avg_localized_transmission_risk_total_State','avg_localized_transmission_risk_total_County');
 end
 
 state_nan=~isnan(avg_spillover_risk_total_State);  % use avg_spillover_risk_total_State as this will remove the regions where we are not assess for BOTH sets of analysis
@@ -91,7 +95,9 @@ hex2rgb('#67000d');];
             risk_measure=avg_spillover_risk_total_County;
         case 2
             State_Name=State_Name_Spill;
-            risk_measure=avg_spillover_risk_total_State;
+            state_filter=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
+            State_Name=State_Name(~state_filter);
+            risk_measure=avg_spillover_risk_total_State(~state_filter);
         case 3
             subplot('Position',[0.41,0.025,0.01,0.45]);    
             Title_Name={['Fold-increase of spillover'],'from poultry and dairy farms'};
@@ -100,7 +106,9 @@ hex2rgb('#67000d');];
             risk_measure=avg_localized_transmission_risk_total_County;
         case 4
             State_Name=State_Name_LT;
-            risk_measure=avg_localized_transmission_risk_total_State;
+            state_filter=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
+            State_Name=State_Name(~state_filter);
+            risk_measure=avg_localized_transmission_risk_total_State(~state_filter);
     end
     
     if(vv==1)||(vv==3)
@@ -212,6 +220,10 @@ hex2rgb('#67000d');];
             ylabel({['Fold-increase in state'],['overall spillover risk']},'FontSize',18);
             xlim([0.5 length(State_Name)+0.5]);
             text(-0.15,1,'B','FontSize',32,'Units','normalized');
+
+            Rank_Risk=[1:length(State_Name)]';
+            risk_output=round(risk_measure,2);
+            Table_out_SP=table(Rank_Risk,State_Name,risk_output);
         case 3
             CM=makesymbolspec('Polygon',{'INDEX',[1 NS],'FaceColor',CC_Risk});
             geoshow(ax3,S,'SymbolSpec',CM,'LineStyle','None'); 
@@ -234,6 +246,11 @@ hex2rgb('#67000d');];
             ylabel({['Fold-increase in state'],['overall spillover risk']},'FontSize',18);
             xlim([0.5 length(State_Name)+0.5]);
             text(-0.15,1,'D','FontSize',32,'Units','normalized');
+
+
+            Rank_Risk=[1:length(State_Name)]';
+            risk_output=round(risk_measure,2);
+            Table_out_LT=table(Rank_Risk,State_Name,risk_output);
     end
 end
 

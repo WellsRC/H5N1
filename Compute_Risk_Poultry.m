@@ -1,7 +1,7 @@
 clear;
 
 load([pwd '/Data/Data_US_County.mat'],'US_County');
-load('Poultry_Models_Fit_Alternative_Likelihood.mat',"par_est","w_AIC",'Poultry_Model');
+load('Poultry_Models_Fit.mat',"par_est","w_AIC",'Poultry_Model');
 
 State_Name=unique(US_County.STATE_NAME);
 
@@ -60,10 +60,14 @@ for mm=1:length(w_AIC)
         t_inc=w_c>0 & ~isnan(c_r);
         c_r=c_r(t_inc);
         susceptible_risk_poultry_farm_State(ss,mm)=1-prod((1-c_r));
+
+        c_r=nbincdf(0,r_nbin,1-overall_risk_poultry_farm_County(t_state,mm));
+        w_c=US_County.TOTAL_DAIRY_OPERATIONS(t_state);
+        t_inc=w_c>0 & ~isnan(c_r);
+        c_r=c_r(t_inc);
+        spillover_risk_poultry_farm_State(ss,mm)=1-prod(c_r);
     end
-    
-    spillover_risk_poultry_farm_State(:,mm)=1-nbincdf(0,r_nbin,1-overall_risk_poultry_farm_State(:,mm));
-    
+        
     overall_risk_poultry_farm_County(County_Farms==0,mm)=0;
     exposure_risk_poultry_farm_County(County_Farms==0,mm)=0;
     susceptible_risk_poultry_farm_County(County_Farms==0,mm)=0;
@@ -86,4 +90,4 @@ avg_exposure_risk_poultry_farm_County(County_Farms==0)=NaN;
 avg_susceptible_risk_poultry_farm_County(County_Farms==0)=NaN;
 avg_spillover_risk_poultry_farm_County(County_Farms==0)=NaN;
 
-save('Average_Risk_Poultry_Alternative.mat','avg_overall_risk_poultry_farm_County','avg_exposure_risk_poultry_farm_County','avg_susceptible_risk_poultry_farm_County','overall_risk_poultry_farm_County','exposure_risk_poultry_farm_County','susceptible_risk_poultry_farm_County','w_AIC','avg_spillover_risk_poultry_farm_County','spillover_risk_poultry_farm_County','avg_overall_risk_poultry_farm_State','avg_exposure_risk_poultry_farm_State','avg_susceptible_risk_poultry_farm_State','overall_risk_poultry_farm_State','exposure_risk_poultry_farm_State','susceptible_risk_poultry_farm_State','w_AIC','avg_spillover_risk_poultry_farm_State','spillover_risk_poultry_farm_State','State_Name');
+save('Average_Risk_Poultry.mat','avg_overall_risk_poultry_farm_County','avg_exposure_risk_poultry_farm_County','avg_susceptible_risk_poultry_farm_County','overall_risk_poultry_farm_County','exposure_risk_poultry_farm_County','susceptible_risk_poultry_farm_County','w_AIC','avg_spillover_risk_poultry_farm_County','spillover_risk_poultry_farm_County','avg_overall_risk_poultry_farm_State','avg_exposure_risk_poultry_farm_State','avg_susceptible_risk_poultry_farm_State','overall_risk_poultry_farm_State','exposure_risk_poultry_farm_State','susceptible_risk_poultry_farm_State','w_AIC','avg_spillover_risk_poultry_farm_State','spillover_risk_poultry_farm_State','State_Name');

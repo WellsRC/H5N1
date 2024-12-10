@@ -21,6 +21,9 @@ NS=length(S);
 
 load('Surveillance_H5N1_Population_H1N1.mat','County_Surveillance','State_Surveillance','State_Name');
 
+state_filter=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
+State_Name=State_Name(~state_filter);
+State_Surveillance=State_Surveillance(~state_filter);
 
 state_nan=~isnan(State_Surveillance);
 State_Surveillance=State_Surveillance(state_nan);
@@ -28,8 +31,6 @@ State_Name=State_Name(state_nan);
 [State_Surveillance,Indx_Risk]=sort(State_Surveillance,'descend');
 State_Name=State_Name(Indx_Risk);
 
-
-State_Name(strcmp(State_Name,'District of Columbia'))='D.C.';
 figure('units','normalized','outerposition',[0 0.075 1 0.5]);
  ax1=usamap('conus');
 
@@ -151,7 +152,7 @@ end
 xlabel('State','FontSize',18);
 ylabel({'Fold-increase in','likelihood of undetected','H5N1 cases'},'FontSize',18);
 xlim([0.5 length(State_Name)+0.5]);
-ylim([0.95 1.5]);
+ylim([0.975 1.2]);
 
 text(-0.145,0.97,'B','FontSize',32,'Units','normalized');
 

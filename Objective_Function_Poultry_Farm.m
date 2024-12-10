@@ -21,32 +21,34 @@ r_farm_County(N_County==0)=0;
 L_County=A_County(:).*log(r_farm_temp(:))+(N_County_temp(:)-A_County(:)).*log(1-r_farm_temp(:));
 L_County=L_County(N_County_temp>0);
 
-r_Pullet_County = Risk_Assesment_Farms(beta_y,Y_County).*Risk_Assesment_Farms(beta_x,X_County);%Risk_Assesment_Farms(beta_x([1 1+indx.Pullet]),X_County(indx.Pullet,:));
+r_Pullet_County = Risk_Assesment_Farms(beta_y,Y_County).*Risk_Assesment_Farms(beta_x([1 1+indx.Pullet]),X_County(indx.Pullet,:));
 r_Pullet_County(Pullet_Farms==0)=0;
 L_HPAI_Pullet=HPAI_Pullet_Farms(:).*log(r_Pullet_County(:))+(Pullet_Farms(:)-HPAI_Pullet_Farms(:)).*log(1-r_Pullet_County(:));
 L_HPAI_Pullet=L_HPAI_Pullet(Pullet_Farms>0);
 
-r_Layer_County = Risk_Assesment_Farms(beta_y,Y_County).*Risk_Assesment_Farms(beta_x,X_County);%Risk_Assesment_Farms(beta_x([1 1+indx.Layer]),X_County(indx.Layer,:));
+r_Layer_County = Risk_Assesment_Farms(beta_y,Y_County).*Risk_Assesment_Farms(beta_x([1 1+indx.Layer]),X_County(indx.Layer,:));
 r_Layer_County(Layer_Farms==0)=0;
 L_HPAI_Layer=HPAI_Layer_Farms(:).*log(r_Layer_County(:))+(Layer_Farms(:)-HPAI_Layer_Farms(:)).*log(1-r_Layer_County(:));
 L_HPAI_Layer=L_HPAI_Layer(Layer_Farms>0);
 
-r_Broiler_County = Risk_Assesment_Farms(beta_y,Y_County).*Risk_Assesment_Farms(beta_x,X_County);%Risk_Assesment_Farms(beta_x([1 1+indx.Broiler]),X_County(indx.Broiler,:));
+r_Broiler_County = Risk_Assesment_Farms(beta_y,Y_County).*Risk_Assesment_Farms(beta_x([1 1+indx.Broiler]),X_County(indx.Broiler,:));
 r_Broiler_County(Broiler_Farms==0)=0;
 L_HPAI_Broiler=HPAI_Broiler_Farms(:).*log(r_Broiler_County(:))+(Broiler_Farms(:)-HPAI_Broiler_Farms(:)).*log(1-r_Broiler_County(:));
 L_HPAI_Broiler=L_HPAI_Broiler(Broiler_Farms>0);
 
-r_Turkey_County = Risk_Assesment_Farms(beta_y,Y_County).*Risk_Assesment_Farms(beta_x,X_County);%Risk_Assesment_Farms(beta_x([1 1+indx.Turkey]),X_County(indx.Turkey,:));
+r_Turkey_County = Risk_Assesment_Farms(beta_y,Y_County).*Risk_Assesment_Farms(beta_x([1 1+indx.Turkey]),X_County(indx.Turkey,:));
 r_Turkey_County(Turkey_Farms==0)=0;
 L_HPAI_Turkey=HPAI_Turkey_Farms(:).*log(r_Turkey_County(:))+(Turkey_Farms(:)-HPAI_Turkey_Farms(:)).*log(1-r_Turkey_County(:));
 L_HPAI_Turkey=L_HPAI_Turkey(Turkey_Farms>0);
 
 L_Spillover_State=zeros(size(State_Spillover_Events));
 for ss=1:length(State_Spillover_Events)
-    temp_county=State_Spillover_Matrix(ss,:).*log((1-r_farm_County)); 
-    temp_state=exp(sum(temp_county));
-    r_spillover_state=1-temp_state;
-    L_Spillover_State(ss)=nbinpdf(round(State_Spillover_Events(ss)),r_nbin,1-r_spillover_state);
+    temp_county=r_farm_County(State_Spillover_Matrix(ss,:)>0); 
+    if(round(State_Spillover_Events(ss))==0)
+        L_Spillover_State(ss)=sum(log(nbinpdf(0,r_nbin,1-temp_county)));
+    else
+        L_Spillover_State(ss)=sum(State_Spillover_Events(ss).*log(1-prod(nbinpdf(0,r_nbin,1-temp_county))));
+    end
 end
 
 F=-sum(L_County)-sum(L_Spillover_State) - sum(L_HPAI_Pullet(:)) - sum(L_HPAI_Layer(:)) - sum(L_HPAI_Broiler(:)) - sum(L_HPAI_Turkey(:));

@@ -32,10 +32,12 @@ end
 
 L_Spillover_State=zeros(size(State_Spillover_Events));
 for ss=1:length(State_Spillover_Events)
-    temp_county=State_Spillover_Matrix(ss,:).*log((1-r_farm_County)); 
-    temp_state=exp(sum(temp_county));
-    r_spillover_state=1-temp_state;
-    L_Spillover_State(ss)=nbinpdf(round(State_Spillover_Events(ss)),r_nbin,1-r_spillover_state);
+    temp_county=r_farm_County(State_Spillover_Matrix(ss,:)>0); 
+    if(round(State_Spillover_Events(ss))==0)
+        L_Spillover_State(ss)=sum(log(nbinpdf(0,r_nbin,1-temp_county)));
+    else
+        L_Spillover_State(ss)=sum(State_Spillover_Events(ss).*log(1-prod(nbinpdf(0,r_nbin,1-temp_county))));
+    end
 end
 
 L_County=Affected_County_Farms(:).*log(r_farm_County(:))+(County_Farms(:)-Affected_County_Farms(:)).*log(1-r_farm_County(:));

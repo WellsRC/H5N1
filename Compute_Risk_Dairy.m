@@ -66,9 +66,15 @@ for mm=1:height(Dairy_Model)
         t_inc=w_c>0 & ~isnan(c_r);
         c_r=c_r(t_inc);
         susceptible_risk_dairy_farm_State(ss,mm)=1-prod((1-c_r));
+
+        c_r=nbincdf(0,r_nbin,1-overall_risk_dairy_farm_County(t_state,mm));
+        w_c=US_County.TOTAL_DAIRY_OPERATIONS(t_state);
+        t_inc=w_c>0 & ~isnan(c_r);
+        c_r=c_r(t_inc);
+        spillover_risk_dairy_farm_State(ss,mm)=1-prod(c_r);
     end
     
-    spillover_risk_dairy_farm_State(:,mm)=1-nbincdf(0,r_nbin,1-overall_risk_dairy_farm_State(:,mm));
+    
     
     overall_risk_dairy_farm_County(County_Farms==0,mm)=0;
     exposure_risk_dairy_farm_County(County_Farms==0,mm)=0;

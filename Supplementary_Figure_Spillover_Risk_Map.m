@@ -23,7 +23,6 @@ NS=length(S);
 % load([pwd '/Data/Data_US_County.mat'],'US_County');
 if(strcmp(Var_Plot,'Poultry'))
     load('Average_Risk_Poultry.mat','avg_spillover_risk_poultry_farm_County','avg_spillover_risk_poultry_farm_State','State_Name');
-    m=624;
     avg_spillover_risk_total_County=avg_spillover_risk_poultry_farm_County;
     avg_spillover_risk_farm_State=avg_spillover_risk_poultry_farm_State;
 elseif(strcmp(Var_Plot,'Dairy'))
@@ -130,6 +129,9 @@ geoshow(ax1, states,'Facecolor','none','LineWidth',1.5); hold on;
 % State-level
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+state_filter=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
+State_Name=State_Name(~state_filter);
+avg_spillover_risk_farm_State=avg_spillover_risk_farm_State(~state_filter);
 risk_measure=(avg_spillover_risk_farm_State)./(min(avg_spillover_risk_farm_State));
 
 if(ceil(max(risk_measure))>=10)

@@ -72,4 +72,4 @@ dAIC=AIC-min(AIC);
 w_AIC=exp(-dAIC./2)./sum(exp(-dAIC./2));
 Poultry_Model=table(Model_H5N1,Model_Farm,Model_Stratified_Chicken_Inventory,L,AIC,w_AIC);
 
-save('Poultry_Models_Fit_Alternative_Likelihood.mat',"Poultry_Model","par_est","L","AIC","w_AIC");
+save('Poultry_Models_Fit.mat',"Poultry_Model","par_est","L","AIC","w_AIC");

@@ -32,7 +32,9 @@ HPAI_Broiler_Farms=US_County.BROILER_HPAI_OUTBREAK;
 % Spillover
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Poultry_Spillover_State=unique(US_County.STATE_NAME(US_County.SPILLOVER_DAIRY>0));
+Poultry_Spillover_State=unique(US_County.STATE_NAME);
+state_remove=strcmp(Poultry_Spillover_State,"Alaska") | strcmp(Poultry_Spillover_State,"District of Columbia");
+Poultry_Spillover_State=Poultry_Spillover_State(~state_remove);
 State_Spillover_Events=zeros(size(Poultry_Spillover_State));
 State_Spillover_Matrix=zeros(length(Poultry_Spillover_State),height(US_County));
 
