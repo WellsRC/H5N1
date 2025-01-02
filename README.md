@@ -1,4 +1,4 @@
-# Spatial risk assessment of H5N1 outbreaks among poultry farms, dairy farms, and humans in the United States: a modelling study
+# Spatial risk assessment of H5N1 outbreaks among poultry farms, dairy farms, and humans in the United States
 Chad R. Wells <sup>1</sup>,✝ , Michael Cairo <sup>1,2</sup>, Sarah Galvani-Townsend <sup>1</sup>, Seyed M. Moghadas <sup>3</sup>, Meagan C. Fitzpatrick <sup>4</sup>, Abhishek Pandey <sup>1</sup>,✝
 
 <sup>1</sup> Center for Infectious Disease Modeling and Analysis, Yale School of Public Health, New Haven, CT, USA <br />
