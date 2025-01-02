@@ -7,8 +7,19 @@ Chad R. Wells <sup>1</sup>,✝ , Michael Cairo <sup>1,2</sup>, Sarah Galvani-Tow
 <sup>4</sup> Center for Vaccine Development and Global Health, University of Maryland School of Medicine, Baltimore, MD, USA <br />
 
 ✝Corresponding authors: abhishek.pandey@yale.edu and chad.richard.wells@gmail.com <br />
-## Software
-The cod was run with Both MATLAB R2022a and R2024a
+## OS System requirements
+The codes developed here are tested on Windows operating system (Windows 10 Home: 64-bit). Optimization was also conducted on a 48 core nodes with 384GB RAM, 2TB SSD, dual Xeon Platinum 8268 2.9GHz CPUs.
+
+## Installation guide
+### MATLAB
+The code was run with Both MATLAB R2022a and R2024a. Installation instruction for MATLAB can be found at https://www.mathworks.com/help/install/install-products.html. Typical install time for MATLAB on a "normal" desktop is around 30-40 minutes. 
+
+## Demo
+Fit_Dairy_Measure runs the optimization for all the models computing the risk for spillover events associated with dairy farms. Aftr the fitting is complete, Compute_Risk_Dairy.m computes the risk and averag risk across the different models to be plotted by Figure_Risk_Map.m (i.e., Figure_Risk_Map('Dairy'));
+
+## Instructions for use
+To generate the Figures and output of the calculations, select a script from Figures and Tables section to run in MATLAB and enter the name in the command line. All mat file are availble to generate figures and conduct the calculations.
+
 ## Data
 Contains the raw data files that were downlaoded and the scripts used to scrape and aggregate it into a single structure at the county-level for use in the analysis
 ### Age_Sex
