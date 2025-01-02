@@ -6,7 +6,7 @@ Chad R. Wells <sup>1</sup>,✝ , Michael Cairo <sup>1,2</sup>, Sarah Galvani-Tow
 <sup>3</sup> Agent-Based Modelling Laboratory, York University, Toronto, Ontario, Canada <br />
 <sup>4</sup> Center for Vaccine Development and Global Health, University of Maryland School of Medicine, Baltimore, MD, USA <br />
 
-✝Corresponding authors: abhishek.pandey@yale.edu and chad.richard.wells@gmail.com <br />
+✝Corresponding authors: abhishek.pandey@yale.edu and chad.richard.wells@gmail.com <br /> <br />
 Copyright (C) <2024>, Chad R. Wells et. al. All rights reserved. Released under the GNU General Public License (GPL)
 ## OS System requirements
 The codes developed here are tested on Windows operating system (Windows 10 Home: 64-bit). Optimization was also conducted on a 48 core nodes with 384GB RAM, 2TB SSD, dual Xeon Platinum 8268 2.9GHz CPUs.
