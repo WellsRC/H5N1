@@ -7,7 +7,8 @@ Chad R. Wells <sup>1</sup>,✝ , Michael Cairo <sup>1,2</sup>, Sarah Galvani-Tow
 <sup>4</sup> Center for Vaccine Development and Global Health, University of Maryland School of Medicine, Baltimore, MD, USA <br />
 
 ✝Corresponding authors: abhishek.pandey@yale.edu and chad.richard.wells@gmail.com <br />
-
+## Software
+The cod was run with Both MATLAB R2022a and R2024a
 ## Data
 Contains the raw data files that were downlaoded and the scripts used to scrape and aggregate it into a single structure at the county-level for use in the analysis
 ### Age_Sex
