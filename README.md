@@ -15,7 +15,7 @@ The codes developed here are tested on Windows operating system (Windows 10 Home
 The code was run with Both MATLAB R2022a and R2024a. Installation instruction for MATLAB can be found at https://www.mathworks.com/help/install/install-products.html. Typical install time for MATLAB on a "normal" desktop is around 30-40 minutes. 
 
 ## Demo
-Fit_Dairy_Measure runs the optimization for all the models computing the risk for spillover events associated with dairy farms. Aftr the fitting is complete, Compute_Risk_Dairy.m computes the risk and averag risk across the different models to be plotted by Figure_Risk_Map.m (i.e., Figure_Risk_Map('Dairy'));
+Fit_Dairy_Measure runs the optimization for all the models computing the risk for spillover events associated with dairy farms. Aftr the fitting is complete, Compute_Risk_Dairy.m computes the risk and averag risk across the different models to be plotted by Figure_Risk_Map.m (i.e., Figure_Risk_Map('Dairy')). The expected run-time to compute the risk based on the optimized values is roughly 3 min and to generate a figure is roughly 1 min. 
 
 ## Instructions for use
 To generate the Figures and output of the calculations, select a script from Figures and Tables section to run in MATLAB and enter the name in the command line. All mat file are availble to generate figures and conduct the calculations.
