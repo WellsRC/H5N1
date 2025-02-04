@@ -90,7 +90,7 @@ hex2rgb('#67000d');];
     switch vv
         case 1
             subplot('Position',[0.41,0.525,0.01,0.45]);
-            Title_Name={['Fold-increase of spillover'],'from poultry farms'};
+            Title_Name={['Fold-increase of spillover'],'from poultry and dairy farms'};
             
             risk_measure=avg_spillover_risk_total_County;
         case 2

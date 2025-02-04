@@ -19,21 +19,39 @@ US_County_Dairy_to_Human=US_County(:,1:end-2);
 US_County_Poultry_to_Human=US_County(:,1:end-2);
 temp_county_fp=str2double(US_County.COUNTYFP);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Migratory Birds
+% Light_Intensity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-load([pwd '\Flyway\Migratory_Bird_Assesment.mat'],'Migratory_Bird');
+load([pwd '\Bird_Stopover\County_Level_Stopover.mat.mat'],'US_County_Stopover');
 X_temp=zeros(height(US_County),1);
-for cc=1:height(Migratory_Bird)
-    t_find=strcmpi(Migratory_Bird.STUSPS{cc},US_County.STUSPS) & strcmpi(Migratory_Bird.NAME{cc},US_County.NAME) & strcmpi(Migratory_Bird.GEOID{cc},US_County.GEOID);
+for cc=1:height(US_County_Stopover)
+    t_find=strcmpi(US_County_Stopover.STUSPS{cc},US_County.STUSPS) & strcmpi(US_County_Stopover.NAME{cc},US_County.NAME) & strcmpi(US_County_Stopover.GEOID{cc},US_County.GEOID);
     if(sum(t_find)>0)
-        X_temp(t_find)=Migratory_Bird.risk_measure_migratory_bird(cc);
+        X_temp(t_find)=US_County_Stopover.risk_measure_migratory_bird(cc);
     end
 end
 
 T_temp=array2table(X_temp);
-T_temp.Properties.VariableNames={'MIGRATORY_BIRD'};
+T_temp.Properties.VariableNames={'LIGHT_INT'};
 US_County=[US_County T_temp];
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Waterfowl
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+load([pwd '\Flyway_waterfowl\County_Waterfowl_Flyway.mat'],'Water_Fowl');
+X_temp=zeros(height(US_County),4);
+for cc=1:height(Water_Fowl)
+    t_find=strcmpi(Water_Fowl.STUSPS{cc},US_County.STUSPS) & strcmpi(Water_Fowl.NAME{cc},US_County.NAME) & strcmpi(Water_Fowl.GEOID{cc},US_County.GEOID);
+    if(sum(t_find)>0)
+        X_temp(t_find,1)=Water_Fowl.Mallard(cc);
+        X_temp(t_find,2)=Water_Fowl.Canada_Goose(cc);
+        X_temp(t_find,3)=Water_Fowl.American_Green_Winged_Teal(cc);
+        X_temp(t_find,4)=Water_Fowl.Northern_Pintail(cc);
+    end
+end
+
+T_temp=array2table(X_temp);
+T_temp.Properties.VariableNames={'MALLARD','CANADA_GOOSE','AGW_TEAL','NORTH_PINTAIL'};
+US_County=[US_County T_temp];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % County H5N1 among migratory birds

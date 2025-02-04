@@ -12,7 +12,7 @@ Fall_Intensity=zeros(height(S),1);
 
 [A_spring,R_spring] = readgeoraster('spring_stopover_2500_v9_265_class.tif');
 info_spring = georasterinfo('spring_stopover_2500_v9_265_class.tif');
-A_spring=double(squeeze(A_spring(:)));
+A_spring=double(A_spring);
 
 x_spring=linspace(R_spring.XWorldLimits(1),R_spring.XWorldLimits(2),size(A_spring,2));
 y_spring=flip(linspace(R_spring.YWorldLimits(1),R_spring.YWorldLimits(2),size(A_spring,1)));
@@ -24,14 +24,14 @@ lat_spring=lat_spring(~isnan(A_spring));
 lon_spring=lon_spring(~isnan(A_spring));
 A_spring=A_spring(~isnan(A_spring));
 
-for ss=1:length(S)
+parfor ss=1:length(S)
     [p_in,p_on]=inpolygon(lon_spring,lat_spring,S(ss).Lon,S(ss).Lat);
     Spring_Intensity(ss)=mean(A_spring(p_on | p_in));
 end
 
 [A_fall,R_fall] = readgeoraster('fall_stopover_2500_v9_265_class.tif');
 info_fall = georasterinfo('fall_stopover_2500_v9_265_class.tif');
-A_fall=double(squeeze(A_fall(:)));
+A_fall=double(A_fall);
 
 x_fall=linspace(R_fall.XWorldLimits(1),R_fall.XWorldLimits(2),size(A_fall,2));
 y_fall=flip(linspace(R_fall.YWorldLimits(1),R_fall.YWorldLimits(2),size(A_fall,1)));
@@ -43,7 +43,7 @@ lat_fall=lat_fall(~isnan(A_fall));
 lon_fall=lon_fall(~isnan(A_fall));
 A_fall=A_fall(~isnan(A_fall));
 
-for ss=1:length(S)
+parfor ss=1:length(S)
     [p_in,p_on]=inpolygon(lon_fall,lat_fall,S(ss).Lon,S(ss).Lat);
     Fall_Intensity(ss)=mean(A_fall(p_on | p_in));
 end
