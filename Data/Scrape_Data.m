@@ -21,12 +21,12 @@ temp_county_fp=str2double(US_County.COUNTYFP);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Light_Intensity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-load([pwd '\Bird_Stopover\County_Level_Stopover.mat.mat'],'US_County_Stopover');
+load([pwd '\Bird_Stopover\County_Level_Stopover.mat'],'US_County_Stopover');
 X_temp=zeros(height(US_County),1);
 for cc=1:height(US_County_Stopover)
     t_find=strcmpi(US_County_Stopover.STUSPS{cc},US_County.STUSPS) & strcmpi(US_County_Stopover.NAME{cc},US_County.NAME) & strcmpi(US_County_Stopover.GEOID{cc},US_County.GEOID);
     if(sum(t_find)>0)
-        X_temp(t_find)=US_County_Stopover.risk_measure_migratory_bird(cc);
+        X_temp(t_find)=(US_County_Stopover.Spring_Stopover(cc)+US_County_Stopover.Fall_Stopover(cc))./2;
     end
 end
 
@@ -39,7 +39,7 @@ US_County=[US_County T_temp];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 load([pwd '\Flyway_waterfowl\County_Waterfowl_Flyway.mat'],'Water_Fowl');
 X_temp=zeros(height(US_County),4);
-for cc=1:height(Water_Fowl)
+for cc=1:length(Water_Fowl.STUSPS)
     t_find=strcmpi(Water_Fowl.STUSPS{cc},US_County.STUSPS) & strcmpi(Water_Fowl.NAME{cc},US_County.NAME) & strcmpi(Water_Fowl.GEOID{cc},US_County.GEOID);
     if(sum(t_find)>0)
         X_temp(t_find,1)=Water_Fowl.Mallard(cc);
@@ -1006,6 +1006,40 @@ T_temp=[array2table(Spillover)];
 T_temp.Properties.VariableNames={'SPILLOVER_POULTRY'};
 US_County=[US_County T_temp];
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Slaughterhouse
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+load([pwd '\Slaughterhouse\Location_Slaughterhouse.mat']);
+
+temp_GEOID=str2double(US_County.GEOID);
+X_temp=zeros(height(US_County),1);
+for cc=1:length(temp_GEOID)
+    t_find=County_FIPS==temp_GEOID(cc);
+    X_temp(cc)=sum(t_find);    
+end
+
+T_temp=array2table(X_temp);
+T_temp.Properties.VariableNames={'SLAUGHTERHOUSE'};
+US_County=[US_County T_temp];
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Swine
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Data=readtable([pwd '\Swine\Inferred_Hogs_Inventory_County_2022.csv']);
+
+X_temp=zeros(height(US_County),1);
+
+for cc=1:height(US_County)
+    t_find=temp_county_fp(cc)==Data.CountyANSI & strcmpi(Data.State,US_County.STATE_NAME{cc});
+    if(sum(t_find)>0)
+        X_temp(cc)=Data.Value(t_find);
+    end
+end
+T_temp=array2table(X_temp);
+T_temp.Properties.VariableNames={'HOG_INVENTORY'};
+US_County=[US_County T_temp];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SAVE FILE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -45,9 +45,9 @@ for ii=1:size(R,1)
 end
 
 
-Water_Fowl.STUSPS=S.STUSPS;
-Water_Fowl.NAME=S.NAME;
-Water_Fowl.GEOID=S.GEOID;
+Water_Fowl.STUSPS={S.STUSPS};
+Water_Fowl.NAME={S.NAME};
+Water_Fowl.GEOID={S.GEOID};
 
 for ss=1:length(Spec)
     for ii=1:length(R)
