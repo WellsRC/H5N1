@@ -1,4 +1,5 @@
-function  Table_out=Figure_Risk_Map(Var_Plot)
+function  Figure_Risk_Map(Var_Plot)
+Var_Plot='Dairy';
 % Plot_Variable
 close all;
 states = shaperead('usastatelo', 'UseGeoCoords', true);
@@ -22,38 +23,49 @@ NS=length(S);
 
 load([pwd '/Data/Data_US_County.mat'],'US_County');
 if(strcmp(Var_Plot,'Dairy'))
-    load('Average_Risk_Dairy.mat','avg_overall_risk_dairy_farm_County','avg_exposure_risk_dairy_farm_County','avg_susceptible_risk_dairy_farm_County','avg_overall_risk_dairy_farm_State','State_Name');
-    avg_overall_risk_farm_County=avg_overall_risk_dairy_farm_County;
-    avg_exposure_risk_farm_County=avg_exposure_risk_dairy_farm_County;
-    avg_susceptible_risk_farm_County=avg_susceptible_risk_dairy_farm_County;
-    avg_overall_risk_farm_State=avg_overall_risk_dairy_farm_State;
+    load('Average_Risk_Dairy.mat','avg_outbreak_risk_dairy_farm_County','avg_spillover_risk_dairy_farm_County','avg_outbreak_risk_dairy_farm_State','avg_spillover_risk_dairy_farm_State','State_Name');
+    avg_outbreak_risk_farm_County=avg_outbreak_risk_dairy_farm_County;
+    avg_spillover_risk_farm_County=avg_spillover_risk_dairy_farm_County;
+    
+    avg_outbreak_risk_farm_State=avg_outbreak_risk_dairy_farm_State;
+    avg_spillover_risk_farm_State=avg_spillover_risk_dairy_farm_State;
 
     farm_type='dairy';
 elseif(strcmp(Var_Plot,'Dairy_Reduction'))
-    load('Average_Risk_Dairy_Reduction_Connectivity=100.mat','avg_overall_risk_dairy_farm_County','avg_exposure_risk_dairy_farm_County','avg_susceptible_risk_dairy_farm_County','avg_overall_risk_dairy_farm_State','State_Name');
-    avg_overall_risk_farm_County=avg_overall_risk_dairy_farm_County;
-    avg_exposure_risk_farm_County=avg_exposure_risk_dairy_farm_County;
-    avg_susceptible_risk_farm_County=avg_susceptible_risk_dairy_farm_County;
-    avg_overall_risk_farm_State=avg_overall_risk_dairy_farm_State;
+    load('Average_Risk_Dairy_Reduction_Connectivity=100.mat','avg_outbreak_risk_dairy_farm_County','avg_spillover_risk_dairy_farm_County','avg_outbreak_risk_dairy_farm_State','avg_spillover_risk_dairy_farm_State','State_Name');
+    avg_outbreak_risk_farm_County=avg_outbreak_risk_dairy_farm_County;
+    avg_spillover_risk_farm_County=avg_spillover_risk_dairy_farm_County;
+    
+    avg_outbreak_risk_farm_State=avg_outbreak_risk_dairy_farm_State;
+    avg_spillover_risk_farm_State=avg_spillover_risk_dairy_farm_State;
 
     farm_type='dairy';
 elseif(strcmp(Var_Plot,'Poultry')) 
-    load('Average_Risk_Poultry.mat','avg_overall_risk_poultry_farm_County','avg_exposure_risk_poultry_farm_County','avg_susceptible_risk_poultry_farm_County','avg_overall_risk_poultry_farm_State','State_Name');
-    avg_overall_risk_farm_County=avg_overall_risk_poultry_farm_County;
-    avg_exposure_risk_farm_County=avg_exposure_risk_poultry_farm_County;
-    avg_susceptible_risk_farm_County=avg_susceptible_risk_poultry_farm_County;
-    avg_overall_risk_farm_State=avg_overall_risk_poultry_farm_State;
+    load('Average_Risk_Poultry.mat','avg_outbreak_risk_dairy_farm_County','avg_spillover_risk_dairy_farm_County','avg_outbreak_risk_dairy_farm_State','avg_spillover_risk_dairy_farm_State','State_Name');
+    avg_outbreak_risk_farm_County=avg_outbreak_risk_dairy_farm_County;
+    avg_spillover_risk_farm_County=avg_spillover_risk_dairy_farm_County;
+    
+    avg_outbreak_risk_farm_State=avg_outbreak_risk_dairy_farm_State;
+    avg_spillover_risk_farm_State=avg_spillover_risk_dairy_farm_State;
     farm_type='poultry';
 end
 
-state_nan=~isnan(avg_overall_risk_farm_State);
-avg_overall_risk_farm_State=avg_overall_risk_farm_State(state_nan);
+state_nan=~isnan(avg_outbreak_risk_farm_State);
+avg_outbreak_risk_farm_State=avg_outbreak_risk_farm_State(state_nan);
+avg_spillover_risk_farm_State=avg_spillover_risk_farm_State(state_nan);
 State_Name=State_Name(state_nan);
-[avg_overall_risk_farm_State,Indx_Risk]=sort(avg_overall_risk_farm_State,'descend');
-State_Name=State_Name(Indx_Risk);
+[avg_outbreak_risk_farm_State,Indx_Risk]=sort(avg_outbreak_risk_farm_State,'descend');
+State_Name_Outbreak=State_Name(Indx_Risk);
+[avg_spillover_risk_farm_State,Indx_Risk]=sort(avg_spillover_risk_farm_State,'descend');
+State_Name_Spillover=State_Name(Indx_Risk);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+% Construct plot
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+
 
 for vv=1:4
-    switch vv
+     switch vv
         case 1
             figure('units','normalized','outerposition',[0 0.075 1 1]);
              ax1=usamap('conus');
@@ -63,14 +75,8 @@ for vv=1:4
             
             states = shaperead('usastatelo', 'UseGeoCoords', true);
             geoshow(ax1, states,'Facecolor','none','LineWidth',0.5); hold on;
-        case 2
-            ax2=usamap('conus');
-            
-            framem off; gridm off; mlabel off; plabel off;
-            ax2.Position=[1.7,0.4,0.6,0.6];
-            
-            states = shaperead('usastatelo', 'UseGeoCoords', true);
-            geoshow(ax2, states,'Facecolor','none','LineWidth',0.5); hold on;
+         case 2
+            ax2=subplot('Position',[0.55,0.65,0.44,0.28]);
         case 3
             ax3=usamap('conus');
             
@@ -87,109 +93,58 @@ for vv=1:4
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% Risk: colour bar
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    C_Risk=[hex2rgb('#ffffff');
+            hex2rgb('#fff5f0');
+            hex2rgb('#fee0d2');
+            hex2rgb('#fcbba1');
+            hex2rgb('#fc9272');
+            hex2rgb('#fb6a4a');
+            hex2rgb('#ef3b2c');
+            hex2rgb('#cb181d');
+            hex2rgb('#a50f15');
+            hex2rgb('#67000d');];
+
     switch vv
         case 1
             subplot('Position',[0.41,0.525,0.01,0.45]);
-            Title_Name={['Fold-increase of county ' farm_type ' farms'],' risk of exposure to H5N1'};
-
-            C_Risk=[hex2rgb('#ffffff');
-                    hex2rgb('##ffffcc');
-                    hex2rgb('#ffeda0');
-                    hex2rgb('#fed976');
-                    hex2rgb('#feb24c');
-                    hex2rgb('#fd8d3c');
-                    hex2rgb('#fc4e2a');
-                    hex2rgb('#e31a1c');
-                    hex2rgb('#bd0026');
-                    hex2rgb('#800026');];
-            risk_measure=avg_exposure_risk_farm_County;
+            Title_Name={['Outbreak risk'],['for ' farm_type ' farms']};
+            
+            risk_measure=avg_outbreak_risk_farm_County;
         case 2
-            subplot('Position',[0.885,0.525,0.01,0.45]);
-            Title_Name={'Fold-increase susecptibility of',['county ' farm_type ' farms to H5N1']};
-
-            C_Risk=[hex2rgb('#ffffff');
-                    hex2rgb('#fff7fb');
-                    hex2rgb('#ece7f2');
-                    hex2rgb('#d0d1e6');
-                    hex2rgb('#a6bddb');
-                    hex2rgb('#74a9cf');
-                    hex2rgb('#3690c0');
-                    hex2rgb('#0570b0');
-                    hex2rgb('#045a8d');
-                    hex2rgb('#023858');];
-
-            risk_measure=avg_susceptible_risk_farm_County;
+            State_Name=State_Name_Outbreak;
+            state_filter=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
+            State_Name=State_Name(~state_filter);
+            risk_measure=avg_outbreak_risk_farm_State(~state_filter);
         case 3
             subplot('Position',[0.41,0.025,0.01,0.45]);    
-            Title_Name={['Fold-increase of county ' farm_type ],'farms overall risk to H5N1'};
+            Title_Name={['Spillover risk'],['for ' farm_type ' farms']};
 
-            C_Risk=[hex2rgb('#ffffff');
-                    hex2rgb('##fff7f3');
-                    hex2rgb('#fde0dd');
-                    hex2rgb('#fcc5c0');
-                    hex2rgb('#fa9fb5');
-                    hex2rgb('#f768a1');
-                    hex2rgb('#dd3497');
-                    hex2rgb('#ae017e');
-                    hex2rgb('#7a0177');
-                    hex2rgb('#49006a');];
 
-            risk_measure=avg_overall_risk_farm_County;
+            risk_measure=avg_spillover_risk_farm_County;
         case 4
-            C_Risk=[hex2rgb('#ffffff');
-                    hex2rgb('##fff7f3');
-                    hex2rgb('#fde0dd');
-                    hex2rgb('#fcc5c0');
-                    hex2rgb('#fa9fb5');
-                    hex2rgb('#f768a1');
-                    hex2rgb('#dd3497');
-                    hex2rgb('#ae017e');
-                    hex2rgb('#7a0177');
-                    hex2rgb('#49006a');];
-
-            risk_measure=avg_overall_risk_farm_State;
+            State_Name=State_Name_Spillover;
+            state_filter=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
+            State_Name=State_Name(~state_filter);
+            risk_measure=avg_spillover_risk_farm_State(~state_filter);
     end
     
-    if(vv<4)
+    if(vv==1)||(vv==3)
+        
 
-        t_upper=risk_measure>prctile(risk_measure,95);
-        v_upper=prctile(risk_measure,95);
-        t_lower=risk_measure<prctile(risk_measure,5);
-        v_lower=prctile(risk_measure,5);
-        risk_measure(t_lower)=v_lower;
-        risk_measure(t_upper)=v_upper;
-        risk_measure=risk_measure./v_lower;
-
-        if(ceil(max(risk_measure))>=10)
-            risk_measure=log10(risk_measure);
-            x_risk=linspace(0,max(risk_measure),size(C_Risk,1));
+            x_risk=linspace(0,ceil(100.*max(risk_measure))./100,size(C_Risk,1));
             c_indx=linspace(0,max(risk_measure),251);
-            y_indx=[1:floor(max(risk_measure(risk_measure>0)))];
-        else
-            x_risk=linspace(1,max(max(risk_measure),2),size(C_Risk,1));
-            c_indx=linspace(1,max(max(risk_measure),2),251);
-            y_indx=[2:ceil(max(risk_measure))];
-        end
+            y_indx=[0:0.01:x_risk(end)];
 
         xlim([0 1]);
-        ylim([min(c_indx) max(c_indx)]);    
-        ymin=1;
+        ylim([0 max(c_indx)]);    
+        ymin=0;
         dy=2/(1+sqrt(5));
         for ii=1:length(c_indx)
             patch([0 0 dy dy],c_indx(ii)+[1 0 0 1],interp1(x_risk,C_Risk,c_indx(ii)),'LineStyle','none');
         end
         
-        if(min(y_indx)==2)
-            text(ymin+2.5,1,{'Baseline','lowest'},'Fontsize',16,'HorizontalAlignment','center');
-        else
-            text(ymin+2.5,0,{'Baseline','lowest'},'Fontsize',16,'HorizontalAlignment','center');
-        end
         for yy=1:length(y_indx)
-            if(min(y_indx)==2)
-                text(ymin,y_indx(yy),[num2str(y_indx(yy))],'Fontsize',16);
-            else
-                text(ymin,y_indx(yy),['10^' num2str(y_indx(yy))],'Fontsize',16);
-            end
+            text(ymin,y_indx(yy),[num2str(y_indx(yy))],'Fontsize',16);            
         end
         text(ymin+4.5,[min(c_indx)+max(c_indx)]./2,Title_Name,'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
         
@@ -206,51 +161,46 @@ for vv=1:4
             end
         end
     else
-        state_filter=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
-            State_Name=State_Name(~state_filter);
-            risk_measure=risk_measure(~state_filter);
-
-        risk_measure=risk_measure./min(risk_measure);
-
-        if(ceil(max(risk_measure))>=10)
-            x_risk=linspace(0,(max(log10(risk_measure))),size(C_Risk,1));
-            CC_Risk=ones(length(State_Name),3);
-        
-            for ii=1:length(State_Name)
-                if(~isnan(risk_measure(ii)))
-                    CC_Risk(ii,:)=interp1(x_risk,C_Risk,log10(risk_measure(ii)));
-                else
-                    CC_Risk(ii,:)=[0.7 0.7 0.7];
-                end
+        x_risk=linspace(0,ceil(100.*max(risk_measure))./100,size(C_Risk,1));
+        CC_Risk=ones(length(State_Name),3);
+    
+        for ii=1:length(State_Name)
+            if(~isnan(risk_measure(ii)))
+                CC_Risk(ii,:)=interp1(x_risk,C_Risk,risk_measure(ii));
+            else
+                CC_Risk(ii,:)=[0.7 0.7 0.7];
             end
-        else
-            x_risk=linspace(1,(max(risk_measure)),size(C_Risk,1));
-            CC_Risk=ones(length(State_Name),3);
-        
-            for ii=1:length(State_Name)
-                if(~isnan(risk_measure(ii)))
-                    CC_Risk(ii,:)=interp1(x_risk,C_Risk,risk_measure(ii));
-                else
-                    CC_Risk(ii,:)=[0.7 0.7 0.7];
-                end
-            end
-        end
-
-        
+        end        
     end 
         
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% Plot uptake
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-    CM=makesymbolspec('Polygon',{'INDEX',[1 NS],'FaceColor',CC_Risk});
+    
     switch vv
         case 1
+            CM=makesymbolspec('Polygon',{'INDEX',[1 NS],'FaceColor',CC_Risk});
             geoshow(ax1,S,'SymbolSpec',CM,'LineStyle','None'); 
             geoshow(ax1, states,'Facecolor','none','LineWidth',1.5); hold on;
         case 2
-            geoshow(ax2,S,'SymbolSpec',CM,'LineStyle','None'); 
-            geoshow(ax2, states,'Facecolor','none','LineWidth',1.5); hold on;
+            b=bar([1:length(State_Name)],risk_measure);
+            b.FaceColor = 'flat';
+            for ss=1:length(State_Name)
+                b.CData(ss,:) =CC_Risk(ss,:);
+            end
+            box off;
+            set(gca,'LineWidth',2,'tickdir','out','Fontsize',16,'XTick',[1:length(State_Name)],'XTickLabel',State_Name);
+            
+            xlabel('State','FontSize',18);
+            ylabel({['Outbreak risk'],['for ' farm_type ' farms']},'FontSize',18);
+            xlim([0.5 length(State_Name)+0.5]);
+            text(-0.15,1,'B','FontSize',32,'Units','normalized');
+
+            Rank_Risk=[1:length(State_Name)]';
+            risk_output=round(risk_measure,2);
+            % Table_out_SP=table(Rank_Risk,State_Name,risk_output);
         case 3
+            CM=makesymbolspec('Polygon',{'INDEX',[1 NS],'FaceColor',CC_Risk});
             geoshow(ax3,S,'SymbolSpec',CM,'LineStyle','None'); 
             geoshow(ax3, states,'Facecolor','none','LineWidth',1.5); hold on;
         case 4
@@ -261,27 +211,22 @@ for vv=1:4
             end
             box off;
             set(gca,'LineWidth',2,'tickdir','out','Fontsize',16,'XTick',[1:length(State_Name)],'XTickLabel',State_Name);
-            if(max(risk_measure)>=10)
-                set(gca,'yscale','log');
-                ylim([0.5 10.^ceil(max(log10(risk_measure)))]);
-            else                
-                ylim([0.5 ceil(max((risk_measure)))]);
-            end
+           
             xlabel('State','FontSize',18);
-            ylabel({['Fold-increase in state'],[farm_type 'farm overall risk to H5N1']},'FontSize',18);
+            ylabel({['Spillover risk'],['for ' farm_type ' farms']},'FontSize',18);
             xlim([0.5 length(State_Name)+0.5]);
             text(-0.15,1,'D','FontSize',32,'Units','normalized');
 
 
             Rank_Risk=[1:length(State_Name)]';
             risk_output=round(risk_measure,2);
-            Table_out=table(Rank_Risk,State_Name,risk_output);
+            % Table_out_LT=table(Rank_Risk,State_Name,risk_output);
     end
 end
 
 
+
 ax1.Position=[-0.075,0.425,0.6,0.6];
-ax2.Position=[0.4,0.425,0.6,0.6];
 ax3.Position=[-0.075,-0.075,0.6,0.6];
 
 print(gcf,['Figure_' Var_Plot '_Risk_Plot.png'],'-dpng','-r300');

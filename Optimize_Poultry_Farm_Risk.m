@@ -1,18 +1,18 @@
 function [par_est,L,AIC]=Optimize_Poultry_Farm_Risk(X_County,County_Farms,Affected_County_Farms_Unknown,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,state_weight_matrix,State_Spillover_Events,x0)
 
 
-lb=[-3 -5.*ones(1,size(X_County,1))  -3 -3 -3 -3 -3];
-ub=[-1 -3.*ones(1,size(X_County,1))  -1 -1 -1 -1 -1];
+lb=[-4 -5.*ones(1,size(X_County,1))  -1 -1  -1 -4 -6];
+ub=[0 -1.*ones(1,size(X_County,1))   0.3  0.3  0.3  0 1];
 options=optimoptions("surrogateopt","UseParallel",false,'MaxFunctionEvaluations',250.*length(lb),'PlotFcn',[]);     
 [par_est]=surrogateopt(@(x)Objective_Function_Poultry_Farm(x,X_County,County_Farms,Affected_County_Farms_Unknown,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,state_weight_matrix,State_Spillover_Events),lb,ub,options);
 
-lb=[-5 -7.*ones(1,size(X_County,1))  -6 -6 -6 -6 -6];
-ub=[ 2  0.*ones(1,size(X_County,1))  1 1 1 1 1];
+lb=[-5 -7.*ones(1,size(X_County,1))  -2 -2 -2 -6 -8];
+ub=[ 1.5  0.*ones(1,size(X_County,1))   0.5 0.5 0.5 0 2];
 options=optimoptions('patternsearch','MaxFunctionEvaluations',250.*length(lb),'PlotFcn',[],'UseParallel',false,'FunctionTolerance',10^(-8),'MaxIterations',125.*length(lb),'MeshTolerance',10^(-9),'StepTolerance',10^(-9));    
 [par_temp,f_temp]=patternsearch(@(x)Objective_Function_Poultry_Farm(x,X_County,County_Farms,Affected_County_Farms_Unknown,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,state_weight_matrix,State_Spillover_Events),par_est,[],[],[],[],lb,ub,[],options);
 
-lb=[-50 -64.*ones(1,size(X_County,1)) -16 -16 -16 -16 -16];
-ub=[ 50  4.*ones(1,size(X_County,1))    3   3   3   3   3];
+lb=[-50 -64.*ones(1,size(X_County,1)) -6 -6 -6 -32 -32];
+ub=[ 3  4.*ones(1,size(X_County,1))   2   2   2   0   3];
 options=optimoptions('fmincon','UseParallel',false,'FunctionTolerance',10^(-16),'MaxFunctionEvaluations',10^4,'MaxIterations',10^4,'OptimalityTolerance',10^(-16),'StepTolerance',10^(-16));
 [par_est,fval_final]=fmincon(@(x)Objective_Function_Poultry_Farm(x,X_County,County_Farms,Affected_County_Farms_Unknown,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,state_weight_matrix,State_Spillover_Events),par_temp,[],[],[],[],lb,ub,[],options);
 
@@ -23,8 +23,8 @@ if(f_temp<fval_final)
 end
 
 if(~isempty(x0))
-    lb=[-50 -64.*ones(1,size(X_County,1)) -16 -16 -16 -16 -16];
-    ub=[ 50  4.*ones(1,size(X_County,1))    3   3   3   3   3];
+    lb=[-50 -64.*ones(1,size(X_County,1)) -8 -8 -8 -64 -64];
+    ub=[ 3  4.*ones(1,size(X_County,1))   3   3   3   0   3];
 
     options=optimoptions("surrogateopt","UseParallel",false,'MaxFunctionEvaluations',100.*length(lb),'PlotFcn',[],'InitialPoints',x0);
     [par_temp]=surrogateopt(@(x)Objective_Function_Poultry_Farm(x,X_County,County_Farms,Affected_County_Farms_Unknown,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,state_weight_matrix,State_Spillover_Events),lb,ub,options);

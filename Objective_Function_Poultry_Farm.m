@@ -5,53 +5,72 @@ if(length(beta_x)>1)
     beta_x(2:end)=10.^beta_x(2:end);
 end
 
-k_outbreak_turkey=10.^x(end-4);
-k_outbreak_pullet=10.^x(end-3);
-k_outbreak_broiler=10.^x(end-2);
-k_outbreak_layer=10.^x(end-1);
-k_spillover=10.^x(end);
+f_outbreak_turkey=10.^x(end-4);
+f_outbreak_pullet=10.^x(end-3);
+f_outbreak_broiler=10.^x(end-2);
+p_outbreak=10.^x(end-1);
+kappa_spillover=10.^x(end);
 
+mu_farm_County_Basline = Risk_Assesment_Farms(beta_x,X_County);
+mu_farm_County_Layer = Risk_Assesment_Farms(beta_x,X_County);
 
-k_outbreak_general=(k_outbreak_pullet.*Pullet_Farms+k_outbreak_broiler.*Broiler_Farms+k_outbreak_layer.*Layer_Farms+k_outbreak_turkey.*Turkey_Farms)./(Pullet_Farms+Broiler_Farms+Layer_Farms+Turkey_Farms);
+mu_farm_County_Turkey = f_outbreak_turkey.*mu_farm_County_Basline;
+mu_farm_County_Pullet = f_outbreak_pullet.*mu_farm_County_Basline;
+mu_farm_County_Broiler = f_outbreak_broiler.*mu_farm_County_Basline;
 
+mu_farm_County_Basline(County_Farms==0)=0;
+dX=County_Farms-Layer_Farms-Turkey_Farms-Pullet_Farms-Broiler_Farms;
+mu_farm_County_Basline(dX<=0)=0;
+mu_farm_County_Layer(Layer_Farms==0)=0;
+mu_farm_County_Turkey(Turkey_Farms==0)=0;
+mu_farm_County_Pullet(Pullet_Farms==0)=0;
+mu_farm_County_Broiler(Broiler_Farms==0)=0;
 
-phi_farm_County = Risk_Assesment_Farms(beta_x,X_County);
-phi_farm_County(County_Farms==0)=0;
+mu_farm_State_Baseline=zeros(size(State_Spillover_Events));
+mu_farm_State_Layer=zeros(size(State_Spillover_Events));
+mu_farm_State_Turkey=zeros(size(State_Spillover_Events));
+mu_farm_State_Pullet=zeros(size(State_Spillover_Events));
+mu_farm_State_Broiler=zeros(size(State_Spillover_Events));
 
-phi_farm_state=zeros(size(State_Spillover_Events));
-k_outbreak_state=zeros(size(State_Spillover_Events));
-for ss=1:length(phi_farm_state)
-    temp_county=state_weight_matrix(ss,:).*log((1-phi_farm_County)); 
-    temp_state=exp(sum(temp_county));
-    phi_farm_state(ss)=1-temp_state;
-
-    k_outbreak_state(ss)=sum(k_outbreak_pullet.*Pullet_Farms(state_weight_matrix(ss,:)>0)+k_outbreak_broiler.*Broiler_Farms(state_weight_matrix(ss,:)>0)+k_outbreak_layer.*Layer_Farms(state_weight_matrix(ss,:)>0)+k_outbreak_turkey.*Turkey_Farms(state_weight_matrix(ss,:)>0))./sum(Pullet_Farms(state_weight_matrix(ss,:)>0)+Broiler_Farms(state_weight_matrix(ss,:)>0)+Layer_Farms(state_weight_matrix(ss,:)>0)+Turkey_Farms(state_weight_matrix(ss,:)>0));
+for ss=1:length(mu_farm_State_Layer)
+    mu_farm_State_Baseline(ss)=sum(state_weight_matrix(ss,:).*mu_farm_County_Basline);
+    mu_farm_State_Layer(ss)=sum(state_weight_matrix(ss,:).*mu_farm_County_Layer);
+    mu_farm_State_Turkey(ss)=sum(state_weight_matrix(ss,:).*mu_farm_County_Turkey);
+    mu_farm_State_Pullet(ss)=sum(state_weight_matrix(ss,:).*mu_farm_County_Pullet);
+    mu_farm_State_Broiler(ss)=sum(state_weight_matrix(ss,:).*mu_farm_County_Broiler);
 end
 
-L_County=log(nbinpdf(Affected_County_Farms_Unknown(:),k_outbreak_general(:),1-phi_farm_County(:)));
-L_County=L_County(County_Farms>0 & ~isnan(Affected_County_Farms_Unknown) & ~isnan(k_outbreak_general));
+mu_farm_County_Total=mu_farm_County_Layer+mu_farm_County_Turkey+mu_farm_County_Pullet+mu_farm_County_Broiler+mu_farm_County_Basline;
+mu_farm_State_Total=mu_farm_State_Layer+mu_farm_State_Turkey+mu_farm_State_Pullet+mu_farm_State_Broiler+mu_farm_State_Baseline;
 
-L_HPAI_Pullet=log(nbinpdf(HPAI_Pullet_Farms(:),k_outbreak_pullet,1-phi_farm_County(:)));
 
+k_outbreak=mu_farm_County_Total(:).*p_outbreak./(1-p_outbreak);
+L_County=log(nbinpdf(Affected_County_Farms_Unknown(:),k_outbreak(:),p_outbreak));
+L_County=L_County(County_Farms>0 & ~isnan(Affected_County_Farms_Unknown) & ~isnan(k_outbreak));
+
+k_outbreak=mu_farm_County_Pullet(:).*p_outbreak./(1-p_outbreak);
+L_HPAI_Pullet=log(nbinpdf(HPAI_Pullet_Farms(:),k_outbreak(:),p_outbreak));
 t_frac=HPAI_Pullet_Farms(:) ~= round(HPAI_Pullet_Farms(:));
-L_HPAI_Pullet(t_frac)=log(nbincdf(ceil(HPAI_Pullet_Farms(t_frac)),k_outbreak_pullet,1-phi_farm_County(t_frac)')-nbincdf(floor(HPAI_Pullet_Farms(t_frac)),k_outbreak_pullet,1-phi_farm_County(t_frac)'));
+L_HPAI_Pullet(t_frac)=log(nbincdf(ceil(HPAI_Pullet_Farms(t_frac)),k_outbreak(t_frac),p_outbreak)-nbincdf(floor(HPAI_Pullet_Farms(t_frac)),k_outbreak(t_frac),p_outbreak));
 L_HPAI_Pullet=L_HPAI_Pullet(Pullet_Farms>0 & ~isnan(HPAI_Pullet_Farms));
 
-L_HPAI_Layer=log(nbinpdf(HPAI_Layer_Farms(:),k_outbreak_layer,1-phi_farm_County(:)));
+k_outbreak=mu_farm_County_Layer(:).*p_outbreak./(1-p_outbreak);
+L_HPAI_Layer=log(nbinpdf(HPAI_Layer_Farms(:),k_outbreak(:),p_outbreak));
 L_HPAI_Layer=L_HPAI_Layer(Layer_Farms>0 & ~isnan(HPAI_Layer_Farms));
 
-L_HPAI_Broiler=log(nbinpdf(HPAI_Broiler_Farms(:),k_outbreak_broiler,1-phi_farm_County(:)));
+k_outbreak=mu_farm_County_Broiler(:).*p_outbreak./(1-p_outbreak);
+L_HPAI_Broiler=log(nbinpdf(HPAI_Broiler_Farms(:),k_outbreak(:),p_outbreak));
 
 t_frac=HPAI_Broiler_Farms(:) ~= round(HPAI_Broiler_Farms(:));
-L_HPAI_Broiler(t_frac)=log(nbincdf(ceil(HPAI_Broiler_Farms(t_frac)),k_outbreak_broiler,1-phi_farm_County(t_frac)')-nbincdf(floor(HPAI_Broiler_Farms(t_frac)),k_outbreak_broiler,1-phi_farm_County(t_frac)'));
+L_HPAI_Broiler(t_frac)=log(nbincdf(ceil(HPAI_Broiler_Farms(t_frac)),k_outbreak(t_frac),p_outbreak)-nbincdf(floor(HPAI_Broiler_Farms(t_frac)),k_outbreak(t_frac),p_outbreak));
 L_HPAI_Broiler=L_HPAI_Broiler(Broiler_Farms>0 & ~isnan(HPAI_Broiler_Farms));
 
-L_HPAI_Turkey=log(nbinpdf(HPAI_Turkey_Farms(:),k_outbreak_turkey,1-phi_farm_County(:)));
+k_outbreak=mu_farm_County_Turkey(:).*p_outbreak./(1-p_outbreak);
+L_HPAI_Turkey=log(nbinpdf(HPAI_Turkey_Farms(:),k_outbreak(:),p_outbreak));
 L_HPAI_Turkey=L_HPAI_Turkey(Turkey_Farms>0 & ~isnan(HPAI_Turkey_Farms));
 
-Risk_Outbreak_State=1-nbinpdf(0,k_outbreak_state(:),1-phi_farm_state(:));
-L_Spillover_State=log(nbinpdf(State_Spillover_Events(:),k_spillover,1-Risk_Outbreak_State(:)));
+L_Spillover_State=log(poisspdf(State_Spillover_Events(:),mu_farm_State_Total(:).*kappa_spillover));
 
-F=-sum(L_County)-sum(L_Spillover_State) - sum(L_HPAI_Pullet(:)) - sum(L_HPAI_Layer(:)) - sum(L_HPAI_Broiler(:)) - sum(L_HPAI_Turkey(:));
+F=-sum(L_County) -sum(L_Spillover_State) -sum(L_HPAI_Pullet(:)) -sum(L_HPAI_Layer(:)) -sum(L_HPAI_Broiler(:)) -sum(L_HPAI_Turkey(:));
 end
 
