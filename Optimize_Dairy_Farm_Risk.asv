@@ -1,0 +1,62 @@
+function [par_est,L,AIC]=Optimize_Dairy_Farm_Risk(X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,x0)
+
+if(max(X_County)>10^3)
+    mx=-3;
+else
+    mx=0;
+end
+
+if(max(P_County)>10^3)
+    px=-3;
+else
+    px=0;
+end
+
+lb=[-20 -20 -15.*ones(1,size(P_County,1)) -15.*ones(1,size(X_County,1)) -4];
+ub=[20 20  px.*ones(1,size(P_County,1)) mx.*ones(1,size(X_County,1))   0];
+
+opts=optimoptions("ga",,'gaplotbestf',"MaxGenerations",250,"FunctionTolerance",10^(-6));
+[par_est,f0]=ga(@(x)Objective_Function_Dairy_Farm(x,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p),length(lb),[],[],[],[],lb,ub,[],[],opts);
+
+options=optimoptions('patternsearch','MaxFunctionEvaluations',200.*length(lb),'PlotFcn',[],'UseParallel',false,'FunctionTolerance',10^(-8),'MaxIterations',100.*length(lb),'MeshTolerance',10^(-9),'StepTolerance',10^(-9));
+lb=[-35 -35 -63.5.*ones(1,size(P_County,1)) -63.5.*ones(1,size(X_County,1))  -6];
+ub=[35 35 1.*ones(1,size(P_County,1)) 1.*ones(1,size(X_County,1)) 0];
+[par_temp,f_temp]=patternsearch(@(x)Objective_Function_Dairy_Farm(x,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p),par_est,[],[],[],[],lb,ub,[],options);
+
+lb=[-50 -50 -64.*ones(1,size(P_County,1)) -64.*ones(1,size(X_County,1))  -9];
+ub=[50 50 3.*ones(1,size(P_County,1)) 3.*ones(1,size(X_County,1)) 0];
+options=optimoptions('fmincon','UseParallel',false,'FunctionTolerance',10^(-8),'MaxFunctionEvaluations',10^4,'MaxIterations',10^4,'OptimalityTolerance',10^(-8),'StepTolerance',10^(-9));
+[par_est,fval_final]=fmincon(@(x)Objective_Function_Dairy_Farm(x,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p),par_temp,[],[],[],[],lb,ub,[],options);
+
+
+if(f_temp<fval_final)
+    fval_final=f_temp;
+    par_est=par_temp;
+end
+
+if(~isempty(x0))
+    lb=[-50 -5 -64.*ones(1,size(P_County,1))  -64.*ones(1,size(X_County,1)) -9];
+    ub=[ 5 25  2.*ones(1,size(P_County,1))  2.*ones(1,size(X_County,1))    3];
+
+    opts=optimoptions("ga","PlotFcn",[],"MaxGenerations",75,"FunctionTolerance",10^(-6),'InitialPopulationMatrix',x0);
+    [par_est,~]=ga(@(x)Objective_Function_Dairy_Farm(x,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p),length(lb),[],[],[],[],lb,ub,[],[],opts);
+
+
+    options=optimoptions('patternsearch','MaxFunctionEvaluations',100.*length(lb),'PlotFcn',[],'UseParallel',false,'FunctionTolerance',10^(-8),'MaxIterations',100.*length(lb),'MeshTolerance',10^(-9),'StepTolerance',10^(-9));
+    [par_temp,r_temp]=patternsearch(@(x)Objective_Function_Dairy_Farm(x,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p),par_temp,[],[],[],[],lb,ub,[],options);
+
+    options=optimoptions('fmincon','UseParallel',false,'FunctionTolerance',10^(-8),'MaxFunctionEvaluations',10^4,'MaxIterations',10^4,'OptimalityTolerance',10^(-8),'StepTolerance',10^(-9));
+    [par_final,r_final]=fmincon(@(x)Objective_Function_Dairy_Farm(x,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p),par_temp,[],[],[],[],lb,ub,[],options);
+    if(r_temp<r_final)
+        r_final=r_temp;
+        par_final=par_temp;    
+    end
+    if(r_final<fval_final)
+        fval_final=r_final;
+        par_est=par_final;
+    end
+end
+
+L=-fval_final;
+AIC=aicbic(L,length(lb));
+end

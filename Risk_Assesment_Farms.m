@@ -1,5 +1,5 @@
 function mu_farm = Risk_Assesment_Farms(beta_x,X)
-% A logisitic regression model to quantify the relative level of risk among
+% A regression model to quantify the relative level of risk among
 % a spatial regions for a specified type of farm
 
 % Append ones to the covariate matrix for the cotanstan

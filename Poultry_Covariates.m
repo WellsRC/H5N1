@@ -1,4 +1,4 @@
-function [X_County,County_Farms,Affected_County_Farms_Unknown,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,state_weight_matrix,State_Spillover_Events,logic_par] = Poultry_Covariates(H5N1_Variable,Farm_Variables,Stratified_Inventory_Variables)
+function [X_County,P_County,County_Farms,Affected_County_Farms_Unknown,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,state_weight_matrix,State_Spillover_Events,logic_par] = Poultry_Covariates(H5N1_Variable,Farm_Variables,Stratified_Inventory_Variables)
    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load Data
@@ -105,29 +105,37 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 
 X_County=zeros(length(H5N1_Variable).*size(X_County_temp,1),height(US_County));
+P_County=zeros(length(H5N1_Variable),height(US_County));
 
+logic_exp=false(5,1);
 for yy=1:length(H5N1_Variable)
     if(strcmp(H5N1_Variable{yy},'Light_Intensity'))
         Y_County=US_County.LIGHT_INT';
         logic_par(1,:)=logic_par_t;
+        logic_exp(1)=true;
     elseif(strcmp(H5N1_Variable{yy},'Waterfowl_Mallard'))
         Y_County=log10(1+US_County.MALLARD)';
         logic_par(2,:)=logic_par_t;
+        logic_exp(2)=true;
     elseif(strcmp(H5N1_Variable{yy},'Waterfowl_Canada_Goose'))
         Y_County=log10(1+US_County.CANADA_GOOSE)';
         logic_par(3,:)=logic_par_t;
+        logic_exp(3)=true;
     elseif(strcmp(H5N1_Variable{yy},'Waterfowl_AGW_Teal'))
         Y_County=log10(1+US_County.AGW_TEAL)';
         logic_par(4,:)=logic_par_t;
+        logic_exp(4)=true;
      elseif(strcmp(H5N1_Variable{yy},'Waterfowl_N_Pintail'))
         Y_County=log10(1+US_County.NORTH_PINTAIL)';
         logic_par(5,:)=logic_par_t;
+        logic_exp(5)=true;
     end
+    P_County(yy,:)=Y_County;
     for xx=1:size(X_County_temp,1)
         X_County(yy+(xx-1).*length(H5N1_Variable),:)=X_County_temp(xx,:).*Y_County;
     end
 end
 
-logic_par=logic_par(:);
+logic_par=[logic_exp(:); logic_par(:)];
 end
 

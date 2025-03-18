@@ -1,41 +1,30 @@
-function [par_est,L,AIC]=Optimize_Dairy_Farm_Risk(X_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,x0)
-lb=[-6 -18.*ones(1,size(X_County,1))  -4 -6];
-ub=[ 0 -2.*ones(1,size(X_County,1)) 0 1];
-options=optimoptions("surrogateopt","UseParallel",false,'MaxFunctionEvaluations',250.*length(lb),'PlotFcn',[]); 
-[par_est]=surrogateopt(@(x)Objective_Function_Dairy_Farm(x,X_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect),lb,ub,options);
+function [par_est,L,AIC]=Optimize_Dairy_Farm_Risk(X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,x0)
 
-options=optimoptions('patternsearch','MaxFunctionEvaluations',250.*length(lb),'PlotFcn',[],'UseParallel',false,'FunctionTolerance',10^(-8),'MaxIterations',125.*length(lb),'MeshTolerance',10^(-9),'StepTolerance',10^(-9));
-lb=[-7 -12.*ones(1,size(X_County,1))  -6 -8];
-ub=[ 1.5   ones(1,size(X_County,1))   0  2];
-[par_temp,f_temp]=patternsearch(@(x)Objective_Function_Dairy_Farm(x,X_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect),par_est,[],[],[],[],lb,ub,[],options);
-
-lb=[-50 -32.*ones(1,size(X_County,1)) -32 -32];
-ub=[ 3  4.*ones(1,size(X_County,1))   0  3];
-options=optimoptions('fmincon','UseParallel',false,'FunctionTolerance',10^(-16),'MaxFunctionEvaluations',10^4,'MaxIterations',10^4,'OptimalityTolerance',10^(-16),'StepTolerance',10^(-16));
-[par_est,fval_final]=fmincon(@(x)Objective_Function_Dairy_Farm(x,X_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect),par_temp,[],[],[],[],lb,ub,[],options);
+lb=[-10 -10 -16.*ones(1,size(P_County,1)) -16.*ones(1,size(X_County,1))  -4];
+ub=[15 15 ones(1,size(P_County,1)) ones(1,size(X_County,1)) 0];
 
 
-if(f_temp<fval_final)
-    fval_final=f_temp;
-    par_est=par_temp;
+
+opts=optimoptions("ga","PlotFcn",[],"MaxGenerations",300,"FunctionTolerance",10^(-6),'CrossoverFcn','crossoverheuristic','MigrationInterval',25,'SelectionFcn',{@selectiontournament,8},'PopulationSize',250);
+[par_est,~]=ga(@(x)Objective_Function_Dairy_Farm(x,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p),length(lb),[],[],[],[],lb,ub,[],[],opts);
+
+if(isnan(par_est))
+    par_est=[2.77396604774808	1.65981130841007 -15.95.*ones(1,size(P_County,1)) -15.95.*ones(1,size(X_County,1)) -2.17837441807865];
 end
+PS_opts=optimoptions('patternsearch','UseParallel',false,'FunctionTolerance',10^(-9),'MaxIterations',750,'StepTolerance',10^(-9),'MaxFunctionEvaluations',10^4,'Cache','on');
+[par_est,fval_final]=patternsearch(@(x)Objective_Function_Dairy_Farm(x,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p),par_est,[],[],[],[],lb,ub,[],PS_opts);
+
 
 if(~isempty(x0))
-    lb=[-50 -64.*ones(1,size(X_County,1)) -64 -64];
-    ub=[ 3  5.*ones(1,size(X_County,1))   0    3];
+    lb=[-10 -10 -16.*ones(1,size(P_County,1)) -16.*ones(1,size(X_County,1))  -4];
+ub=[15 15 ones(1,size(P_County,1)) ones(1,size(X_County,1)) 0];
 
-    options=optimoptions("surrogateopt","UseParallel",false,'MaxFunctionEvaluations',100.*length(lb),'PlotFcn',[],'InitialPoints',x0);
-    [par_temp]=surrogateopt(@(x)Objective_Function_Dairy_Farm(x,X_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect),lb,ub,options);
+    PS_opts=optimoptions('patternsearch','UseParallel',false,'FunctionTolerance',10^(-9),'MaxIterations',375,'StepTolerance',10^(-9),'MaxFunctionEvaluations',10^4,'Cache','on');
+    opts=optimoptions("ga","PlotFcn",[],"MaxGenerations",150,"FunctionTolerance",10^(-6),'CrossoverFcn','crossoverheuristic','MigrationInterval',25,'SelectionFcn',{@selectiontournament,8},'PopulationSize',250,'InitialPopulationMatrix',x0);
+    [par_final,~]=ga(@(x)Objective_Function_Dairy_Farm(x,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p),length(lb),[],[],[],[],lb,ub,[],[],opts);
 
-    options=optimoptions('patternsearch','MaxFunctionEvaluations',100.*length(lb),'PlotFcn',[],'UseParallel',false,'FunctionTolerance',10^(-8),'MaxIterations',125.*length(lb),'MeshTolerance',10^(-9),'StepTolerance',10^(-9));
-    [par_temp,r_temp]=patternsearch(@(x)Objective_Function_Dairy_Farm(x,X_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect),par_temp,[],[],[],[],lb,ub,[],options);
+    [par_final,r_final]=patternsearch(@(x)Objective_Function_Dairy_Farm(x,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p),par_final,[],[],[],[],lb,ub,[],PS_opts);
 
-    options=optimoptions('fmincon','UseParallel',false,'FunctionTolerance',10^(-16),'MaxFunctionEvaluations',10^4,'MaxIterations',10^4,'OptimalityTolerance',10^(-16),'StepTolerance',10^(-16));
-    [par_final,r_final]=fmincon(@(x)Objective_Function_Dairy_Farm(x,X_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect),par_temp,[],[],[],[],lb,ub,[],options);
-    if(r_temp<r_final)
-        r_final=r_temp;
-        par_final=par_temp;    
-    end
     if(r_final<fval_final)
         fval_final=r_final;
         par_est=par_final;

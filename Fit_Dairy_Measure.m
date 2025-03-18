@@ -1,7 +1,7 @@
 clear;
 clc;
 parpool(24);
-% Define the variables to loop through
+% % Define the variables to loop through
 H5N1_Variable_v={'Light_Intensity','Waterfowl_Mallard','Waterfowl_Canada_Goose','Waterfowl_AGW_Teal','Waterfowl_N_Pintail'};
 Farm_Variables_v={'Inventory','Poultry_Operations','Connectivity'};
 Stratified_Operations_Variables_v={'Cattle_Inventory_50','Cattle_Inventory_100','Cattle_Inventory_200','Cattle_Inventory_500','All'};
@@ -20,7 +20,7 @@ Model_H5N1=cell(size(bin_farm,1),1);
 Model_Farm=cell(size(bin_farm,1),1);
 Model_Stratified_Operations=cell(size(bin_farm,1),1);
 
-Sub_Model_Fit=NaN.*zeros(size(bin_farm,1),90);
+Sub_Model_Fit=NaN.*zeros(size(bin_farm,1),99);
 logic_temp=cell(size(bin_farm,1),1);
 
 for ss=2:9
@@ -51,29 +51,26 @@ for ss=2:9
             Stratified_Operations_Variables={};
         end
     
-        [X_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_par]= Dairy_Covariates(H5N1_Variable,Farm_Variables,Stratified_Operations_Variables);
+        [X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,logic_par]= Dairy_Covariates(H5N1_Variable,Farm_Variables,Stratified_Operations_Variables);
         logic_temp{mm}=logic_par;
         if(~isempty(x0_pot))
-            lt=[true(1); logic_par; true(2,1)];
+            lt=[true(2,1); logic_par; true(1)];
             xt=max(abs(x0_pot(:,~lt)),[],2);
             x0=x0_pot(isnan(xt),:);
-            x0(isnan(x0))=-64;
+            x0(isnan(x0))=-15.95;
             x0=x0(:,lt);
         else
             x0=[];
         end
-
-        [par_est{mm},L(mm),AIC(mm)]=Optimize_Dairy_Farm_Risk(X_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,x0);
+        [par_est{mm},L(mm),AIC(mm)]=Optimize_Dairy_Farm_Risk(X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,x0);
         Model_H5N1{mm}=H5N1_Variable;
         Model_Farm{mm}=Farm_Variables;
         Model_Stratified_Operations{mm}=Stratified_Operations_Variables;
     end
-
     for mm= m_start:m_end
-        lt=[true(1); logic_temp{mm}; true(2,1)];
+        lt=[true(2,1); logic_temp{mm}; true(1)];
         Sub_Model_Fit(mm,lt)=par_est{mm};
     end
-
 end
 dAIC=AIC-min(AIC);
 w_AIC=exp(-dAIC./2)./sum(exp(-dAIC./2));

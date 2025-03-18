@@ -20,7 +20,7 @@ Model_H5N1=cell(size(bin_farm,1),1);
 Model_Farm=cell(size(bin_farm,1),1);
 Model_Stratified_Chicken_Inventory=cell(size(bin_farm,1),1);
 
-Sub_Model_Fit=NaN.*zeros(size(bin_farm,1),40);
+Sub_Model_Fit=NaN.*zeros(size(bin_farm,1),51);
 logic_temp=cell(size(bin_farm,1),1);
 
 for ss=2:10
@@ -51,24 +51,24 @@ for ss=2:10
             Stratified_Chicken_Inventory_Variables={};
         end
 
-        [X_County,County_Farms,Affected_County_Farms_Unknown,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,state_weight_matrix,State_Spillover_Events,logic_par] = Poultry_Covariates(H5N1_Variable,Farm_Variables,Stratified_Chicken_Inventory_Variables);
+        [X_County,P_County,County_Farms,Affected_County_Farms_Unknown,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,state_weight_matrix,State_Spillover_Events,logic_par] = Poultry_Covariates(H5N1_Variable,Farm_Variables,Stratified_Chicken_Inventory_Variables);
         logic_temp{mm}=logic_par;
         if(~isempty(x0_pot))
-            lt=[true(1); logic_par; true(5,1)];
+            lt=[true(2,1); logic_par; true(4,1)];
             xt=max(abs(x0_pot(:,~lt)),[],2);
             x0=x0_pot(isnan(xt),:);
-            x0(isnan(x0))=-64;
+            x0(isnan(x0))=-15.95;
             x0=x0(:,lt);
         else
             x0=[];
-        end     
-        [par_est{mm},L(mm),AIC(mm)]=Optimize_Poultry_Farm_Risk(X_County,County_Farms,Affected_County_Farms_Unknown,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,state_weight_matrix,State_Spillover_Events,x0);
+        end 
+        [par_est{mm},L(mm),AIC(mm)]=Optimize_Poultry_Farm_Risk(X_County,P_County,County_Farms,Affected_County_Farms_Unknown,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,state_weight_matrix,State_Spillover_Events,x0);
         Model_H5N1{mm}=H5N1_Variable;
         Model_Farm{mm}=Farm_Variables;
         Model_Stratified_Chicken_Inventory{mm}=Stratified_Chicken_Inventory_Variables;
     end
     for mm= m_start:m_end
-        lt=[true(1); logic_temp{mm}; true(5,1)];
+        lt=[true(2,1); logic_temp{mm}; true(4,1)];
         Sub_Model_Fit(mm,lt)=par_est{mm};
     end
 end
