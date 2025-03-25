@@ -34,7 +34,7 @@ S=shaperead([temp_pwd 'Shapefile/cb_2021_us_county_500k.shp'],'UseGeoCoords',tru
 
 CS=zeros(length(S),2);
 for ii=1:length(S)
-    polyin = polyshape(S(ii).Lon,S(ii).Lat);
+    polyin = polyshape(S(ii).Lon,S(ii).Lat,'Simplify',false);
     [CS(ii,1),CS(ii,2)] = centroid(polyin);
 end
 

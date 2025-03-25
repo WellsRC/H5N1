@@ -1,4 +1,4 @@
-function [X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,logic_par] = Dairy_Covariates(H5N1_Variable,Farm_Variables,Stratified_Operations_Variables)
+function [F_County,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,logic_par] = Dairy_Covariates(H5N1_Variable,Farm_Variables,Stratified_Operations_Variables)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load Data
@@ -18,11 +18,6 @@ Affected_County_Farms = US_County.DAIRY_HPAI_OUTBREAK_KNOWN;
 State_Names=unique(US_County.STATE_NAME);
 state_remove=strcmp(State_Names,"Alaska") | strcmp(State_Names,"District of Columbia");
 State_Names=State_Names(~state_remove);
-
-Dairy_HPAI_Remain_State_Level=unique(US_County.STATE_NAME(US_County.DAIRY_HPAI_OUTBREAK_UNKNOWN>0));
-
-County_Suppressed_State=ismember(State_Names,Dairy_HPAI_Remain_State_Level);
-County_Nonsuppressed=US_County.DAIRY_HPAI_OUTBREAK_UNKNOWN==0 | US_County.DAIRY_HPAI_OUTBREAK_KNOWN>0;
 
 Affected_State_Farms = zeros(size(State_Names));
 state_weight_matrix=zeros(length(State_Names),height(US_County));
@@ -47,6 +42,11 @@ for ss=1:length(Dairy_Spillover_State)
     t_state=strcmp(Dairy_Spillover_State{ss},US_County.STATE_NAME);
     State_Spillover_Events(ss)=round(sum(US_County.SPILLOVER_DAIRY(t_state))); 
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+% Flyway
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+F_County=[US_County.ATLANTIC_FLYWAY US_County.MISSISSIPPI_FLYWAY US_County.PACIFIC_FLYWAY US_County.CENTRAL_FLYWAY]';
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5

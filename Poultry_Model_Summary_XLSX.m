@@ -17,7 +17,7 @@ Fold_Broiler=zeros(length(L),1);
 
 Spillover_per_Outbreak=zeros(length(L),1);
 
-Variable_Names=cell(1,55);
+Variable_Names=cell(1,52);
 Variable_Names(1)={'Zero_Inflated_Intercept'};
 Variable_Names(7)={'Outbreak_Intercept'};
 for ii=1:length(H5N1_Variable_v)
@@ -27,17 +27,14 @@ for ii=1:length(H5N1_Variable_v)
     end
 end
 
-Variable_Names(48)={'Fold_Turkey'};
-Variable_Names(49)={'Fold_Pullet'};
-Variable_Names(50)={'Fold_Broiler'};
-Variable_Names(51)={'Spillover_per_Outbreak'};
-Variable_Names(52)={'Log_Likelihood'};
-Variable_Names(53)={'AIC'};
-Variable_Names(54)={'Delta_AIC'};
-Variable_Names(55)={'AIC_Weight'};
+Variable_Names(48)={'Spillover_per_Outbreak'};
+Variable_Names(49)={'Log_Likelihood'};
+Variable_Names(50)={'AIC'};
+Variable_Names(51)={'Delta_AIC'};
+Variable_Names(52)={'AIC_Weight'};
 
 for mm=1:length(L)
-    [X_County,P_County,~,~,~,~,~,~,~,~,~,~,~,~,logic_par] = Poultry_Covariates(Poultry_Model.Model_H5N1{mm},Poultry_Model.Model_Farm{mm},Poultry_Model.Model_Stratified_Chicken_Inventory{mm});
+    [X_County,P_County,~,~,~,~,logic_par] = Poultry_Covariates(Poultry_Model.Model_H5N1{mm},Poultry_Model.Model_Farm{mm},Poultry_Model.Model_Stratified_Chicken_Inventory{mm});
 
     x_mle=par_est{mm};
     
@@ -56,15 +53,12 @@ for mm=1:length(L)
     l_p=[true; logic_par(1:5)];
     Zero_Inflated(mm,l_p)=beta_p;
 
-    Fold_Turkey(mm)=10.^x_mle(end-3);
-    Fold_Pullet(mm)=10.^x_mle(end-2);
-    Fold_Broiler(mm)=10.^x_mle(end-1);
     Spillover_per_Outbreak(mm)=10.^x_mle(end);
 
 end
 
 
-T=[array2table(Zero_Inflated) array2table(Outbreak_Model) table(Fold_Turkey,Fold_Pullet,Fold_Broiler,Spillover_per_Outbreak,L,AIC,Delta_AIC,w_AIC)];
+T=[array2table(Zero_Inflated) array2table(Outbreak_Model) table(Spillover_per_Outbreak,L,AIC,Delta_AIC,w_AIC)];
 T.Properties.VariableNames=Variable_Names;
 
 writetable(T,'H5N1_Poultry_Risk_Model.xlsx','Sheet','Estimated_Coefficients');

@@ -25,7 +25,7 @@ post_spillover_dairy_farm_State=zeros(length(State_Name),101,length(par_est));
 
 
 for mm=1:height(Dairy_Model)
-    [X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,County_Suppressed_State,County_Nonsuppressed,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,logic_par]= Dairy_Covariates(Dairy_Model.Model_H5N1{mm},Dairy_Model.Model_Farm{mm},Dairy_Model.Model_Stratified_Operations{mm});
+    [X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,logic_par] = Dairy_Covariates(Dairy_Model.Model_H5N1{mm},Dairy_Model.Model_Farm{mm},Dairy_Model.Model_Stratified_Operations{mm});
     x=par_est{mm};
     no_farms=County_Farms==0;
     
@@ -96,7 +96,7 @@ for mm=1:height(Dairy_Model)
 
 
     spillover_risk_dairy_farm_County(:,mm)=1-(p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,kappa_spillover.*mu_farm_County(:)));
-    spillover_risk_dairy_farm_State(:,mm)=1-(p_inf_State(:)+(1-p_inf_State(:)).*poisspdf(0,kappa_spillover.*mu_farm_State(:)));
+    spillover_risk_dairy_farm_State(:,mm)=1-(poisspdf(0,kappa_spillover.*mu_farm_State(:)));
 
     outbreak_dairy_farm_County(no_farms,mm)=NaN;
     

@@ -10,15 +10,9 @@ State_Names=State_Names(~state_remove);
 
 clearvars US_County
 
-[X_County,P_County,County_Farms,Affected_County_Farms_Unknown,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,state_weight_matrix,State_Spillover_Events,logic_par] = Poultry_Covariates({},{},{});
+[X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_par] = Poultry_Covariates({},{},{});
 
-Affected_County_Farms_Unknown(isnan(Affected_County_Farms_Unknown))=0;
-HPAI_Pullet_Farms(isnan(HPAI_Pullet_Farms))=0;
-HPAI_Layer_Farms(isnan(HPAI_Layer_Farms))=0;
-HPAI_Turkey_Farms(isnan(HPAI_Turkey_Farms))=0;
-HPAI_Broiler_Farms(isnan(HPAI_Broiler_Farms))=0;
-
-Affected_County_Farms=Affected_County_Farms_Unknown+HPAI_Pullet_Farms+HPAI_Layer_Farms+HPAI_Turkey_Farms+HPAI_Broiler_Farms;
+Affected_County_Farms(isnan(Affected_County_Farms))=0;
 Outbreak_State=zeros(size(State_Spillover_Events));
 for ss=1:length(Outbreak_State)
     Outbreak_State(ss)=state_weight_matrix(ss,:)*Affected_County_Farms;
@@ -32,31 +26,50 @@ load('Average_Risk_Poultry.mat','post_outbreak_poultry_farm_State','w_AIC');
 post_outbreak_poultry_farm_State=post_outbreak_poultry_farm_State(R_Indx,:,:);
 State_Names=State_Names(R_Indx);
 
-nr=[5 5 5 1];
+
+nr=[4 4 4 4];
 for pp=1:4
     figure('units','normalized','outerposition',[0.2 0.06 0.8 1]);
     for ii=1:nr(pp)
         for jj=1:3
-            Outbreak_Post_State=squeeze(post_outbreak_poultry_farm_State(jj+3.*(ii-1)+15.*(pp-1),:,:))*w_AIC;
-            subplot('Position',[0.06+0.33.*(jj-1) 0.87-0.1975.*(ii-1) 0.27 0.1]);
-            bar([0:2500],Outbreak_Post_State,'k');
+            Outbreak_Post_State=squeeze(post_outbreak_poultry_farm_State(jj+3.*(ii-1)+12.*(pp-1),:,:))*w_AIC;
+            subplot('Position',[0.025+0.3275.*(jj-1) 0.80-0.24.*(ii-1) 0.30 0.17]);
+            bar([0:2500],Outbreak_Post_State,'FaceColor',hex2rgb('#011A27'));
             hold on
             mx=max(Outbreak_Post_State);
-            plot([Outbreak_State(jj+3.*(ii-1)+15.*(pp-1))  Outbreak_State(jj+3.*(ii-1)+15.*(pp-1))],[0 1.5],'r','LineWidth',2);
+            plot([Outbreak_State(jj+3.*(ii-1)+12.*(pp-1))  Outbreak_State(jj+3.*(ii-1)+12.*(pp-1))],[0 1.5],'color',hex2rgb('#F0810F'),'LineWidth',2);
             tempx=find(cumsum(Outbreak_Post_State)>=0.995,1,'first')-1;
-            if(isempty(tempx))
-                tempx=min(400,Outbreak_State(jj+3.*(ii-1)+15.*(pp-1))+5);
+            f_75=find(cumsum(Outbreak_Post_State)>=0.75,1,"first");
+            mxl=max([f_75 5+Outbreak_State(jj+3.*(ii-1)+12.*(pp-1))]);
+            
+            mxl=max(mxl,10);
+            dxtick=1;
+            if(mxl>10)
+                mxl=ceil(mxl./10).*10;
+                if(mxl<=50)
+                    dxtick=5;
+                elseif(mxl<150)
+                    dxtick=10;
+                elseif(mxl<=300)
+                    dxtick=25;
+                else
+                    dxtick=75;
+                end
             end
-            mxl=max([tempx 5+Outbreak_State(jj+3.*(ii-1)+15.*(pp-1))]);
             xlim([-0.5 mxl+0.5])
             ylim([0 mx.*1.1]);
             dx=[0.01 0.025 0.05 0.075 0.1 0.15 0.2];
             dx=dx(find(abs((ceil(10.*mx))./10./5-dx)==min(abs((ceil(10.*mx))./10./5-dx))));
-            set(gca,'LineWidth',2,'TickDir','out','Fontsize',16,'YTick',[0:dx:1]);
-            xlabel('Number of outbreaks','FontSize',18)
-            ylabel('Density','FontSize',18)
+            set(gca,'LineWidth',2,'TickDir','out','Fontsize',16,'YTick',[],'XTick',[0:dxtick:mxl]);
+            if(ii==nr(pp))
+                xlabel('Number of outbreaks','FontSize',18)
+            end
+            if(jj==1)
+                ylabel('Density','FontSize',18)
+            end
             box off;
-            title(State_Names(jj+3.*(ii-1)+15.*(pp-1)))
+            xtickangle(0);
+            title(State_Names(jj+3.*(ii-1)+12.*(pp-1)))
         end
     end
 end

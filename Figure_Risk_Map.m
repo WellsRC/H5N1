@@ -15,7 +15,7 @@ US_County.Properties.VariableNames=Var_Name;
 
 S=S(Indx);
 
-County_remove=strcmp("HI",US_County.STUSPS) | strcmp("AS",US_County.STUSPS) | strcmp("GU",US_County.STUSPS) | strcmp("MP",US_County.STUSPS) | strcmp("PR",US_County.STUSPS) | strcmp("VI",US_County.STUSPS);
+County_remove=strcmp("AK",US_County.STUSPS) |strcmp("HI",US_County.STUSPS) | strcmp("AS",US_County.STUSPS) | strcmp("GU",US_County.STUSPS) | strcmp("MP",US_County.STUSPS) | strcmp("PR",US_County.STUSPS) | strcmp("VI",US_County.STUSPS);
 S=S(~County_remove,:);
 
 NS=length(S);
@@ -173,12 +173,14 @@ for vv=1:4
             y_indx=[x_risk(1):0.25:x_risk(end)];
         end
 
+
+        dx=c_indx(2)-c_indx(1);
         xlim([0 1]);
-        ylim([x_risk(1) max(x_risk)]);    
+        ylim([x_risk(1) max(x_risk)+dx]);    
         ymin=1;
         dy=2/(1+sqrt(5));
         for ii=1:length(c_indx)
-            patch([0 0 dy dy],c_indx(ii)+[1 0 0 1],interp1(x_risk,C_Risk,c_indx(ii)),'LineStyle','none');
+            patch([0 0 dy dy],c_indx(ii)+[dx 0 0 dx],interp1(x_risk,C_Risk,c_indx(ii)),'LineStyle','none');
         end
         
         for yy=1:length(y_indx)-1

@@ -1,4 +1,4 @@
-function [X_County,P_County,County_Farms,Affected_County_Farms_Unknown,Pullet_Farms,Layer_Farms,Turkey_Farms,Broiler_Farms,HPAI_Pullet_Farms,HPAI_Layer_Farms,HPAI_Turkey_Farms,HPAI_Broiler_Farms,state_weight_matrix,State_Spillover_Events,logic_par] = Poultry_Covariates(H5N1_Variable,Farm_Variables,Stratified_Inventory_Variables)
+function [F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_par] = Poultry_Covariates(H5N1_Variable,Farm_Variables,Stratified_Inventory_Variables)
    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load Data
@@ -16,19 +16,8 @@ State_Names=State_Names(~state_remove);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
 % HPAI Outbreaks
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Affected_County_Farms_Unknown = US_County.POULTRY_HPAI_OUTBREAK;
+Affected_County_Farms = US_County.POULTRY_HPAI_OUTBREAK;
 County_Farms=US_County.POULTRY_OPR_w_INVENTORY;
-
-Pullet_Farms=US_County.PULLET_OPR_w_INVENTORY;
-Layer_Farms=US_County.LAYER_OPR_w_INVENTORY;
-Turkey_Farms=US_County.TURKEY_OPR_w_INVENTORY;
-Broiler_Farms=US_County.BROILER_OPR_w_INVENTORY;
-
-HPAI_Pullet_Farms=US_County.PULLET_HPAI_OUTBREAK;
-HPAI_Layer_Farms=US_County.LAYER_HPAI_OUTBREAK;
-HPAI_Turkey_Farms=US_County.TURKEY_HPAI_OUTBREAK;
-HPAI_Broiler_Farms=US_County.BROILER_HPAI_OUTBREAK;
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 % Spillover
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -51,6 +40,11 @@ for ss=1:length(State_Names)
     t_find = strcmp(US_County.STATE_NAME,State_Names{ss});
     state_weight_matrix(ss,t_find)=1;
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+% Flyway
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+F_County=[US_County.ATLANTIC_FLYWAY US_County.MISSISSIPPI_FLYWAY US_County.PACIFIC_FLYWAY US_County.CENTRAL_FLYWAY]';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 % Suseptbility  
