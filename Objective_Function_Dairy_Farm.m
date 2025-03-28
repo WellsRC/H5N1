@@ -16,17 +16,17 @@ kappa_spillover=10.^x(end);
 
 
 if(~isempty(Dairy_Network))
-    beta_x_temp=beta_x([1 1+find(~logic_connect)']);
+    beta_x_temp=beta_x([1:4 4+find(~logic_connect)]);
     mu_farm_temp = Risk_Assesment_Farms(beta_x_temp,[F_County; X_County(~logic_connect,:)]);
     mu_farm_temp(County_Farms==0)=0;
 
-    beta_p_temp=beta_p([1 1+find(~logic_connect_p)']);
+    beta_p_temp=beta_p([1:4 4+find(~logic_connect_p)]);
     p_inf_County_temp=Zero_Inflation(beta_p_temp,[F_County; P_County(~logic_connect_p,:)]);
     p_inf_County_temp(County_Farms==0)=1;
 
     temp_r=(1-p_inf_County_temp(:)).*mu_farm_temp(:);
-    X_County(logic_connect,:)=repmat((temp_r(:)'*Dairy_Network),sum(logic_connect),1);
-    P_County(logic_connect_p,:)=repmat((temp_r(:)'*Dairy_Network),sum(logic_connect_p),1);
+    X_County(logic_connect,:)=(temp_r(:)'*Dairy_Network);
+    P_County(logic_connect_p,:)=(temp_r(:)'*Dairy_Network);
 end
 
 delta_Affected_State=Affected_State_Farms-state_weight_matrix*Affected_County_Farms;

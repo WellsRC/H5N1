@@ -35,15 +35,18 @@ if(strcmp(Var_Plot,'Dairy'))
     avg_outbreak_risk_farm_State=outbreak_dairy_farm_State*w_AIC;
     avg_spillover_risk_farm_State=spillover_risk_dairy_farm_State*w_AIC;
 
-    farm_type='dairy';
-elseif(strcmp(Var_Plot,'Dairy_Reduction'))
-    load('Average_Risk_Dairy_Reduction_Connectivity=100.mat','outbreak_dairy_farm_County','outbreak_risk_dairy_farm_County','spillover_risk_dairy_farm_County','outbreak_dairy_farm_State','spillover_risk_dairy_farm_State','State_Name');
-    avg_outbreak_farm_County=outbreak_dairy_farm_County*w_AIC;
-    avg_outbreak_risk_farm_County=outbreak_risk_dairy_farm_County*w_AIC;
-    avg_spillover_risk_farm_County=spillover_risk_dairy_farm_County*w_AIC;
+    Samp_outbreak_risk_farm_State=zeros(length(avg_outbreak_risk_farm_State),1000);
+    Samp_spillover_risk_farm_State=zeros(length(avg_outbreak_risk_farm_State),1000);
 
-    avg_outbreak_risk_farm_State=outbreak_dairy_farm_State*w_AIC;
-    avg_spillover_risk_farm_State=spillover_risk_dairy_farm_State*w_AIC;
+    w=cumsum(w_AIC);
+    for ii=1:1000
+        f_indx=find(rand(1)<=w,1,"first");
+        Samp_outbreak_risk_farm_State(:,ii)=outbreak_dairy_farm_State(:,f_indx);
+        Samp_spillover_risk_farm_State(:,ii)=spillover_risk_dairy_farm_State(:,f_indx);
+    end
+
+    CrI_outbreak_risk_farm_State=prctile(Samp_outbreak_risk_farm_State,[2.5 97.5],2);
+    CrI_spillover_risk_farm_State=prctile(Samp_spillover_risk_farm_State,[2.5 97.5],2);
 
     farm_type='dairy';
 elseif(strcmp(Var_Plot,'Poultry')) 
@@ -55,6 +58,19 @@ elseif(strcmp(Var_Plot,'Poultry'))
     avg_outbreak_risk_farm_State=outbreak_poultry_farm_State*w_AIC;
     avg_spillover_risk_farm_State=spillover_risk_poultry_farm_State*w_AIC;
     farm_type='poultry';
+
+    Samp_outbreak_risk_farm_State=zeros(length(avg_outbreak_risk_farm_State),1000);
+    Samp_spillover_risk_farm_State=zeros(length(avg_outbreak_risk_farm_State),1000);
+
+    w=cumsum(w_AIC);
+    for ii=1:1000
+        f_indx=find(rand(1)<=w,1,"first");
+        Samp_outbreak_risk_farm_State(:,ii)=outbreak_poultry_farm_State(:,f_indx);
+        Samp_spillover_risk_farm_State(:,ii)=spillover_risk_poultry_farm_State(:,f_indx);
+    end
+
+    CrI_outbreak_risk_farm_State=prctile(Samp_outbreak_risk_farm_State,[2.5 97.5],2);
+    CrI_spillover_risk_farm_State=prctile(Samp_spillover_risk_farm_State,[2.5 97.5],2);
 end
 
 state_nan=~isnan(avg_outbreak_risk_farm_State);

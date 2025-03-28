@@ -4,8 +4,8 @@ function [F_County,X_County,P_County,County_Farms,Affected_County_Farms,State_Sp
 % Load Data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-logic_par=false(5,18);
-logic_connect=false(5,18);
+logic_par=false(1,17);
+logic_connect=false(1,17);
 
 load([pwd '/Data/Data_US_County.mat'],'US_County');
 
@@ -53,74 +53,70 @@ F_County=[US_County.ATLANTIC_FLYWAY US_County.MISSISSIPPI_FLYWAY US_County.PACIF
 % Suseptbility  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 if(strcmp(Stratified_Operations_Variables,'All'))
-    X_County_temp=zeros(length(Farm_Variables)+7,height(US_County));
+    X_County=zeros(length(Farm_Variables)+7,height(US_County));
 elseif(~isempty(Stratified_Operations_Variables))
-    X_County_temp=zeros(length(Farm_Variables)+2,height(US_County));
+    X_County=zeros(length(Farm_Variables)+2,height(US_County));
 else
-    X_County_temp=zeros(length(Farm_Variables),height(US_County));
+    X_County=zeros(length(Farm_Variables),height(US_County));
 end
 
-logic_par_t=false(1,18);
 Dairy_Network={};
 logic_conn_included=false;
 for ff=1:length(Farm_Variables)
     if(strcmp(Farm_Variables{ff},'Inventory'))
-        X_County_temp(ff,:)=log10(US_County.CATTLE_INVENTORY);
-        logic_par_t(1)=true;
-    elseif(strcmp(Farm_Variables{ff},'Poultry_Operations'))
-        X_County_temp(ff,:)=log10(1+US_County.POULTRY_OPR_w_INVENTORY);
-        logic_par_t(2)=true;
+        X_County(ff,:)=log10(US_County.CATTLE_INVENTORY);
+        logic_par(1)=true;
     elseif(strcmp(Farm_Variables{ff},'Connectivity'))
-       X_County_temp(ff,:)=ones(size(US_County.CATTLE_INVENTORY));
+       X_County(ff,:)=ones(size(US_County.CATTLE_INVENTORY));
        Dairy_Network=US_County.CONNECT_DAIRY;
        Dairy_Network=Dairy_Network-diag(diag(Dairy_Network));
-       logic_par_t(3)=true;
-       logic_connect(:,3)=true(size(logic_connect(:,3)));
+       logic_par(2)=true;
+       logic_connect(2)=true(size(logic_connect(2)));
        logic_conn_included=true;
     end
 
 end
 
 if strcmp(Stratified_Operations_Variables,'Cattle_Inventory_50')
-    X_County_temp(length(Farm_Variables)+1,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (1 TO 9 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (10 TO 19 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (20 TO 49 HEAD)");
-    X_County_temp(length(Farm_Variables)+2,:)=County_Farms'-X_County_temp(length(Farm_Variables)+1,:);
-    logic_par_t(4:5)=true;
+    X_County(length(Farm_Variables)+1,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (1 TO 9 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (10 TO 19 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (20 TO 49 HEAD)");
+    X_County(length(Farm_Variables)+2,:)=County_Farms'-X_County(length(Farm_Variables)+1,:);
+    logic_par(3:4)=true;
 elseif strcmp(Stratified_Operations_Variables,'Cattle_Inventory_100')
-    X_County_temp(length(Farm_Variables)+1,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (1 TO 9 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (10 TO 19 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (20 TO 49 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (50 TO 99 HEAD)");
-    X_County_temp(length(Farm_Variables)+2,:)=County_Farms'-X_County_temp(length(Farm_Variables)+1,:);
-    logic_par_t(6:7)=true;
+    X_County(length(Farm_Variables)+1,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (1 TO 9 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (10 TO 19 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (20 TO 49 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (50 TO 99 HEAD)");
+    X_County(length(Farm_Variables)+2,:)=County_Farms'-X_County(length(Farm_Variables)+1,:);
+    logic_par(5:6)=true;
 elseif strcmp(Stratified_Operations_Variables,'Cattle_Inventory_200')
-    X_County_temp(length(Farm_Variables)+1,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (1 TO 9 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (10 TO 19 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (20 TO 49 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (50 TO 99 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (100 TO 199 HEAD)");
-    X_County_temp(length(Farm_Variables)+2,:)=County_Farms'-X_County_temp(length(Farm_Variables)+1,:);
-    logic_par_t(8:9)=true;
+    X_County(length(Farm_Variables)+1,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (1 TO 9 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (10 TO 19 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (20 TO 49 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (50 TO 99 HEAD)")+US_County.("CATTLE INVENTORY OF MILK COWS: (100 TO 199 HEAD)");
+    X_County(length(Farm_Variables)+2,:)=County_Farms'-X_County(length(Farm_Variables)+1,:);
+    logic_par(7:8)=true;
 elseif strcmp(Stratified_Operations_Variables,'Cattle_Inventory_500')
-    X_County_temp(length(Farm_Variables)+2,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (500 OR MORE HEAD)");
-    X_County_temp(length(Farm_Variables)+1,:)=County_Farms'-X_County_temp(length(Farm_Variables)+2,:);
-    logic_par_t(10:11)=true;
+    X_County(length(Farm_Variables)+2,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (500 OR MORE HEAD)");
+    X_County(length(Farm_Variables)+1,:)=County_Farms'-X_County(length(Farm_Variables)+2,:);
+    logic_par(9:10)=true;
 elseif strcmp(Stratified_Operations_Variables,'All')
-    X_County_temp(length(Farm_Variables)+1,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (1 TO 9 HEAD)");
-    X_County_temp(length(Farm_Variables)+2,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (10 TO 19 HEAD)");
-    X_County_temp(length(Farm_Variables)+3,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (20 TO 49 HEAD)");
-    X_County_temp(length(Farm_Variables)+4,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (50 TO 99 HEAD)");
-    X_County_temp(length(Farm_Variables)+5,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (100 TO 199 HEAD)");
-    X_County_temp(length(Farm_Variables)+6,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (200 TO 499 HEAD)");
-    X_County_temp(length(Farm_Variables)+7,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (500 OR MORE HEAD)");
-    logic_par_t(12:18)=true;
+    X_County(length(Farm_Variables)+1,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (1 TO 9 HEAD)");
+    X_County(length(Farm_Variables)+2,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (10 TO 19 HEAD)");
+    X_County(length(Farm_Variables)+3,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (20 TO 49 HEAD)");
+    X_County(length(Farm_Variables)+4,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (50 TO 99 HEAD)");
+    X_County(length(Farm_Variables)+5,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (100 TO 199 HEAD)");
+    X_County(length(Farm_Variables)+6,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (200 TO 499 HEAD)");
+    X_County(length(Farm_Variables)+7,:)=US_County.("CATTLE INVENTORY OF MILK COWS: (500 OR MORE HEAD)");
+    logic_par(11:17)=true;
 end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 % Exposure 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-X_County=zeros(length(H5N1_Variable).*size(X_County_temp,1),height(US_County));
+% X_County=zeros(length(H5N1_Variable).*size(X_County_temp,1),height(US_County));
 
 logic_exp=false(6,1);
 if(~logic_conn_included)
     P_County=zeros(length(H5N1_Variable),height(US_County));
-    logic_connect_p=false(length(H5N1_Variable),1);
+    logic_connect_p=false(1,length(H5N1_Variable));
 else
     P_County=zeros(length(H5N1_Variable)+1,height(US_County));
-    logic_connect_p=false(length(H5N1_Variable)+1,1);
+    logic_connect_p=false(1,length(H5N1_Variable)+1);
     logic_connect_p(end)=logic_conn_included;
     logic_exp(6)=true;
 end
@@ -128,29 +124,24 @@ end
 for yy=1:length(H5N1_Variable)
     if(strcmp(H5N1_Variable{yy},'Light_Intensity'))
         Y_County=US_County.LIGHT_INT';
-        logic_par(1,:)=logic_par_t;
         logic_exp(1)=true;
     elseif(strcmp(H5N1_Variable{yy},'Waterfowl_Mallard'))
         Y_County=log10(1+US_County.MALLARD)';
-        logic_par(2,:)=logic_par_t;
         logic_exp(2)=true;
     elseif(strcmp(H5N1_Variable{yy},'Waterfowl_Canada_Goose'))
         Y_County=log10(1+US_County.CANADA_GOOSE)';
-        logic_par(3,:)=logic_par_t;
         logic_exp(3)=true;
     elseif(strcmp(H5N1_Variable{yy},'Waterfowl_AGW_Teal'))
         Y_County=log10(1+US_County.AGW_TEAL)';
-        logic_par(4,:)=logic_par_t;
         logic_exp(4)=true;
      elseif(strcmp(H5N1_Variable{yy},'Waterfowl_N_Pintail'))
         Y_County=log10(1+US_County.NORTH_PINTAIL)';
-        logic_par(5,:)=logic_par_t;
         logic_exp(5)=true;
     end
     P_County(yy,:)=Y_County;
-    for xx=1:size(X_County_temp,1)
-        X_County(yy+(xx-1).*length(H5N1_Variable),:)=X_County_temp(xx,:).*Y_County;
-    end
+    % for xx=1:size(X_County_temp,1)
+    %     X_County(yy+(xx-1).*length(H5N1_Variable),:)=X_County_temp(xx,:).*Y_County;
+    % end
 end
 
 

@@ -20,7 +20,7 @@ Model_H5N1=cell(size(bin_farm,1),1);
 Model_Farm=cell(size(bin_farm,1),1);
 Model_Stratified_Chicken_Inventory=cell(size(bin_farm,1),1);
 
-Sub_Model_Fit=NaN.*zeros(size(bin_farm,1),48);
+Sub_Model_Fit=NaN.*zeros(size(bin_farm,1),22);
 logic_temp=cell(size(bin_farm,1),1);
 
 for ss=2:10
@@ -71,6 +71,7 @@ for ss=2:10
         lt=[true(8,1); logic_temp{mm}; true(1)];
         Sub_Model_Fit(mm,lt)=par_est{mm};
     end
+    save('Poultry_Models_Fit_temp.mat','Sub_Model_Fit',"par_est","L","AIC",'ss');
 end
 dAIC=AIC-min(AIC);
 w_AIC=exp(-dAIC./2)./sum(exp(-dAIC./2));

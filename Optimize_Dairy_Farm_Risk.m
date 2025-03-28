@@ -4,6 +4,7 @@ function [par_est,L,AIC]=Optimize_Dairy_Farm_Risk(F_County,X_County,P_County,Cou
 lb=[-10.*ones(1,size(F_County,1)) -10.*ones(1,size(F_County,1)) -32.*ones(1,size(P_County,1)) -32.*ones(1,size(X_County,1)) -4];
 ub=[15.*ones(1,size(F_County,1)) 10.*ones(1,size(F_County,1))  ones(1,size(P_County,1)) ones(1,size(X_County,1)) 0];
 
+
 opts=optimoptions("ga","PlotFcn",[],"MaxGenerations",300,"FunctionTolerance",10^(-6),'CrossoverFcn','crossoverheuristic','MigrationInterval',25,'SelectionFcn',{@selectiontournament,8},'PopulationSize',250);
 [par_est,f0]=ga(@(x)Objective_Function_Dairy_Farm(x,F_County,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p),length(lb),[],[],[],[],lb,ub,[],[],opts);
 

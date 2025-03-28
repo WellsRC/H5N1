@@ -4,8 +4,6 @@ function [F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_we
 % Load Data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-logic_par=false(5,8);
-
 load([pwd '/Data/Data_US_County.mat'],'US_County');
 
 
@@ -51,46 +49,46 @@ F_County=[US_County.ATLANTIC_FLYWAY US_County.MISSISSIPPI_FLYWAY US_County.PACIF
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 
 if(strcmp(Stratified_Inventory_Variables,'All'))
-    X_County_temp=zeros(length(Farm_Variables)+3,height(US_County));
+    X_County=zeros(length(Farm_Variables)+3,height(US_County));
 elseif(~isempty(Stratified_Inventory_Variables))
-    X_County_temp=zeros(length(Farm_Variables)+1,height(US_County));
+    X_County=zeros(length(Farm_Variables)+1,height(US_County));
 else
-    X_County_temp=zeros(length(Farm_Variables),height(US_County));
+    X_County=zeros(length(Farm_Variables),height(US_County));
 end
 
-logic_par_t=false(1,8);
+logic_par=false(1,8);
 
 for ff=1:length(Farm_Variables)
     if(strcmp(Farm_Variables{ff},'Turkey_Operations'))
-       X_County_temp(ff,:)=US_County.TURKEY_OPR_w_INVENTORY;
-       logic_par_t(1)=true;
+       X_County(ff,:)=US_County.TURKEY_OPR_w_INVENTORY;
+       logic_par(1)=true;
     elseif(strcmp(Farm_Variables{ff},'Broiler_Operations'))
-       X_County_temp(ff,:)=US_County.BROILER_OPR_w_INVENTORY;
-       logic_par_t(2)=true;
+       X_County(ff,:)=US_County.BROILER_OPR_w_INVENTORY;
+       logic_par(2)=true;
     elseif(strcmp(Farm_Variables{ff},'Layer_Operations'))
-       X_County_temp(ff,:)=US_County.LAYER_OPR_w_INVENTORY;
-       logic_par_t(3)=true;
+       X_County(ff,:)=US_County.LAYER_OPR_w_INVENTORY;
+       logic_par(3)=true;
     elseif(strcmp(Farm_Variables{ff},'Pullet_Operations'))
-       X_County_temp(ff,:)=US_County.PULLET_OPR_w_INVENTORY;
-       logic_par_t(4)=true;
+       X_County(ff,:)=US_County.PULLET_OPR_w_INVENTORY;
+       logic_par(4)=true;
     end
 end
 
 if strcmp(Stratified_Inventory_Variables,'All')
     temp_p=US_County.PULLET_INVENTORY;
-    X_County_temp(length(Farm_Variables)+1,:)=log10(1+temp_p);
+    X_County(length(Farm_Variables)+1,:)=log10(1+temp_p);
 
     temp_p=US_County.LAYER_INVENTORY;
-    X_County_temp(length(Farm_Variables)+2,:)=log10(1+temp_p);
+    X_County(length(Farm_Variables)+2,:)=log10(1+temp_p);
 
     temp_p=US_County.BROILER_INVENTORY;
-    X_County_temp(length(Farm_Variables)+3,:)=log10(1+temp_p);
+    X_County(length(Farm_Variables)+3,:)=log10(1+temp_p);
 
-    logic_par_t(6:8)=true;
+    logic_par(6:8)=true;
 elseif strcmp(Stratified_Inventory_Variables,'Total_Inventory')
     temp_p=US_County.BROILER_INVENTORY+US_County.ROOSTER_INVENTORY+US_County.PULLET_INVENTORY+US_County.LAYER_INVENTORY;
-        X_County_temp(length(Farm_Variables)+1,:)=log10(1+temp_p);
-    logic_par_t(5)=true;
+        X_County(length(Farm_Variables)+1,:)=log10(1+temp_p);
+    logic_par(5)=true;
 end
 
 
@@ -98,36 +96,31 @@ end
 % Exposure 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 
-X_County=zeros(length(H5N1_Variable).*size(X_County_temp,1),height(US_County));
+% X_County=zeros(length(H5N1_Variable).*size(X_County,1),height(US_County));
 P_County=zeros(length(H5N1_Variable),height(US_County));
 
 logic_exp=false(5,1);
 for yy=1:length(H5N1_Variable)
     if(strcmp(H5N1_Variable{yy},'Light_Intensity'))
         Y_County=US_County.LIGHT_INT';
-        logic_par(1,:)=logic_par_t;
         logic_exp(1)=true;
     elseif(strcmp(H5N1_Variable{yy},'Waterfowl_Mallard'))
         Y_County=log10(1+US_County.MALLARD)';
-        logic_par(2,:)=logic_par_t;
         logic_exp(2)=true;
     elseif(strcmp(H5N1_Variable{yy},'Waterfowl_Canada_Goose'))
         Y_County=log10(1+US_County.CANADA_GOOSE)';
-        logic_par(3,:)=logic_par_t;
         logic_exp(3)=true;
     elseif(strcmp(H5N1_Variable{yy},'Waterfowl_AGW_Teal'))
         Y_County=log10(1+US_County.AGW_TEAL)';
-        logic_par(4,:)=logic_par_t;
         logic_exp(4)=true;
      elseif(strcmp(H5N1_Variable{yy},'Waterfowl_N_Pintail'))
         Y_County=log10(1+US_County.NORTH_PINTAIL)';
-        logic_par(5,:)=logic_par_t;
         logic_exp(5)=true;
     end
     P_County(yy,:)=Y_County;
-    for xx=1:size(X_County_temp,1)
-        X_County(yy+(xx-1).*length(H5N1_Variable),:)=X_County_temp(xx,:).*Y_County;
-    end
+    % for xx=1:size(X_County_temp,1)
+    %     X_County(yy+(xx-1).*length(H5N1_Variable),:)=X_County_temp(xx,:).*Y_County;
+    % end
 end
 
 logic_par=[logic_exp(:); logic_par(:)];
