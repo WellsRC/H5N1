@@ -1,15 +1,19 @@
-function F = Objective_Function_Poultry_Farm(x,F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events)
+function F = Objective_Function_Poultry_Farm(x,F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_temperature)
 
 indx_pinf=[5:(8+size(P_County,1))];
 
 beta_x=x(~ismember(1:length(x),[indx_pinf length(x)]));
 if(length(beta_x)>4)
-    beta_x(5:end)=10.^beta_x(5:end);
+    beta_x(5:end)=10.^beta_x(5:end);    
 end
 
 beta_p=x(indx_pinf);
 if(length(beta_p)>4)
-    beta_p(5:end)=-10.^beta_p(5:end);
+    if(logic_temperature)
+        beta_p(5:end-1)=-10.^beta_p(5:end-1);    
+    else
+        beta_p(5:end)=-10.^beta_p(5:end);
+    end
 end
 
 kappa_spillover=10.^x(end);

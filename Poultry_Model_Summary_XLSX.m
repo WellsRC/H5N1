@@ -2,14 +2,14 @@ clear;
 clc;
 
 H5N1_Variable_v={'Light_Intensity','Waterfowl_Mallard','Waterfowl_Canada_Goose','Waterfowl_AGW_Teal','Waterfowl_N_Pintail'};
-Other_Variables_v={'Turkey_Operations','Broiler_Operations','Layer_Operations','Pullet_Operations','Total_Inventory','Pullet_Inventory','Layer_Inventory','Broiler_Inventory'};
+Other_Variables_v={'Turkey_Operations','Turkey_Inventory','Broiler_Operations','Broiler_Inventory','Layer_Operations','Layer_Inventory','Pullet_Operations','Pullet_Inventory','Temperature'};
 
 load('Poultry_Models_Fit.mat')
 
 Delta_AIC=AIC-min(AIC);
 
-Zero_Inflated=NaN.*zeros(length(L),6);
-Outbreak_Model=NaN.*zeros(length(L),41);
+Zero_Inflated=NaN.*zeros(length(L),9);
+Outbreak_Model=NaN.*zeros(length(L),13);
 
 Fold_Turkey=zeros(length(L),1);
 Fold_Pullet=zeros(length(L),1);
@@ -17,43 +17,61 @@ Fold_Broiler=zeros(length(L),1);
 
 Spillover_per_Outbreak=zeros(length(L),1);
 
-Variable_Names=cell(1,52);
-Variable_Names(1)={'Zero_Inflated_Intercept'};
-Variable_Names(7)={'Outbreak_Intercept'};
+Variable_Names=cell(1,27);
+
+Variable_Names(1)={'Zero_Inflated_Intercept_Atlantic_Flyway'};
+Variable_Names(2)={'Zero_Inflated_Intercept_Missippi_Flyway'};
+Variable_Names(3)={'Zero_Inflated_Intercept_Pacific_Flyway'};
+Variable_Names(4)={'Zero_Inflated_Intercept_Central_Flyway'};
+
+Variable_Names(10)={'Outbreak_Intercept_Atlantic_Flyway'};
+Variable_Names(11)={'Outbreak_Intercept_Missippi_Flyway'};
+Variable_Names(12)={'Outbreak_Intercept_Pacific_Flyway'};
+Variable_Names(13)={'Outbreak_Intercept_Central_Flyway'};
 for ii=1:length(H5N1_Variable_v)
-    Variable_Names(ii+1)={['Zero_Inflated_' H5N1_Variable_v{ii}]};
-    for ff=1:length(Other_Variables_v)
-        Variable_Names(7+ff+length(Other_Variables_v).*(ii-1))={['Outbreak_' H5N1_Variable_v{ii} '_' Other_Variables_v{ff}]};
-    end
+    Variable_Names(ii+4)={['Zero_Inflated_' H5N1_Variable_v{ii}]};
 end
 
-Variable_Names(48)={'Spillover_per_Outbreak'};
-Variable_Names(49)={'Log_Likelihood'};
-Variable_Names(50)={'AIC'};
-Variable_Names(51)={'Delta_AIC'};
-Variable_Names(52)={'AIC_Weight'};
+for ff=1:length(Other_Variables_v)
+    Variable_Names(13+ff)={['Outbreak_' Other_Variables_v{ff}]};
+end
+
+Variable_Names(23)={'Spillover_per_Outbreak'};
+Variable_Names(24)={'Log_Likelihood'};
+Variable_Names(25)={'AIC'};
+Variable_Names(26)={'Delta_AIC'};
+Variable_Names(27)={'AIC_Weight'};
 
 for mm=1:length(L)
-    [X_County,P_County,~,~,~,~,logic_par] = Poultry_Covariates(Poultry_Model.Model_H5N1{mm},Poultry_Model.Model_Farm{mm},Poultry_Model.Model_Stratified_Chicken_Inventory{mm});
+    [F_County,X_County,P_County,~,~,~,~,logic_par,logic_temperature] = Poultry_Covariates(Poultry_Model.Model_H5N1{mm},Poultry_Model.Model_Farm{mm});
 
-    x_mle=par_est{mm};
+    x=par_est{mm};
     
-    beta_x=x_mle([1 (1+2+size(P_County,1)):(2+size(P_County,1)+size(X_County,1))]);
-    if(length(beta_x)>1)
-        beta_x(2:end)=10.^beta_x(2:end);
+    indx_pinf=[5:(8+size(P_County,1))];
+
+    beta_x=x(~ismember(1:length(x),[indx_pinf length(x)]));
+    if(length(beta_x)>4)
+        if(logic_temperature)
+            indx_betax=[1:(size(X_County,1)-1)];
+        else
+            indx_betax=[1:(size(X_County,1))];
+        end
+        beta_x(4+indx_betax)=10.^beta_x(4+indx_betax);    
     end
-    l_out=[true; logic_par(6:end)];
+    
+    beta_p=x(indx_pinf);
+    if(length(beta_p)>4)
+        beta_p(5:end)=-10.^beta_p(5:end);
+    end
+        
+    l_out=[true(4,1); logic_par(6:end)];
     Outbreak_Model(mm,l_out)=beta_x;
     
-    beta_p=x_mle([2:(2+size(P_County,1))]);
-    if(length(beta_x)>1)
-        beta_p(2:end)=-10.^beta_p(2:end);
-    end
     
-    l_p=[true; logic_par(1:5)];
+    l_p=[true(4,1); logic_par(1:5)];
     Zero_Inflated(mm,l_p)=beta_p;
 
-    Spillover_per_Outbreak(mm)=10.^x_mle(end);
+    Spillover_per_Outbreak(mm)=10.^x(end);
 
 end
 

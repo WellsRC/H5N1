@@ -24,23 +24,31 @@ onward_transmission_poultry_farm_State=zeros(length(State_Name),length(par_est))
 post_outbreak_poultry_farm_State=zeros(length(State_Name),1001,length(par_est));
 post_spillover_poultry_farm_State=zeros(length(State_Name),76,length(par_est));
 
+post_outbreak_poultry_farm_County=zeros(height(US_County),2,length(par_est));
+post_spillover_poultry_farm_County=zeros(height(US_County),2,length(par_est));
+
 k_onward_transmission=2.69;
 R0=0.05;
 p_no_onward_transmission=nbinpdf(0,k_onward_transmission,k_onward_transmission./(k_onward_transmission+R0));
 
 for mm=1:length(par_est)
     
-    [F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_par] = Poultry_Covariates(Poultry_Model.Model_H5N1{mm},Poultry_Model.Model_Farm{mm},Poultry_Model.Model_Stratified_Chicken_Inventory{mm});
+    [F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_par,logic_temperature] = Poultry_Covariates(Poultry_Model.Model_H5N1{mm},Poultry_Model.Model_Farm{mm});
     x=par_est{mm};  
     no_farms=County_Farms==0;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
     % Parameters
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
     indx_pinf=[5:(8+size(P_County,1))];
-    
+
     beta_x=x(~ismember(1:length(x),[indx_pinf length(x)]));
     if(length(beta_x)>4)
-        beta_x(5:end)=10.^beta_x(5:end);
+        if(logic_temperature)
+            indx_betax=[1:(size(X_County,1)-1)];
+        else
+            indx_betax=[1:(size(X_County,1))];
+        end
+        beta_x(4+indx_betax)=10.^beta_x(4+indx_betax);    
     end
     
     beta_p=x(indx_pinf);
@@ -49,6 +57,7 @@ for mm=1:length(par_est)
     end
     
     kappa_spillover=10.^x(end);
+
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
     % Probability of extra zeros and avg for poisson
@@ -115,6 +124,22 @@ for mm=1:length(par_est)
     spillover_poultry_farm_County(:,mm)=kappa_spillover.*outbreak_poultry_farm_County(:,mm);
     spillover_poultry_farm_State(:,mm)=kappa_spillover.*outbreak_poultry_farm_State(:,mm);
 
+    post_outbreak_poultry_farm_County(:,1,mm)=poissinv((0.025-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
+    post_outbreak_poultry_farm_County(:,2,mm)=poissinv((0.975-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
+
+    lb_z=p_inf_County>=0.025;
+    ub_z=p_inf_County>=0.975;
+    post_outbreak_poultry_farm_County(lb_z,1,mm)=0;
+    post_outbreak_poultry_farm_County(ub_z,2,mm)=0;
+
+    post_spillover_poultry_farm_County(:,1,mm)=poissinv((0.025-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
+    post_spillover_poultry_farm_County(:,2,mm)=poissinv((0.975-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
+
+    lb_z=p_inf_County>=0.025;
+    ub_z=p_inf_County>=0.975;
+    post_spillover_poultry_farm_County(lb_z,1,mm)=0;
+    post_spillover_poultry_farm_County(ub_z,2,mm)=0;
+
     for ii=0:1000
         post_outbreak_poultry_farm_State(:,1+ii,mm)=nbinpdf(ii,k_State(:),k_State(:)./(k_State(:)+mu_farm_State(:)));
     end
@@ -147,7 +172,7 @@ for mm=1:length(par_est)
     spillover_risk_poultry_farm_County(no_farms,mm)=NaN;
 end
 
-save('Average_Risk_Poultry.mat','onward_transmission_poultry_farm_State','onward_transmission_poultry_farm_County','post_spillover_poultry_farm_State','post_outbreak_poultry_farm_State','w_AIC','State_Name','outbreak_poultry_farm_County','outbreak_risk_poultry_farm_County','spillover_poultry_farm_County','spillover_risk_poultry_farm_County','outbreak_poultry_farm_State','outbreak_risk_poultry_farm_State','spillover_poultry_farm_State','spillover_risk_poultry_farm_State');
+save('Average_Risk_Poultry.mat','post_outbreak_poultry_farm_County','post_spillover_poultry_farm_County','onward_transmission_poultry_farm_State','onward_transmission_poultry_farm_County','post_spillover_poultry_farm_State','post_outbreak_poultry_farm_State','w_AIC','State_Name','outbreak_poultry_farm_County','outbreak_risk_poultry_farm_County','spillover_poultry_farm_County','spillover_risk_poultry_farm_County','outbreak_poultry_farm_State','outbreak_risk_poultry_farm_State','spillover_poultry_farm_State','spillover_risk_poultry_farm_State');
 
 
 

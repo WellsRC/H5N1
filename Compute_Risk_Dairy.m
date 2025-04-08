@@ -30,15 +30,19 @@ R0=0.05;
 p_no_onward_transmission=nbinpdf(0,k_onward_transmission,k_onward_transmission./(k_onward_transmission+R0));
 
 for mm=1:height(Dairy_Model)
-    [F_County,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,logic_par]= Dairy_Covariates(Dairy_Model.Model_H5N1{mm},Dairy_Model.Model_Farm{mm},Dairy_Model.Model_Stratified_Operations{mm});
+    [F_County,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,logic_par,logic_temperature_indx]= Dairy_Covariates(Dairy_Model.Model_H5N1{mm},Dairy_Model.Model_Farm{mm},Dairy_Model.Model_Stratified_Operations{mm});
     x=par_est{mm};
     no_farms=County_Farms==0;
     
     indx_pinf=[5:(8+size(P_County,1))];
-    
+
     beta_x=x(~ismember(1:length(x),[indx_pinf length(x)]));
+    temp_beta=x(~ismember(1:length(x),[indx_pinf length(x)]));
     if(length(beta_x)>4)
-        beta_x(5:end)=10.^beta_x(5:end);
+            beta_x(5:end)=10.^beta_x(5:end);
+        if(~isempty(logic_temperature_indx))
+            beta_x(logic_temperature_indx+4)=-temp_beta(logic_temperature_indx+4);
+        end
     end
     
     beta_p=x(indx_pinf);
@@ -50,11 +54,11 @@ for mm=1:height(Dairy_Model)
     
     
     if(~isempty(Dairy_Network))
-        beta_x_temp=beta_x([1:4 4+find(~logic_connect)']);
+        beta_x_temp=beta_x([1:4 4+find(~logic_connect)]);
         mu_farm_temp = Risk_Assesment_Farms(beta_x_temp,[F_County; X_County(~logic_connect,:)]);
         mu_farm_temp(County_Farms==0)=0;
     
-        beta_p_temp=beta_p([1:4 4+find(~logic_connect_p)']);
+        beta_p_temp=beta_p([1:4 4+find(~logic_connect_p)]);
         p_inf_County_temp=Zero_Inflation(beta_p_temp,[F_County; P_County(~logic_connect_p,:)]);
         p_inf_County_temp(County_Farms==0)=1;
     
@@ -71,7 +75,7 @@ for mm=1:height(Dairy_Model)
     
     mu_farm_State=zeros(size(State_Spillover_Events));
     k_State=zeros(size(State_Spillover_Events));
-    k_State_spillover=zeros(size(State_Spillover_Events));
+    k_spill_State=zeros(size(State_Spillover_Events));
     
     p_temp=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,mu_farm_County(:));
     p_temp_spill=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,kappa_spillover.*mu_farm_County(:));
@@ -107,7 +111,7 @@ for mm=1:height(Dairy_Model)
         rt=r(ia);
         rt=rt(~isinf(p_temp_state) & ~isnan(p_temp_state));
         p_temp_state=p_temp_state(~isinf(p_temp_state) & ~isnan(p_temp_state));
-        k_State_spillover(ss)=interp1(p_temp_state,rt,log(p_zero_county),"pchip");
+        k_spill_State(ss)=interp1(p_temp_state,rt,log(p_zero_county),"pchip");
         
     end
      
@@ -128,7 +132,7 @@ for mm=1:height(Dairy_Model)
             onward_transmission_dairy_farm_County(:,mm)=onward_transmission_dairy_farm_County(:,mm)+(1-p_inf_County(:)).*poisspdf(ii,kappa_spillover.*mu_farm_County(:)).*(1-p_no_onward_transmission.^ii);
             onward_transmission_dairy_farm_State(:,mm)=onward_transmission_dairy_farm_State(:,mm)+nbinpdf(ii,k_spill_State(:),k_spill_State(:)./(k_spill_State(:)+spillover_dairy_farm_State(:,mm))).*(1-p_no_onward_transmission.^ii);
         end
-        post_spillover_dairy_farm_State(:,1+ii,mm)=nbinpdf(ii,k_State_spillover(:),k_State_spillover(:)./(k_State_spillover(:)+spillover_dairy_farm_State(:))); 
+        post_spillover_dairy_farm_State(:,1+ii,mm)=nbinpdf(ii,k_spill_State(:),k_spill_State(:)./(k_spill_State(:)+spillover_dairy_farm_State(:,mm))); 
     end
 
     outbreak_risk_dairy_farm_County(:,mm)=1-(p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,mu_farm_County(:)));
@@ -141,7 +145,7 @@ for mm=1:height(Dairy_Model)
 
 
     spillover_risk_dairy_farm_County(:,mm)=1-(p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,kappa_spillover.*mu_farm_County(:)));
-    spillover_risk_dairy_farm_State(:,mm)=1-nbinpdf(0,k_State_spillover(:),k_State_spillover(:)./(k_State_spillover(:)+spillover_dairy_farm_State(:))); 
+    spillover_risk_dairy_farm_State(:,mm)=1-nbinpdf(0,k_spill_State(:),k_spill_State(:)./(k_spill_State(:)+spillover_dairy_farm_State(:,mm))); 
 
     outbreak_dairy_farm_County(no_farms,mm)=NaN;
     

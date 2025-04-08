@@ -10,7 +10,7 @@ State_Names=State_Names(~state_remove);
 
 clearvars US_County
 
-[X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_par] = Poultry_Covariates({},{},{});
+[F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_par] = Poultry_Covariates({},{});
 
 Affected_County_Farms(isnan(Affected_County_Farms))=0;
 Outbreak_State=zeros(size(State_Spillover_Events));
@@ -34,7 +34,7 @@ for pp=1:4
         for jj=1:3
             Outbreak_Post_State=squeeze(post_outbreak_poultry_farm_State(jj+3.*(ii-1)+12.*(pp-1),:,:))*w_AIC;
             subplot('Position',[0.025+0.3275.*(jj-1) 0.80-0.24.*(ii-1) 0.30 0.17]);
-            bar([0:2500],Outbreak_Post_State,'FaceColor',hex2rgb('#011A27'));
+            bar([0:length(Outbreak_Post_State)-1],Outbreak_Post_State,'FaceColor',hex2rgb('#011A27'));
             hold on
             mx=max(Outbreak_Post_State);
             plot([Outbreak_State(jj+3.*(ii-1)+12.*(pp-1))  Outbreak_State(jj+3.*(ii-1)+12.*(pp-1))],[0 1.5],'color',hex2rgb('#F0810F'),'LineWidth',2);
@@ -72,4 +72,5 @@ for pp=1:4
             title(State_Names(jj+3.*(ii-1)+12.*(pp-1)))
         end
     end
+    print(gcf,['Model_Fit_Poultry_State_' num2str(pp) '.png'],'-dpng','-r300');
 end

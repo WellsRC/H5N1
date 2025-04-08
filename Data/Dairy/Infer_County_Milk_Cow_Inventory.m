@@ -2,8 +2,13 @@ clear;
 clc;
 
 County_Strat=readtable('County_Operations_with_Inventory_Cattle_Milk_2022.csv');
+County_Strat=County_Strat(~strcmp(County_Strat.State,'ALASKA')& ~strcmp(County_Strat.State,'HAWAII'),:);
+
 State_Inv=readtable('State_Milk_Cow_Inventory_2022.csv');
+State_Inv=State_Inv(~strcmp(State_Inv.State,'ALASKA')& ~strcmp(State_Inv.State,'HAWAII'),:);
+
 County_Inv=readtable('County_Milk_Cow_Inventory_2022.csv');
+County_Inv=County_Inv(~strcmp(County_Inv.State,'ALASKA')& ~strcmp(County_Inv.State,'HAWAII'),:);
 
 Strat=unique(County_Strat.DomainCategory);
 Strat=Strat([1 2 4 6 3 5 7]);

@@ -1,0 +1,85 @@
+clear;
+clc;
+close all;
+
+load([pwd '/Data/Data_US_County.mat'],'US_County');
+
+State_Names=US_County.STATE_NAME;
+state_remove=strcmp(State_Names,"Alaska") | strcmp(State_Names,"District of Columbia");
+State_Names=State_Names(~state_remove);
+
+UState_Names=unique(US_County.STATE_NAME);
+state_remove=strcmp(UState_Names,"Alaska") | strcmp(UState_Names,"District of Columbia");
+UState_Names=UState_Names(~state_remove);
+clearvars US_County
+
+[F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_par] = Poultry_Covariates({},{},{});
+
+Affected_County_Farms(isnan(Affected_County_Farms))=0;
+Outbreak_State=zeros(size(State_Spillover_Events));
+for ss=1:length(Outbreak_State)
+    Outbreak_State(ss)=state_weight_matrix(ss,:)*Affected_County_Farms;
+end
+
+
+load('Average_Risk_Poultry.mat','post_outbreak_poultry_farm_County','w_AIC');
+
+post_outbreak_poultry_farm_County=post_outbreak_poultry_farm_County(:,:,w_AIC>10^(-4));
+w_AIC=w_AIC(w_AIC>10^(-4));
+w_AIC=w_AIC./sum(w_AIC);
+
+
+[Outbreak_State,R_Indx]=sort(Outbreak_State,'descend');
+UState_Names=UState_Names(R_Indx);
+
+
+nr=[4 4 4 4];
+for pp=1:4
+    figure('units','normalized','outerposition',[0.2 0.06 0.8 1]);
+    for ii=1:nr(pp)
+        for jj=1:3
+            f_state=strcmp(UState_Names{jj+3.*(ii-1)+12.*(pp-1)},State_Names);
+            post_outbreak_County=post_outbreak_poultry_farm_County(f_state,:,:);
+            AfC=Affected_County_Farms(f_state);
+            
+            [~,SAFc]=sort(squeeze(post_outbreak_County(:,2,:))*w_AIC,'descend');
+            post_outbreak_County=post_outbreak_County(SAFc,:,:);
+            AfC=AfC(SAFc);
+            subplot('Position',[0.065+0.32.*(jj-1) 0.77-0.24.*(ii-1) 0.29 0.2]);
+            for cc=1:size(post_outbreak_County,1)
+                for mm=1:length(w_AIC)
+                    patch(cc+[-0.45 -0.45 0.45 0.45],[post_outbreak_County(cc,1,mm) post_outbreak_County(cc,2,mm) post_outbreak_County(cc,2,mm) post_outbreak_County(cc,1,mm)],hex2rgb('#011A27'),'FaceAlpha',w_AIC(mm),'linestyle','none'); hold on;
+                end
+            end
+            scatter(1:size(post_outbreak_County,1),AfC,20,hex2rgb('#F0810F'),'filled');
+            xlim([0.55 size(post_outbreak_County,1)+0.45]);
+
+            mxl=ceil(max(max(AfC),max(post_outbreak_County(:))).*1.01);
+            dxtick=1;
+            if(mxl>=10)
+                mxl=ceil(mxl./10).*10;
+                if(mxl<20)
+                    dxtick=2;
+                elseif(mxl<=45)
+                    dxtick=5;
+                elseif(mxl<50)
+                    dxtick=10;
+                elseif(mxl<=150)
+                    dxtick=25;
+                else
+                    dxtick=75;
+                end
+            end
+            ylim([0 mxl])
+            if(ii==nr(pp))
+                xlabel('State counties','FontSize',18)
+            end
+            if(jj==1)
+                ylabel({'Number of','outbreaks'},'FontSize',18)
+            end
+            set(gca,'LineWidth',2,'TickDir','out','Fontsize',16,'XTick',[],'YTick',[0:dxtick:mxl]);
+            box off;
+            title(UState_Names(jj+3.*(ii-1)+12.*(pp-1)))
+        end
+    end
+end

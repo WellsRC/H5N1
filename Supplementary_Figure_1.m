@@ -28,9 +28,10 @@ state_remove=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columb
 State_Name=State_Name(~state_remove);
 
 
-[~,~,~,Affected_County_Farms,~,~,~,~,~,~,~]= Dairy_Covariates({},{},{});
-
-figure('units','normalized','outerposition',[0.25 0.25 0.4 0.5]);
+[F_County]= Dairy_Covariates({},{},{});
+F_County=F_County([1 2 4 3],:); % Re-order simply for the colouring and labeling
+YL={'Atlantic flyway','Mississippi flyway','Central flyway','Pacific flyway'}; % We re-orderd in the line above
+figure('units','normalized','outerposition',[0.25 0.25 0.5 0.5]);
  ax1=usamap('conus');
 
 framem off; gridm off; mlabel off; plabel off;
@@ -39,23 +40,17 @@ ax1.Position=[-0.3,0.4,0.6,0.6];
 states = shaperead('usastatelo', 'UseGeoCoords', true);
 geoshow(ax1, states,'Facecolor','none','LineWidth',0.5); hold on;
 
-subplot('Position',[0.86,0.025,0.01,0.95]);
-Title_Name={['Number of outbreaks'],['among dairy farms']};
+subplot('Position',[0.75,0.025,0.04,0.95]);
 
-risk_measure=Affected_County_Farms;
-C_Risk=[hex2rgb('#ffffff');
-        hex2rgb('#FBF5BB');
-        hex2rgb('#FFFF00');
-        hex2rgb('#C29545');
-        hex2rgb('#FAC898'); % OR
-        hex2rgb('#FFA500');
-        hex2rgb('#FF7518');
-        hex2rgb('#CC5500');
-        hex2rgb('#FAA0A0');%R
-        hex2rgb('#E30B5C');
-        hex2rgb('#D2042D');
-        hex2rgb('#880808');
-        hex2rgb('#000000')];
+risk_measure=zeros(size(F_County,2),1);
+for jj=1:size(F_County,1)
+    f_indx=F_County(jj,:)==1;
+    risk_measure(f_indx)=jj;
+end
+C_Risk=[hex2rgb('#444C5C');
+        hex2rgb('#CE5A57');
+        hex2rgb('#78A5A3');
+        hex2rgb('#E1B16A')];
  y_indx=unique(risk_measure);
 x_risk=y_indx;
 
@@ -70,11 +65,10 @@ for ii=1:length(c_indx)
     patch([0 0 dy dy],c_indx(ii)+[dx.*0.8 dx.*0.2 dx.*0.2 dx.*0.8],C_Risk(ii,:),'LineWidth',1.5);
 end
 
-for yy=1:length(y_indx)
-    text(ymin+1,dx./2+c_indx(yy),[num2str(y_indx(yy),'%2.0f')],'Fontsize',16);            
-end
 
-text(ymin+7.5, (1+dx)/2,Title_Name,'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
+for yy=1:length(y_indx)
+    text(0.7,dx./2+c_indx(yy),[YL{yy}],'Fontsize',16);            
+end
 
 axis off;  
 
@@ -85,5 +79,5 @@ geoshow(ax1,S,'SymbolSpec',CM,'LineStyle','None');
 geoshow(ax1, states,'Facecolor','none','LineWidth',1.5); hold on;
 
 
-ax1.Position=[-0.16,-0.15,1.2,1.2];
+ax1.Position=[-0.245,-0.15,1.2,1.2];
 print(gcf,['Supplementary_Figure_1.png'],'-dpng','-r300');

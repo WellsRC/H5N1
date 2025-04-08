@@ -1,4 +1,4 @@
-function F = Objective_Function_Dairy_Farm(x,F_County,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p)
+function F = Objective_Function_Dairy_Farm(x,F_County,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,logic_temperature)
 
 indx_pinf=[5:(8+size(P_County,1))];
 
@@ -9,7 +9,11 @@ end
 
 beta_p=x(indx_pinf);
 if(length(beta_p)>4)
-    beta_p(5:end)=-10.^beta_p(5:end);
+    if(logic_temperature)
+        beta_p(5:end-1)=-10.^beta_p(5:end-1);    
+    else
+        beta_p(5:end)=-10.^beta_p(5:end);
+    end
 end
 
 kappa_spillover=10.^x(end);
@@ -17,6 +21,7 @@ kappa_spillover=10.^x(end);
 
 if(~isempty(Dairy_Network))
     beta_x_temp=beta_x([1:4 4+find(~logic_connect)]);
+    
     mu_farm_temp = Risk_Assesment_Farms(beta_x_temp,[F_County; X_County(~logic_connect,:)]);
     mu_farm_temp(County_Farms==0)=0;
 
@@ -44,7 +49,7 @@ k_State=zeros(size(State_Spillover_Events));
 k_State_spillover=zeros(size(State_Spillover_Events));
 
 p_temp=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,mu_farm_County(:));
-p_temp_spill=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,kappa_spillover.*mu_farm_County(:));
+p_temp_spill=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,kappa_spillover.*mu_farm_County(:)); % Use the "TRUE" county risk as aspects are not observed if lack of surviellance 
 
 r=10.^linspace(-3,4,501);
 L_Nan=false;
@@ -78,7 +83,7 @@ for ss=1:length(mu_farm_State)
     if(p_zero_county==0)
         p_zero_county=10^(-64);
     end
-    p_temp_state=r.*log(r./(r+mu_farm_State(ss)));
+    p_temp_state=r.*log(r./(r+kappa_spillover.*mu_farm_State(ss)));
     [p_temp_state,ia]=unique(p_temp_state);
     rt=r(ia);
     rt=rt(~isinf(p_temp_state) & ~isnan(p_temp_state));
@@ -112,7 +117,7 @@ L_State=log(nbinpdf(Affected_State_Farms(:),k_State(:),k_State(:)./(k_State(:)+k
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Spillover
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-L_Spillover_State=log(nbinpdf(State_Spillover_Events(:),k_State_spillover(:),k_State_spillover(:)./(k_State_spillover(:)+mu_farm_State(:).*kappa_spillover)));
+L_Spillover_State=log(nbinpdf(State_Spillover_Events(:),k_State_spillover(:),k_State_spillover(:)./(k_State_spillover(:)+kappa_spillover.*mu_farm_State(:))));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Objective function

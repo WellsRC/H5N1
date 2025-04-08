@@ -11,7 +11,7 @@ State_Names=State_Names(~state_remove);
 clearvars US_County
 
 N_Samp=10^4;
-[X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,logic_par] =  Dairy_Covariates({},{},{});
+[F_County,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,logic_par] =  Dairy_Covariates({},{},{});
 Outbreak_State=Affected_State_Farms;
 
 
@@ -66,4 +66,5 @@ for pp=1:4
             title(State_Names(jj+3.*(ii-1)+12.*(pp-1)))
         end
     end
+    print(gcf,['Model_Fit_Dairy_State_' num2str(pp) '.png'],'-dpng','-r300');
 end
