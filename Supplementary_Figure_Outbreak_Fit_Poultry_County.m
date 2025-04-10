@@ -13,7 +13,7 @@ state_remove=strcmp(UState_Names,"Alaska") | strcmp(UState_Names,"District of Co
 UState_Names=UState_Names(~state_remove);
 clearvars US_County
 
-[F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_par] = Poultry_Covariates({},{},{});
+[F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_par,logic_temp] = Poultry_Covariates({},{});
 
 Affected_County_Farms(isnan(Affected_County_Farms))=0;
 Outbreak_State=zeros(size(State_Spillover_Events));

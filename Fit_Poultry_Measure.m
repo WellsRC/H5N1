@@ -1,6 +1,6 @@
 clear;
 clc;
-parpool(24);
+parpool(48);
 % Define the variables to loop through
 H5N1_Variable_v={'Light_Intensity','Waterfowl_Mallard','Waterfowl_Canada_Goose','Waterfowl_AGW_Teal','Waterfowl_N_Pintail','Temperature'};
 Farm_Variables_v={'Turkey_Operations','Broiler_Operations','Layer_Operations','Pullet_Operations'};

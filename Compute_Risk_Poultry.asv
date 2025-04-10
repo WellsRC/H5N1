@@ -68,52 +68,70 @@ for mm=1:length(par_est)
     mu_farm_County = Risk_Assesment_Farms(beta_x,[F_County; X_County]);
     
     mu_farm_County(County_Farms==0)=0;
+    Avg_P=zeros(length(mu_farm_County(:)),2500);
+    for ii=1:2500
+        Avg_P(:,ii)=poissrnd(mu_farm_County(:));
+    end
+    Out_C=zeros(size(Avg_P));
+    RZ=rand(size(Out_C))>repmat(p_inf_County(:),1,2500);
+    Out_C(RZ)=Avg_P(RZ);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
     % Probability of extra zeros and avg State-Level
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
     mu_farm_State=zeros(size(State_Spillover_Events));
-    
-    k_state=zeros(size(State_Spillover_Events));
-    p_nb_state=zeros(size(State_Spillover_Events));
-    z_state=zeros(size(State_Spillover_Events));
-    
-    k_state_spill=zeros(size(State_Spillover_Events));
-    z_state_spill=zeros(size(State_Spillover_Events));
-    p_nb_state_spill=zeros(size(State_Spillover_Events));
-    
-    Affected_State_Farms=zeros(size(State_Spillover_Events));
-    
+    k_State=zeros(size(State_Spillover_Events));
+    k_spill_State=zeros(size(State_Spillover_Events));
+
+
     p_temp=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,mu_farm_County(:));
     p_temp_spill=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,kappa_spillover.*mu_farm_County(:));
     
+    r=10.^linspace(-3,4,501);
+    L_Nan=false;
+    
     w_state=zeros(size(State_Spillover_Events));
     County_w_Farms=County_Farms>0;
-    
-    L_Nan=false;
-    for ss=1:length(w_state) 
+    for ss=1:length(mu_farm_State)
+
         mu_farm_State(ss)=state_weight_matrix(ss,:)*((1-p_inf_County(:)).*mu_farm_County(:)); 
         w_state(ss)=state_weight_matrix(ss,:)*County_w_Farms(:);
-    
+
         mu_County_NB=state_weight_matrix(ss,:)*((1-p_inf_County(:)).*mu_farm_County(:)); 
         var_County_NB=state_weight_matrix(ss,:)*((1-p_inf_County(:)).*(mu_farm_County(:)+p_inf_County(:).*mu_farm_County(:).^2)); 
+    
+        K_Const=(var_County_NB-mu_County_NB)./mu_County_NB+mu_County_NB;
         p_zero_county=prod(p_temp(state_weight_matrix(ss,:)==1));
         if(p_zero_county==0)
             p_zero_county=10^(-64);
         end
+
+        p_nb=(r+1)./K_Const-r;
+        m_nb=r./(r+p_nb);
+        z_nb=1-
+
+
+        p_temp_state=log(z_nb(r)+(1-z_nb(r)).*nbinpdf(0,r,p_nb(r)));
         
-        [z_state(ss),k_state(ss),p_nb_state(ss),L_Nan1]=Estimate_ZIF_NB(mu_County_NB,var_County_NB,p_zero_county);
+        [p_temp_state,ia]=unique(p_temp_state);
+        rt=r(ia);
+        rt=rt(~isinf(p_temp_state) & ~isnan(p_temp_state));
+        p_temp_state=p_temp_state(~isinf(p_temp_state) & ~isnan(p_temp_state));
+        k_State(ss)=interp1(p_temp_state,rt,log(p_zero_county),"pchip");
     
     
-        mu_County_NB=state_weight_matrix(ss,:)*((1-p_inf_County(:)).*kappa_spillover.*mu_farm_County(:)); 
-        var_County_NB=state_weight_matrix(ss,:)*((1-p_inf_County(:)).*(kappa_spillover.*mu_farm_County(:)+p_inf_County(:).*(kappa_spillover.*mu_farm_County(:)).^2)); 
         p_zero_county=prod(p_temp_spill(state_weight_matrix(ss,:)==1));
         if(p_zero_county==0)
             p_zero_county=10^(-64);
         end
-        [z_state_spill(ss),k_state_spill(ss),p_nb_state_spill(ss),L_Nan2]=Estimate_ZIF_NB(mu_County_NB,var_County_NB,p_zero_county);
+        p_temp_state=r.*log(r./(r+kappa_spillover.*mu_farm_State(ss)));
+        
+        [p_temp_state,ia]=unique(p_temp_state);
+        rt=r(ia);
+        rt=rt(~isinf(p_temp_state) & ~isnan(p_temp_state));
+        p_temp_state=p_temp_state(~isinf(p_temp_state) & ~isnan(p_temp_state));
+        k_spill_State(ss)=interp1(p_temp_state,rt,log(p_zero_county),"pchip");
     end
-
     
     outbreak_poultry_farm_County(:,mm)=(1-p_inf_County(:)).*mu_farm_County(:);
 
@@ -139,35 +157,27 @@ for mm=1:length(par_est)
     post_spillover_poultry_farm_County(ub_z,2,mm)=0;
 
     for ii=0:1000
-        if(ii==0)
-            post_outbreak_poultry_farm_State(:,1+ii,mm)=z_state(:)+(1-z_state(:)).*nbinpdf(ii,k_state(:),p_nb_state(:));
-        else
-            post_outbreak_poultry_farm_State(:,1+ii,mm)=(1-z_state(:)).*nbinpdf(ii,k_state(:),p_nb_state(:));
-        end
+        post_outbreak_poultry_farm_State(:,1+ii,mm)=nbinpdf(ii,k_State(:),k_State(:)./(k_State(:)+mu_farm_State(:)));
     end
     
     for ii=0:75
         if(ii>0)
             onward_transmission_poultry_farm_County(:,mm)=onward_transmission_poultry_farm_County(:,mm)+(1-p_inf_County(:)).*poisspdf(ii,kappa_spillover.*mu_farm_County(:)).*(1-p_no_onward_transmission.^ii);
-            onward_transmission_poultry_farm_State(:,mm)=onward_transmission_poultry_farm_State(:,mm)+(1-z_state_spill(:)).*nbinpdf(ii,k_state_spill(:),p_nb_state_spill(:)).*(1-p_no_onward_transmission.^ii);
+            onward_transmission_poultry_farm_State(:,mm)=onward_transmission_poultry_farm_State(:,mm)+nbinpdf(ii,k_spill_State(:),k_spill_State(:)./(k_spill_State(:)+spillover_poultry_farm_State(:,mm))).*(1-p_no_onward_transmission.^ii);
         end
-        if(ii==0)
-            post_spillover_poultry_farm_State(:,1+ii,mm)=z_state_spill(:)+(1-z_state_spill(:)).*nbinpdf(ii,k_state_spill(:),p_nb_state_spill(:));
-        else
-            post_spillover_poultry_farm_State(:,1+ii,mm)=(1-z_state_spill(:)).*nbinpdf(ii,k_state_spill(:),p_nb_state_spill(:));
-        end
+        post_spillover_poultry_farm_State(:,1+ii,mm)=nbinpdf(ii,k_spill_State(:),k_spill_State(:)./(k_spill_State(:)+spillover_poultry_farm_State(:,mm)));
     end
 
     outbreak_risk_poultry_farm_County(:,mm)=1-(p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,mu_farm_County(:)));
     t_nan=isnan(outbreak_risk_poultry_farm_County(:,mm));
     outbreak_risk_poultry_farm_County(t_nan,mm)=0;
 
-    outbreak_risk_poultry_farm_State(:,mm)=1-(z_state(:)+(1-z_state(:)).*nbinpdf(0,k_state(:),p_nb_state(:)));
+    outbreak_risk_poultry_farm_State(:,mm)=1-(nbinpdf(0,k_State(:),k_State(:)./(k_State(:)+mu_farm_State(:))));
     t_nan=isnan(outbreak_risk_poultry_farm_State(:,mm));
     outbreak_risk_poultry_farm_State(t_nan,mm)=0;
 
     spillover_risk_poultry_farm_County(:,mm)=1-(p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,kappa_spillover.*mu_farm_County(:)));
-    spillover_risk_poultry_farm_State(:,mm)=1-(z_state_spill(:)+(1-z_state_spill(:)).*nbinpdf(0,k_state_spill(:),p_nb_state_spill(:)));
+    spillover_risk_poultry_farm_State(:,mm)=1-(nbinpdf(0,k_spill_State(:),k_spill_State(:)./(k_spill_State(:)+kappa_spillover.*mu_farm_State(:))));
 
     outbreak_poultry_farm_County(no_farms,mm)=NaN;
     

@@ -123,7 +123,7 @@ for yy=1:length(H5N1_Variable)
      elseif(strcmp(H5N1_Variable{yy},'Waterfowl_N_Pintail'))
         Y_County=log10(1+US_County.NORTH_PINTAIL)';
         logic_exp(5)=true;
-    elseif(strcmp(Farm_Variables{ff},'Temperature'))        
+    elseif(strcmp(H5N1_Variable{yy},'Temperature'))        
         Y_County=US_County.TEMP-mean(US_County.TEMP);  
         logic_exp(6)=true;
     end

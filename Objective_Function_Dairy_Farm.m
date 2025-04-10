@@ -44,85 +44,78 @@ p_inf_County(County_Farms==0)=1;
 mu_farm_County = Risk_Assesment_Farms(beta_x,[F_County; X_County]);
 mu_farm_County(County_Farms==0)=0;
 
-mu_farm_State=zeros(size(State_Spillover_Events));
-k_State=zeros(size(State_Spillover_Events));
-k_State_spillover=zeros(size(State_Spillover_Events));
+k_state=zeros(size(State_Spillover_Events));
+p_nb_state=zeros(size(State_Spillover_Events));
+z_state=zeros(size(State_Spillover_Events));
+
+k_state_spill=zeros(size(State_Spillover_Events));
+z_state_spill=zeros(size(State_Spillover_Events));
+p_nb_state_spill=zeros(size(State_Spillover_Events));
 
 p_temp=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,mu_farm_County(:));
 p_temp_spill=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,kappa_spillover.*mu_farm_County(:)); % Use the "TRUE" county risk as aspects are not observed if lack of surviellance 
 
-r=10.^linspace(-3,4,501);
-L_Nan=false;
-
 w_state=zeros(size(State_Spillover_Events));
 County_w_Farms=County_Farms>0;
+L_Nan=false;
+for ss=1:length(w_state)
 
-for ss=1:length(mu_farm_State)
-
-    temp_county=(1-p_inf_County(:)).*mu_farm_County(:); 
-    mu_farm_State(ss)=state_weight_matrix(ss,:)*temp_county;   
     w_state(ss)=state_weight_matrix(ss,:)*County_w_Farms(:);
     
+    mu_County_NB=state_weight_matrix(ss,:)*((1-p_inf_County(:)).*mu_farm_County(:)); 
+    var_County_NB=state_weight_matrix(ss,:)*((1-p_inf_County(:)).*(mu_farm_County(:)+p_inf_County(:).*mu_farm_County(:).^2)); 
     p_zero_county=prod(p_temp(state_weight_matrix(ss,:)==1));
     if(p_zero_county==0)
         p_zero_county=10^(-64);
     end
-    p_temp_state=r.*log(r./(r+mu_farm_State(ss)));
-    [p_temp_state,ia]=unique(p_temp_state);
-    rt=r(ia);
-    rt=rt(~isinf(p_temp_state) & ~isnan(p_temp_state));
-    p_temp_state=p_temp_state(~isinf(p_temp_state) & ~isnan(p_temp_state));
-    if(length(rt)>=2)
-        k_State(ss)=interp1(p_temp_state,rt,log(p_zero_county),"pchip");
-    else
-        k_State(ss)=1; % Arbitrary since we will be returning a NaN value for the lieklihood
-        L_Nan=true;
-    end
+    
+    [z_state(ss),k_state(ss),p_nb_state(ss),L_Nan1]=Estimate_ZIF_NB(mu_County_NB,var_County_NB,p_zero_county);
 
+
+    mu_County_NB=state_weight_matrix(ss,:)*((1-p_inf_County(:)).*kappa_spillover.*mu_farm_County(:)); 
+    var_County_NB=state_weight_matrix(ss,:)*((1-p_inf_County(:)).*(kappa_spillover.*mu_farm_County(:)+p_inf_County(:).*(kappa_spillover.*mu_farm_County(:)).^2)); 
     p_zero_county=prod(p_temp_spill(state_weight_matrix(ss,:)==1));
     if(p_zero_county==0)
         p_zero_county=10^(-64);
     end
-    p_temp_state=r.*log(r./(r+kappa_spillover.*mu_farm_State(ss)));
-    [p_temp_state,ia]=unique(p_temp_state);
-    rt=r(ia);
-    rt=rt(~isinf(p_temp_state) & ~isnan(p_temp_state));
-    p_temp_state=p_temp_state(~isinf(p_temp_state) & ~isnan(p_temp_state));
-    if(length(rt)>=2)
-        k_State_spillover(ss)=interp1(p_temp_state,rt,log(p_zero_county),"pchip");
-    else
-        k_State_spillover(ss)=1; % Arbitrary since we will be returning a NaN value for the lieklihood
-        L_Nan=true;
+    [z_state_spill(ss),k_state_spill(ss),p_nb_state_spill(ss),L_Nan2]=Estimate_ZIF_NB(mu_County_NB,var_County_NB,p_zero_county);
+
+    L_Nan=L_Nan |L_Nan1 | L_Nan2;
+    Affected_State_Farms(ss)=state_weight_matrix(ss,:)*(Affected_County_Farms(:));
+    if(L_Nan)
+        break;
     end
 end
-
-k_outbreak_county=mu_farm_County(:);
-k_outbreak_state=mu_farm_State(:);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% County
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-L_County=log((1-p_inf_County(:)).*poisspdf(Affected_County_Farms(:),k_outbreak_county(:)));
-L_County(Affected_County_Farms==0)=log(p_inf_County(Affected_County_Farms==0)+(1-p_inf_County(Affected_County_Farms==0)).*poisspdf(Affected_County_Farms(Affected_County_Farms==0),k_outbreak_county(Affected_County_Farms==0)));
-
-cdf=(1-p_inf_County(:)).*poisscdf(Affected_County_Farms(:)+upper_County_Unknown(:),k_outbreak_county(:))-(1-p_inf_County(:)).*poisscdf(Affected_County_Farms(:),k_outbreak_county(:)); % do not need the addition of p_inf_County alone since it cancels out in subtration because computing cdf in each 
-L_County(upper_County_Unknown>0)=log(cdf(upper_County_Unknown>0));
-
-L_County=L_County(County_Farms>0 & ~isnan(Affected_County_Farms));
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% State
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-L_State=log(nbinpdf(Affected_State_Farms(:),k_State(:),k_State(:)./(k_State(:)+k_outbreak_state(:))));
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Spillover
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-L_Spillover_State=log(nbinpdf(State_Spillover_Events(:),k_State_spillover(:),k_State_spillover(:)./(k_State_spillover(:)+kappa_spillover.*mu_farm_State(:))));
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Objective function
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (~L_Nan)
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % County
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    k_outbreak=mu_farm_County(:);
+    L_County=log((1-p_inf_County(:)).*poisspdf(Affected_County_Farms(:),k_outbreak(:)));
+    L_County(Affected_County_Farms==0)=log(p_inf_County(Affected_County_Farms==0)+(1-p_inf_County(Affected_County_Farms==0)).*poisspdf(Affected_County_Farms(Affected_County_Farms==0),k_outbreak(Affected_County_Farms==0)));
+    
+    cdf=(1-p_inf_County(:)).*poisscdf(Affected_County_Farms(:)+upper_County_Unknown(:),k_outbreak(:))-(1-p_inf_County(:)).*poisscdf(Affected_County_Farms(:),k_outbreak(:)); % do not need the addition of p_inf_County alone since it cancels out in subtration because computing cdf in each 
+    L_County(upper_County_Unknown>0)=log(cdf(upper_County_Unknown>0));
+    
+    L_County=L_County(County_Farms>0 & ~isnan(Affected_County_Farms));
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % State outbreaks
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    L_State=log((1-z_state(:)).*nbinpdf(Affected_State_Farms(:),k_state(:),p_nb_state(:)));
+    L_State(Affected_State_Farms==0)=log(z_state(Affected_State_Farms==0)+(1-z_state(Affected_State_Farms==0)).*nbinpdf(Affected_State_Farms(Affected_State_Farms==0),k_state(Affected_State_Farms==0),p_nb_state(Affected_State_Farms==0)));
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Spillover
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    L_Spillover_State=log((1-z_state_spill(:)).*nbinpdf(State_Spillover_Events(:),k_state_spill(:),p_nb_state_spill(:)));
+    L_Spillover_State(State_Spillover_Events(:)==0)=log(z_state_spill(State_Spillover_Events(:)==0)+(1-z_state_spill(State_Spillover_Events(:)==0)).*nbinpdf(State_Spillover_Events(State_Spillover_Events(:)==0),k_state_spill(State_Spillover_Events(:)==0),p_nb_state_spill(State_Spillover_Events(:)==0)));
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Objective function
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
     F=-sum(L_County) -sum(w_state(:).*L_Spillover_State(:)) -sum(w_state(:).*L_State(:));
 else
     F=NaN;

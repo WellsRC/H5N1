@@ -1,6 +1,6 @@
 clear;
 clc;
-parpool(24);
+parpool(48);
 % % Define the variables to loop through
 H5N1_Variable_v={'Light_Intensity','Waterfowl_Mallard','Waterfowl_Canada_Goose','Waterfowl_AGW_Teal','Waterfowl_N_Pintail','Temperature'};
 Farm_Variables_v={'Inventory','Connectivity'};
@@ -36,7 +36,7 @@ for ss=2:9
     
     parfor mm=m_start:m_end
         if(sum(bin_farm(mm,1:6))>0)
-            H5N1_Variable=H5N1_Variable_v(bin_farm(mm,1:5));
+            H5N1_Variable=H5N1_Variable_v(bin_farm(mm,1:6));
         else
             H5N1_Variable={};
         end
