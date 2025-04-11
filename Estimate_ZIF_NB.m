@@ -19,12 +19,21 @@ p_temp_state=p_temp_state(~isinf(p_temp_state) & ~isnan(p_temp_state));
 L_Nan=false;
 if(length(rt)>=2)
     k_nb=interp1(p_temp_state,rt,log(p_zero_county),"pchip");
-    if(k_nb<=0)
-        k_nb=10.^(interp1(p_temp_state,log10(rt),log(p_zero_county),"pchip"));
-    end
     p_nb=(k_nb+1)./(k_nb+1+K_Const);
     m_nb=k_nb.*(1-p_nb)./p_nb;
     z_nb=max(1-mu_County_NB./m_nb,0);
+    if(k_nb<=0 || p_nb>1 || p_nb <0 || z_nb<0 || z_nb >1)
+        r=10.^linspace(-4,3,501);
+        p_temp_state=log(nbinpdf(0,r,r./(r+mu_County_NB)));
+        [p_temp_state,ia]=unique(p_temp_state);
+        rt=r(ia);
+        rt=rt(~isinf(p_temp_state) & ~isnan(p_temp_state));
+        p_temp_state=p_temp_state(~isinf(p_temp_state) & ~isnan(p_temp_state));
+
+        k_nb=interp1(p_temp_state,rt,log(p_zero_county),"pchip");
+        p_nb=k_nb./(k_nb+mu_County_NB);
+        z_nb=0;
+    end
 else
     % Arbitrary since we will be returning a NaN value for the lieklihood
     k_nb=1;

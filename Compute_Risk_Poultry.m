@@ -7,6 +7,8 @@ State_Name=unique(US_County.STATE_NAME);
 state_remove=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
 State_Name=State_Name(~state_remove);
 
+potential_outbreak_poultry_farm_County=zeros(height(US_County),length(par_est));
+
 outbreak_poultry_farm_County=zeros(height(US_County),length(par_est));
 outbreak_risk_poultry_farm_County=zeros(height(US_County),length(par_est));
 
@@ -114,7 +116,7 @@ for mm=1:length(par_est)
         [z_state_spill(ss),k_state_spill(ss),p_nb_state_spill(ss),L_Nan2]=Estimate_ZIF_NB(mu_County_NB,var_County_NB,p_zero_county);
     end
 
-    
+    potential_outbreak_poultry_farm_County(:,mm)=mu_farm_County(:);
     outbreak_poultry_farm_County(:,mm)=(1-p_inf_County(:)).*mu_farm_County(:);
 
     outbreak_poultry_farm_State(:,mm)=mu_farm_State(:);
@@ -168,17 +170,9 @@ for mm=1:length(par_est)
 
     spillover_risk_poultry_farm_County(:,mm)=1-(p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,kappa_spillover.*mu_farm_County(:)));
     spillover_risk_poultry_farm_State(:,mm)=1-(z_state_spill(:)+(1-z_state_spill(:)).*nbinpdf(0,k_state_spill(:),p_nb_state_spill(:)));
-
-    outbreak_poultry_farm_County(no_farms,mm)=NaN;
-    
-    spillover_poultry_farm_County(no_farms,mm)=NaN;
-    
-    outbreak_risk_poultry_farm_County(no_farms,mm)=NaN;
-    
-    spillover_risk_poultry_farm_County(no_farms,mm)=NaN;
 end
 
-save('Average_Risk_Poultry.mat','post_outbreak_poultry_farm_County','post_spillover_poultry_farm_County','onward_transmission_poultry_farm_State','onward_transmission_poultry_farm_County','post_spillover_poultry_farm_State','post_outbreak_poultry_farm_State','w_AIC','State_Name','outbreak_poultry_farm_County','outbreak_risk_poultry_farm_County','spillover_poultry_farm_County','spillover_risk_poultry_farm_County','outbreak_poultry_farm_State','outbreak_risk_poultry_farm_State','spillover_poultry_farm_State','spillover_risk_poultry_farm_State');
+save('Average_Risk_Poultry.mat','no_farms','potential_outbreak_poultry_farm_County','post_outbreak_poultry_farm_County','post_spillover_poultry_farm_County','onward_transmission_poultry_farm_State','onward_transmission_poultry_farm_County','post_spillover_poultry_farm_State','post_outbreak_poultry_farm_State','w_AIC','State_Name','outbreak_poultry_farm_County','outbreak_risk_poultry_farm_County','spillover_poultry_farm_County','spillover_risk_poultry_farm_County','outbreak_poultry_farm_State','outbreak_risk_poultry_farm_State','spillover_poultry_farm_State','spillover_risk_poultry_farm_State');
 
 
 
