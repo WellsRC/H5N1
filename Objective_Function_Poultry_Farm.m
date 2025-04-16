@@ -37,12 +37,8 @@ Affected_State_Farms=zeros(size(State_Spillover_Events));
 p_temp=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,mu_farm_County(:));
 p_temp_spill=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,kappa_spillover.*mu_farm_County(:));
 
-w_state=zeros(size(State_Spillover_Events));
-County_w_Farms=County_Farms>0;
-
 L_Nan=false;
-for ss=1:length(w_state) 
-    w_state(ss)=state_weight_matrix(ss,:)*County_w_Farms(:);
+for ss=1:length(z_state) 
 
     mu_County_NB=state_weight_matrix(ss,:)*((1-p_inf_County(:)).*mu_farm_County(:)); 
     var_County_NB=state_weight_matrix(ss,:)*((1-p_inf_County(:)).*(mu_farm_County(:)+p_inf_County(:).*mu_farm_County(:).^2)); 
@@ -98,9 +94,9 @@ if (~L_Nan)
     % Objective function
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    F=-sum(L_County) -sum(w_state(:).*L_Spillover_State(:)) -sum(w_state(:).*L_State(:));
+    F=-sum(L_County) -sum(L_Spillover_State(:)) -sum(L_State(:));
 else
-    F=NaN;
+    F=Inf;
 end
 
 

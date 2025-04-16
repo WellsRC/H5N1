@@ -49,8 +49,8 @@ for ss=2:10
             lt=[true(8,1); logic_par; true(1)];
             xt=max(abs(x0_pot(:,~lt)),[],2);
             x0=x0_pot(isnan(xt),:);
-            x0(isnan(x0))=-32;
-            x0(x0(:,14)==-32,14)=0;
+            x0(isnan(x0))=-16;
+            x0(x0(:,14)==-16,14)=0;
             x0=x0(:,lt);
         else
             x0=[];

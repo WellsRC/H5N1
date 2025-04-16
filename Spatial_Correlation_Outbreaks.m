@@ -23,76 +23,9 @@
 % 
 % NS=length(S);
 % 
-% load([pwd '/Data/Data_US_County.mat'],'US_County');
 % 
-% State_Name=unique(US_County.STATE_NAME);
-% state_remove=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
-% State_Name=State_Name(~state_remove);
+% [~,~,~,County_Farms,Affected_County_Farms,~,~,~] = Poultry_Covariates({},{});
 % 
-% [~,~,~,County_Farms,Affected_County_Farms,~,~,~] = Poultry_Covariates({},{},{});
-% load('Average_Risk_Poultry.mat','w_AIC','outbreak_poultry_farm_County','State_Name');
-% avg_outbreak_farm_County=outbreak_poultry_farm_County*w_AIC;
-% 
-% avg_outbreak_farm_County(County_Farms==0)=NaN;
-% 
-% Err=(Affected_County_Farms-avg_outbreak_farm_County);
-% 
-% figure('units','normalized','outerposition',[0.25 0.25 0.45 0.475]);
-% ax1=usamap('conus');
-% 
-% framem off; gridm off; mlabel off; plabel off;
-% 
-% ax1.Position=[-1.25,-0.2,1.3,1.3];
-% 
-% states = shaperead('usastatelo', 'UseGeoCoords', true);
-% geoshow(ax1, states,'Facecolor','none','LineWidth',0.5); hold on;
-% 
-% 
-% C_Err=[hex2rgb('#b2182b');
-% hex2rgb('#d6604d');
-% hex2rgb('#f4a582');
-% hex2rgb('#fddbc7');
-% hex2rgb('#f7f7f7');
-% hex2rgb('#d1e5f0');
-% hex2rgb('#92c5de');
-% hex2rgb('#4393c3');
-% hex2rgb('#2166ac');];
-% 
-% x_Err=[-45 -30 -15 -0.5 0 0.5 15 30 45];
-% 
-% 
-% CC_Err=ones(length(S),3);
-% 
-% for ii=1:length(S)
-%     if(~isnan(Err(ii)))
-%         CC_Err(ii,:)=interp1(x_Err,C_Err,Err(ii));
-%     else
-%         CC_Err(ii,:)=[0.7 0.7 0.7];
-%     end
-% end
-% 
-% CM=makesymbolspec('Polygon',{'INDEX',[1 NS],'FaceColor',CC_Err});
-% geoshow(ax1,S,'SymbolSpec',CM,'LineStyle','None'); 
-% geoshow(ax1, states,'Facecolor','none','LineWidth',1.5); hold on;
-% 
-% subplot('Position',[0.8 0.03 0.03 0.94])
-% 
-% yy=linspace(-45,45,1001);
-% for ii=1:1000
-%     patch([0 0 1 1],[yy(ii) yy(ii+1) yy(ii+1) yy(ii)],interp1(x_Err,C_Err,yy(ii)),'LineStyle','none'); hold on;
-% end
-% 
-% for er=-45:15:45
-%     text(1.5,er,num2str(er),'FontSize',14,'HorizontalAlignment','left','VerticalAlignment','middle');
-% end
-% 
-% text(3,0,'Residual','FontSize',18,'HorizontalAlignment','center','VerticalAlignment','middle','Rotation',270)
-% 
-% patch([0 0 1 1],[-45 45 45 -45],'k','LineWidth',2,'FaceAlpha',0);
-% axis off;
-% 
-% ax1.Position=[-0.25,-0.2,1.3,1.3];
-
 % W=zeros(length(S));
 % 
 % for ii=1:length(S)
@@ -105,16 +38,25 @@
 %         end
 %     end
 % end
+% 
+% Wt=W(County_Farms>0,:);
+% Wt=Wt(:,County_Farms>0);
 
-Wt=W(~isnan(Err),:);
-Wt=Wt(:,~isnan(Err));
-z=Err(~isnan(Err))-mean(Err(~isnan(Err)));
+z=Affected_County_Farms(County_Farms>0)-mean(Affected_County_Farms(County_Farms>0));
 n=length(z);
 
 Wf=Wt;
 for ss=1:length(z)
     Wf(ss,ss)=1;
 end
+
+GI=0;
+for ii=1:length(z)
+    GI=GI+z(ii).*(Wf(ii,:)*z);    
+end
+GI=GI./sum(z.^2);
+
+GI=length(z).*GI./sum(Wf(:));
 
 I=zeros(length(z),1);
 E=zeros(length(z),1);
@@ -138,11 +80,13 @@ ZZ=real(Z_stat);
 pv=normcdf(ZZ);
 pv(ZZ>0)=1-normcdf(ZZ(ZZ>0));
 
-p_Err=NaN.*zeros(size(Err));
+p_Err=NaN.*zeros(size(County_Farms));
 c=1;
-for cc=1:length(Err)
-    if(~isnan(Err(cc)))
+CCz=NaN.*zeros(size(County_Farms));
+for cc=1:length(County_Farms)
+    if(County_Farms(cc)>0)
         p_Err(cc)=pv(c);
+        CCz(cc)=z(c);
         c=c+1;
     end
 end
@@ -160,9 +104,9 @@ geoshow(ax1, states,'Facecolor','none','LineWidth',0.5); hold on;
 CC_Err=ones(length(S),3);
 
 for ii=1:length(S)
-    if(~isnan(p_Err(ii)) && p_Err(ii)<0.05 && Err(ii)>0)
+    if(~isnan(p_Err(ii)) && p_Err(ii)<0.05 && CCz(ii)>0)
         CC_Err(ii,:)=[1 0 0];
-    elseif(~isnan(p_Err(ii)) && p_Err(ii)<0.05 && Err(ii)<0)
+    elseif(~isnan(p_Err(ii)) && p_Err(ii)<0.05 && CCz(ii)<0)
         CC_Err(ii,:)=[0 0 1];
     elseif(~isnan(p_Err(ii)))
         CC_Err(ii,:)=[1 1 1];

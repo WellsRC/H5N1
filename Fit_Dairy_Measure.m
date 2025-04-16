@@ -22,7 +22,6 @@ Model_Stratified_Operations=cell(size(bin_farm,1),1);
 
 Sub_Model_Fit=NaN.*zeros(size(bin_farm,1),26);
 logic_temp=cell(size(bin_farm,1),1);
-
 for ss=2:9
     m_indx=find(sum(bin_farm,2)==ss);
     m_start=min(m_indx);
@@ -57,8 +56,8 @@ for ss=2:9
             lt=[true(8,1); logic_par; true(1)];
             xt=max(abs(x0_pot(:,~lt)),[],2);
             x0=x0_pot(isnan(xt),:);
-            x0(isnan(x0))=-32;            
-            x0(x0(:,14)==-32,14)=0;
+            x0(isnan(x0))=-16;            
+            x0(x0(:,14)==-16,14)=0;
             x0=x0(:,lt);
         else
             x0=[];

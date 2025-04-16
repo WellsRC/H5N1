@@ -1,38 +1,51 @@
 clear;
 clc;
 
-H5N1_Variable_v={'Light_Intensity','Waterfowl_Mallard','Waterfowl_Canada_Goose','Waterfowl_AGW_Teal','Waterfowl_N_Pintail','Connectivity'};
-Other_Variables_v={'Inventory','Connectivity','Cattle_Inventory_50_or_less','Cattle_Inventory_over_50','Cattle_Inventory_100_or_less','Cattle_Inventory_over_100','Cattle_Inventory_200_or_less','Cattle_Inventory_over_200','Cattle_Inventory_500_or_less','Cattle_Inventory_over_500','Cattle_Inventory_1_to_9','Cattle_Inventory_10_to_19','Cattle_Inventory_20_to_49','Cattle_Inventory_50_to_99','Cattle_Inventory_100_to_199','Cattle_Inventory_200_to_499','Cattle_Inventory_500_or_more'};
+H5N1_Variable_v={'Light_Intensity','Waterfowl_Mallard','Waterfowl_Canada_Goose','Waterfowl_AGW_Teal','Waterfowl_N_Pintail','Temperature','Connectivity'};
+Other_Variables_v={'Inventory','Connectivity','Total_Oprations','Cattle_Inventory_1_to_9','Cattle_Inventory_10_to_19','Cattle_Inventory_20_to_49','Cattle_Inventory_50_to_99','Cattle_Inventory_100_to_199','Cattle_Inventory_200_to_499','Cattle_Inventory_500_or_more'};
 
 load('Dairy_Models_Fit.mat')
 
 Delta_AIC=AIC-min(AIC);
 
-Zero_Inflated=NaN.*zeros(length(L),7);
-Outbreak_Model=NaN.*zeros(length(L),91);
+
+Zero_Inflated=NaN.*zeros(length(L),11);
+Outbreak_Model=NaN.*zeros(length(L),14);
 
 Spillover_per_Outbreak=zeros(length(L),1);
 
-Variable_Names=cell(1,103);
-Variable_Names(1)={'Zero_Inflated_Intercept'};
-Variable_Names(8)={'Outbreak_Intercept'};
+Variable_Names=cell(1,30);
+
+Variable_Names(1)={'Model'};
+
+Variable_Names(2)={'Zero_Inflated_Intercept_Atlantic_Flyway'};
+Variable_Names(3)={'Zero_Inflated_Intercept_Missippi_Flyway'};
+Variable_Names(4)={'Zero_Inflated_Intercept_Pacific_Flyway'};
+Variable_Names(5)={'Zero_Inflated_Intercept_Central_Flyway'};
+
+Variable_Names(13)={'Outbreak_Intercept_Atlantic_Flyway'};
+Variable_Names(14)={'Outbreak_Intercept_Missippi_Flyway'};
+Variable_Names(15)={'Outbreak_Intercept_Pacific_Flyway'};
+Variable_Names(16)={'Outbreak_Intercept_Central_Flyway'};
 for ii=1:length(H5N1_Variable_v)
-    Variable_Names(ii+1)={['Zero_Inflated_' H5N1_Variable_v{ii}]};
-    if(ii<length(H5N1_Variable_v))
-        for ff=1:length(Other_Variables_v)
-            Variable_Names(8+ff+length(Other_Variables_v).*(ii-1))={['Outbreak_' H5N1_Variable_v{ii} '_' Other_Variables_v{ff}]};
-        end
-    end
+    Variable_Names(ii+5)={['Zero_Inflated_' H5N1_Variable_v{ii}]};
 end
 
-Variable_Names(99)={'Spillover_per_Outbreak'};
-Variable_Names(100)={'Log_Likelihood'};
-Variable_Names(101)={'AIC'};
-Variable_Names(102)={'Delta_AIC'};
-Variable_Names(103)={'AIC_Weight'};
+for ff=1:length(Other_Variables_v)
+    Variable_Names(16+ff)={['Outbreak_' Other_Variables_v{ff}]};
+end
+
+Variable_Names(26)={'Spillover_per_Outbreak'};
+Variable_Names(27)={'Log_Likelihood'};
+Variable_Names(28)={'AIC'};
+Variable_Names(29)={'Delta_AIC'};
+Variable_Names(30)={'AIC_Weight'};
+
+Model=cell(length(L),1);
 
 for mm=1:length(L)
-    [X_County,P_County,~,~,~,~,~,~,logic_connect,logic_connect_p,logic_par] = Dairy_Covariates(Dairy_Model.Model_H5N1{mm},Dairy_Model.Model_Farm{mm},Dairy_Model.Model_Stratified_Operations{mm});
+    Model{mm}=['Model ' num2str(mm)];
+    [F_County,X_County,P_County,~,~,~,~,~,Dairy_Network,logic_connect,logic_connect_p,logic_par,logic_temperature]= Dairy_Covariates(Dairy_Model.Model_H5N1{mm},Dairy_Model.Model_Farm{mm},Dairy_Model.Model_Stratified_Operations{mm});
 
     x_mle=par_est{mm};
     

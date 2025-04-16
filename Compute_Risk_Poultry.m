@@ -26,8 +26,10 @@ onward_transmission_poultry_farm_State=zeros(length(State_Name),length(par_est))
 post_outbreak_poultry_farm_State=zeros(length(State_Name),1001,length(par_est));
 post_spillover_poultry_farm_State=zeros(length(State_Name),76,length(par_est));
 
-post_outbreak_poultry_farm_County=zeros(height(US_County),2,length(par_est));
-post_spillover_poultry_farm_County=zeros(height(US_County),2,length(par_est));
+post_outbreak_poultry_farm_County=zeros(height(US_County),5,length(par_est));
+post_spillover_poultry_farm_County=zeros(height(US_County),5,length(par_est));
+
+par_spillover=zeros(1,length(par_est));
 
 k_onward_transmission=2.69;
 R0=0.05;
@@ -36,6 +38,7 @@ p_no_onward_transmission=nbinpdf(0,k_onward_transmission,k_onward_transmission./
 for mm=1:length(par_est)
     
     [F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_par,logic_temperature] = Poultry_Covariates(Poultry_Model.Model_H5N1{mm},Poultry_Model.Model_Farm{mm});
+
     x=par_est{mm};  
     no_farms=County_Farms==0;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
@@ -58,7 +61,7 @@ for mm=1:length(par_est)
     end
     
     kappa_spillover=10.^x(end);
-
+    par_spillover(mm)=kappa_spillover;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
     % Probability of extra zeros and avg for poisson
@@ -125,7 +128,10 @@ for mm=1:length(par_est)
     spillover_poultry_farm_State(:,mm)=kappa_spillover.*outbreak_poultry_farm_State(:,mm);
 
     post_outbreak_poultry_farm_County(:,1,mm)=poissinv((0.025-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
-    post_outbreak_poultry_farm_County(:,2,mm)=poissinv((0.975-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
+    post_outbreak_poultry_farm_County(:,2,mm)=poissinv((0.25-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
+    post_outbreak_poultry_farm_County(:,3,mm)=poissinv((0.5-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
+    post_outbreak_poultry_farm_County(:,4,mm)=poissinv((0.75-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
+    post_outbreak_poultry_farm_County(:,5,mm)=poissinv((0.975-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
 
     lb_z=p_inf_County>=0.025;
     ub_z=p_inf_County>=0.975;
@@ -133,7 +139,10 @@ for mm=1:length(par_est)
     post_outbreak_poultry_farm_County(ub_z,2,mm)=0;
 
     post_spillover_poultry_farm_County(:,1,mm)=poissinv((0.025-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
-    post_spillover_poultry_farm_County(:,2,mm)=poissinv((0.975-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
+    post_spillover_poultry_farm_County(:,2,mm)=poissinv((0.25-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
+    post_spillover_poultry_farm_County(:,3,mm)=poissinv((0.5-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
+    post_spillover_poultry_farm_County(:,4,mm)=poissinv((0.75-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
+    post_spillover_poultry_farm_County(:,5,mm)=poissinv((0.975-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
 
     lb_z=p_inf_County>=0.025;
     ub_z=p_inf_County>=0.975;

@@ -9,8 +9,11 @@ end
 
 beta_p=x(indx_pinf);
 if(length(beta_p)>4)
-    if(logic_temperature)
+    if(logic_temperature & isempty(Dairy_Network))
         beta_p(5:end-1)=-10.^beta_p(5:end-1);    
+    elseif(logic_temperature & ~isempty(Dairy_Network))
+        beta_p(5:end-2)=-10.^beta_p(5:end-2);
+        beta_p(end)=-10.^beta_p(end);
     else
         beta_p(5:end)=-10.^beta_p(5:end);
     end
@@ -30,8 +33,13 @@ if(~isempty(Dairy_Network))
     p_inf_County_temp(County_Farms==0)=1;
 
     temp_r=(1-p_inf_County_temp(:)).*mu_farm_temp(:);
-    X_County(logic_connect,:)=(temp_r(:)'*Dairy_Network);
-    P_County(logic_connect_p,:)=(temp_r(:)'*Dairy_Network);
+
+    temp_r=(temp_r(:)'*Dairy_Network);
+    tt=min(temp_r(temp_r>0));
+    temp_r(temp_r(:)==0 & County_Farms>0)=tt./10;
+
+    X_County(logic_connect,:)=log10(temp_r);
+    P_County(logic_connect_p,:)=log10(temp_r);
 end
 
 delta_Affected_State=Affected_State_Farms-state_weight_matrix*Affected_County_Farms;
@@ -55,13 +63,8 @@ p_nb_state_spill=zeros(size(State_Spillover_Events));
 p_temp=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,mu_farm_County(:));
 p_temp_spill=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,kappa_spillover.*mu_farm_County(:)); % Use the "TRUE" county risk as aspects are not observed if lack of surviellance 
 
-w_state=zeros(size(State_Spillover_Events));
-County_w_Farms=County_Farms>0;
 L_Nan=false;
-for ss=1:length(w_state)
-
-    w_state(ss)=state_weight_matrix(ss,:)*County_w_Farms(:);
-    
+for ss=1:length(z_state)    
     mu_County_NB=state_weight_matrix(ss,:)*((1-p_inf_County(:)).*mu_farm_County(:)); 
     var_County_NB=state_weight_matrix(ss,:)*((1-p_inf_County(:)).*(mu_farm_County(:)+p_inf_County(:).*mu_farm_County(:).^2)); 
     p_zero_county=prod(p_temp(state_weight_matrix(ss,:)==1));
@@ -116,9 +119,9 @@ if (~L_Nan)
     % Objective function
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    F=-sum(L_County) -sum(w_state(:).*L_Spillover_State(:)) -sum(w_state(:).*L_State(:));
+    F=-sum(L_County) -sum(L_Spillover_State(:)) -sum(L_State(:));
 else
-    F=NaN;
+    F=Inf;
 end
 end
 

@@ -37,19 +37,23 @@ for mm=1:height(Dairy_Model)
 
    indx_pinf=[5:(8+size(P_County,1))];
 
-    beta_x=x(~ismember(1:length(x),[indx_pinf length(x)]));
+   beta_x=x(~ismember(1:length(x),[indx_pinf length(x)]));
     if(length(beta_x)>4)
         beta_x(5:end)=10.^beta_x(5:end);
     end
     
     beta_p=x(indx_pinf);
     if(length(beta_p)>4)
-        if(logic_temperature)
+        if(logic_temperature & isempty(Dairy_Network))
             beta_p(5:end-1)=-10.^beta_p(5:end-1);    
+        elseif(logic_temperature & ~isempty(Dairy_Network))
+            beta_p(5:end-2)=-10.^beta_p(5:end-2);
+            beta_p(end)=-10.^beta_p(end);
         else
             beta_p(5:end)=-10.^beta_p(5:end);
         end
     end
+
     
     kappa_spillover=10.^x(end);
     

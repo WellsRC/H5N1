@@ -48,8 +48,10 @@ for pp=1:4
             subplot('Position',[0.065+0.32.*(jj-1) 0.77-0.24.*(ii-1) 0.29 0.2]);
             for cc=1:size(post_outbreak_County,1)
                 for mm=1:length(w_AIC)
-                    patch(cc+[-0.45 -0.45 0.45 0.45],[post_outbreak_County(cc,1,mm) post_outbreak_County(cc,2,mm) post_outbreak_County(cc,2,mm) post_outbreak_County(cc,1,mm)],hex2rgb('#011A27'),'FaceAlpha',w_AIC(mm),'linestyle','none'); hold on;
+                    patch(cc+[-0.45 -0.45 0.45 0.45],[post_outbreak_County(cc,1,mm) post_outbreak_County(cc,5,mm) post_outbreak_County(cc,5,mm) post_outbreak_County(cc,1,mm)],hex2rgb('#011A27'),'FaceAlpha',w_AIC(mm)./4,'linestyle','none'); hold on;
+                    patch(cc+[-0.45 -0.45 0.45 0.45],[post_outbreak_County(cc,2,mm) post_outbreak_County(cc,4,mm) post_outbreak_County(cc,4,mm) post_outbreak_County(cc,2,mm)],hex2rgb('#011A27'),'FaceAlpha',w_AIC(mm)./4,'linestyle','none'); hold on;
                 end
+                % plot(cc+[-0.45 0.45],(squeeze(post_outbreak_County(cc,3,:))*w_AIC).*ones(1,2),'-','Colour',hex2rgb('#011A27'),'LineWidth',2);
             end
             scatter(1:size(post_outbreak_County,1),AfC,20,hex2rgb('#F0810F'),'filled');
             xlim([0.55 size(post_outbreak_County,1)+0.45]);
