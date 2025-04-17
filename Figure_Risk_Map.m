@@ -221,13 +221,17 @@ for vv=1:4
                 b(1).CData(ss,:) =C_out;
             end
             box off;
-            set(gca,'yscale','log','LineWidth',2,'tickdir','out','Fontsize',14,'XTick',[1:length(State_Name)],'XTickLabel',State_Name,'YTick',10.^[-1:3]);
+            if(max(risk_measure_outbreak)>300)
+                set(gca,'LineWidth',2,'tickdir','out','Fontsize',14,'XTick',[1:length(State_Name)],'XTickLabel',State_Name,'YTick',[0:100:1500]);
+            else
+                set(gca,'LineWidth',2,'tickdir','out','Fontsize',14,'XTick',[1:length(State_Name)],'XTickLabel',State_Name,'YTick',[0:25:300]);
+            end
            
             xlabel('State','FontSize',18);
             yl=ylabel({'State-level outbreaks'},'FontSize',18);
             xlim([0.5 length(State_Name)+0.5]);
-            ymax=10.^ceil(log10(max(risk_measure_outbreak(:))));
-            ylim([0.1 ymax])
+            ymax=ceil(max(risk_measure_outbreak(:))./100).*100;
+            ylim([0 ymax])
 
             yyaxis right
             plot([1:length(State_Name)],risk_measure_spillover,'o','color',C_spill,'MarkerFaceColor',C_spill,'LineWidth',2);

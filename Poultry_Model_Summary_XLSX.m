@@ -4,7 +4,7 @@ clc;
 H5N1_Variable_v={'Light_Intensity','Waterfowl_Mallard','Waterfowl_Canada_Goose','Waterfowl_AGW_Teal','Waterfowl_N_Pintail','Temperature'};
 Other_Variables_v={'Turkey_Operations','Turkey_Inventory','Broiler_Operations','Broiler_Inventory','Layer_Operations','Layer_Inventory','Pullet_Operations','Pullet_Inventory'};
 
-load('Poultry_Models_Fit.mat')
+load('Poultry_Models_Refined_Fit.mat')
 
 Delta_AIC=AIC-min(AIC);
 
@@ -124,15 +124,15 @@ for ii=1:length(r)
     X_Samp(ii,:)=X_temp(find(r(ii)<=wc,1,"first"),:);
 end
 
-Zero_Inflated(2,:)=prctile(X_temp(:,1:10),50);
-Zero_Inflated(3,:)=prctile(X_temp(:,1:10),2.5);
-Zero_Inflated(4,:)=prctile(X_temp(:,1:10),97.5);
+Zero_Inflated(2,:)=prctile(X_Samp(:,1:10),50);
+Zero_Inflated(3,:)=prctile(X_Samp(:,1:10),2.5);
+Zero_Inflated(4,:)=prctile(X_Samp(:,1:10),97.5);
 
-Outbreak_Model(2,:)=prctile(X_temp(:,11:22),50);
-Outbreak_Model(3,:)=prctile(X_temp(:,11:22),2.5);
-Outbreak_Model(4,:)=prctile(X_temp(:,11:22),97.5);
+Outbreak_Model(2,:)=prctile(X_Samp(:,11:22),50);
+Outbreak_Model(3,:)=prctile(X_Samp(:,11:22),2.5);
+Outbreak_Model(4,:)=prctile(X_Samp(:,11:22),97.5);
 
-Spillover_per_Outbreak(2:4)=prctile(X_temp(:,23),[50 2.5 97.5]);
+Spillover_per_Outbreak(2:4)=prctile(X_Samp(:,23),[50 2.5 97.5]);
 
 L=NaN.*zeros(4,1);
 AIC=NaN.*zeros(4,1);

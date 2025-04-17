@@ -1,7 +1,7 @@
 clear;
 
 load([pwd '/Data/Data_US_County.mat'],'US_County');
-load('Poultry_Models_Fit.mat',"par_est","w_AIC",'Poultry_Model');
+load('Poultry_Models_Refined_Fit.mat',"par_est","w_AIC",'Poultry_Model');
 
 State_Name=unique(US_County.STATE_NAME);
 state_remove=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
@@ -181,7 +181,7 @@ for mm=1:length(par_est)
     spillover_risk_poultry_farm_State(:,mm)=1-(z_state_spill(:)+(1-z_state_spill(:)).*nbinpdf(0,k_state_spill(:),p_nb_state_spill(:)));
 end
 
-save('Average_Risk_Poultry.mat','no_farms','potential_outbreak_poultry_farm_County','post_outbreak_poultry_farm_County','post_spillover_poultry_farm_County','onward_transmission_poultry_farm_State','onward_transmission_poultry_farm_County','post_spillover_poultry_farm_State','post_outbreak_poultry_farm_State','w_AIC','State_Name','outbreak_poultry_farm_County','outbreak_risk_poultry_farm_County','spillover_poultry_farm_County','spillover_risk_poultry_farm_County','outbreak_poultry_farm_State','outbreak_risk_poultry_farm_State','spillover_poultry_farm_State','spillover_risk_poultry_farm_State');
+save('Average_Risk_Poultry.mat','par_spillover','no_farms','potential_outbreak_poultry_farm_County','post_outbreak_poultry_farm_County','post_spillover_poultry_farm_County','onward_transmission_poultry_farm_State','onward_transmission_poultry_farm_County','post_spillover_poultry_farm_State','post_outbreak_poultry_farm_State','w_AIC','State_Name','outbreak_poultry_farm_County','outbreak_risk_poultry_farm_County','spillover_poultry_farm_County','spillover_risk_poultry_farm_County','outbreak_poultry_farm_State','outbreak_risk_poultry_farm_State','spillover_poultry_farm_State','spillover_risk_poultry_farm_State');
 
 
 

@@ -2,15 +2,15 @@ function [par_est,L,AIC]=Optimize_Dairy_Farm_Risk(F_County,X_County,P_County,Cou
 
 if(logic_temperature && isempty(Dairy_Network))
     lb=[-7.*ones(1,size(F_County,1)) -7.*ones(1,size(F_County,1)) -16.*ones(1,size(P_County,1)-1) -0.5 -16.*ones(1,size(X_County,1))  -3];
-    ub=[7.*ones(1,size(F_County,1)) 7.*ones(1,size(F_County,1))  log10(5).*ones(1,size(P_County,1)-1) 0.5 log10(0.2).*ones(1,size(X_County,1)) 0];
+    ub=[7.*ones(1,size(F_County,1)) 7.*ones(1,size(F_County,1))  log10(5).*ones(1,size(P_County,1)-1) 0.5 log10(5).*ones(1,size(X_County,1)) 0];
 elseif(logic_temperature && ~isempty(Dairy_Network))
     lb=[-7.*ones(1,size(F_County,1)) -7.*ones(1,size(F_County,1)) -16.*ones(1,size(P_County,1)-2) -0.5 -16 -16.*ones(1,size(X_County,1))  -3];
-    ub=[7.*ones(1,size(F_County,1)) 7.*ones(1,size(F_County,1))  log10(5).*ones(1,size(P_County,1)-2) 0.5 1 log10(0.2).*ones(1,size(X_County,1)) 0];
+    ub=[7.*ones(1,size(F_County,1)) 7.*ones(1,size(F_County,1))  log10(5).*ones(1,size(P_County,1)-2) 0.5 1 log10(5).*ones(1,size(X_County,1)) 0];
 else
     lb=[-7.*ones(1,size(F_County,1)) -7.*ones(1,size(F_County,1)) -16.*ones(1,size(P_County,1)) -16.*ones(1,size(X_County,1)) -3];
-    ub=[7.*ones(1,size(F_County,1)) 7.*ones(1,size(F_County,1))  log10(5).*ones(1,size(P_County,1)) log10(0.2).*ones(1,size(X_County,1)) 0];
+    ub=[7.*ones(1,size(F_County,1)) 7.*ones(1,size(F_County,1))  log10(5).*ones(1,size(P_County,1)) log10(5).*ones(1,size(X_County,1)) 0];
 end
-
+ 
 if(isempty(x0))
     par_0=zeros(10,length(lb));
     fv=zeros(10,1);
@@ -24,11 +24,11 @@ if(isempty(x0))
     
     if(isnan(f0)||isinf(f0))
         if(logic_temperature && isempty(Dairy_Network))
-            par_est=[-2.63982779105011	-0.194068605384843	0.667880149142995	2.40993970044395	-1.83400135686935	1.58191245894691	-0.166555870090647	1.61274763082925 -16.*ones(1,size(P_County,1)-1) 0 -16.*ones(1,size(X_County,1)) -1.38511960271810];
+            par_est=[-2.22236971565865	0.154804918547251	0.617560829468310	2.54703013158430	0.0973854659412203	2.61965273214736	0.357968834057754	2.16792947795670 -16.*ones(1,size(P_County,1)-1) 0 -16.*ones(1,size(X_County,1)) -1.41773995561889];
         elseif(logic_temperature && ~isempty(Dairy_Network))
-            par_est=[-2.63982779105011	-0.194068605384843	0.667880149142995	2.40993970044395	-1.83400135686935	1.58191245894691	-0.166555870090647	1.61274763082925 -16.*ones(1,size(P_County,1)-2) 0 -16 -16.*ones(1,size(X_County,1)) -1.38511960271810];
+            par_est=[-2.22236971565865	0.154804918547251	0.617560829468310	2.54703013158430	0.0973854659412203	2.61965273214736	0.357968834057754	2.16792947795670 -16.*ones(1,size(P_County,1)-2) 0 -16 -16.*ones(1,size(X_County,1)) -1.41773995561889];
         else
-            par_est=[-2.63982779105011	-0.194068605384843	0.667880149142995	2.40993970044395	-1.83400135686935	1.58191245894691	-0.166555870090647	1.61274763082925 -16.*ones(1,size(P_County,1)) -16.*ones(1,size(X_County,1)) -1.38511960271810];
+            par_est=[-2.22236971565865	0.154804918547251	0.617560829468310	2.54703013158430	0.0973854659412203	2.61965273214736	0.357968834057754	2.16792947795670 -16.*ones(1,size(P_County,1)) -16.*ones(1,size(X_County,1)) -1.41773995561889];
         end
         opts=optimoptions("ga",'UseParallel',false,"PlotFcn",[],"MaxGenerations",300,"FunctionTolerance",10^(-9),'CrossoverFcn','crossoverheuristic','MigrationInterval',25,'SelectionFcn',{@selectiontournament,8},'PopulationSize',250,'InitialPopulationMatrix',par_est);
         [par_est,~]=ga(@(x)Objective_Function_Dairy_Farm(x,F_County,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,logic_temperature),length(lb),[],[],[],[],lb,ub,[],[],opts);                                                                 
