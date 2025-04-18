@@ -2,18 +2,19 @@ clear;
 clc;
 rng(12500410)
 load([pwd '/Data/Data_US_County.mat'],'US_County');
-load('Average_Risk_Poultry.mat');
+load('Average_Risk_Dairy.mat');
 
 US_County=US_County(~no_farms,[4 5]);
 
-avg_outbreak=outbreak_poultry_farm_County*w_AIC;
-avg_outbreak_risk=outbreak_risk_poultry_farm_County*w_AIC;
-avg_pot_outbreak=potential_outbreak_poultry_farm_County*w_AIC;
+avg_outbreak=outbreak_dairy_farm_County*w_AIC;
+avg_outbreak_risk=outbreak_risk_dairy_farm_County*w_AIC;
+avg_pot_outbreak=potntial_outbreak_dairy_farm_County*w_AIC;
+                 
 avg_spillover_per_outbreak=par_spillover*w_AIC;
-avg_spillover_risk_County=spillover_risk_poultry_farm_County*w_AIC;
+avg_spillover_risk_County=spillover_risk_dairy_farm_County*w_AIC;
 
-avg_outbreak_state=outbreak_poultry_farm_State*w_AIC;
-avg_spillover_risk_State=spillover_risk_poultry_farm_State*w_AIC;
+avg_outbreak_state=outbreak_dairy_farm_State*w_AIC;
+avg_spillover_risk_State=spillover_risk_dairy_farm_State*w_AIC;
 
 avg_spillover_risk_County=avg_spillover_risk_County(~no_farms);
 avg_outbreak=avg_outbreak(~no_farms);
@@ -28,12 +29,12 @@ for ii=1:length(r)
    f_indx(ii) = find(r(ii)<=wc,1,"first");
 end
 
-samp_outbreak=outbreak_poultry_farm_County(~no_farms,f_indx);
-samp_outbreak_risk=outbreak_risk_poultry_farm_County(~no_farms,f_indx);
-samp_pot_outbreak=potential_outbreak_poultry_farm_County(~no_farms,f_indx);
-samp_outbreak_state=outbreak_poultry_farm_State(:,f_indx);
+samp_outbreak=outbreak_dairy_farm_County(~no_farms,f_indx);
+samp_outbreak_risk=outbreak_risk_dairy_farm_County(~no_farms,f_indx);
+samp_pot_outbreak=potntial_outbreak_dairy_farm_County(~no_farms,f_indx);
+samp_outbreak_state=outbreak_dairy_farm_State(:,f_indx);
 samp_spillover_per_outbreak=par_spillover(f_indx);
-samp_spillover_risk_County=spillover_risk_poultry_farm_County(~no_farms,f_indx);
+samp_spillover_risk_County=spillover_risk_dairy_farm_County(~no_farms,f_indx);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -73,7 +74,7 @@ fprintf(['Number of counties with an outbreak risk over ' num2str(risk_t) ': ' n
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % low risk of outbreaks but potential for large number
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-risk_t=0.1;
+risk_t=0.25;
 
 cc=zeros(3,1);
 
@@ -138,3 +139,22 @@ for ii=1:5
     fprintf(['County Rank ' num2str(ii) ' for spillover-risk: ' US_County.NAME{IndxS(ii)} ', ' US_County.STATE_NAME{IndxS(ii)}  ' (' num2str(avg_spillover_risk_County(IndxS(ii)),'%3.2f') ') \n']);
 end
 
+fprintf('\n');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% State no outbreaks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+fprintf(['Numebr of states with no reported outbreaks: ' num2str(sum(Affected_State_Farms==0)) ' \n'])
+
+test=squeeze(post_outbreak_dairy_farm_State(:,1,:))*w_AIC;
+test=test(Affected_State_Farms==0);
+
+fprintf(['Likelihood of ' num2str(sum(Affected_State_Farms==0)) ' states having no reported outbreaks: ' num2str(prod(test),'%3.2e') ' \n']);
+
+
+State_Name_t=State_Name(Affected_State_Farms==0);
+[~,IndxS]=sort(test,'descend');
+
+
+fprintf(['State with the highest likelihood of having no reported outbreaks: ' State_Name_t{IndxS(1)} ' (' num2str(test(IndxS(1)),'%4.3f') ') \n']);
+fprintf(['State with the lowesr likelihood of having no reported outbreaks: ' State_Name_t{IndxS(end)} ' (' num2str(test(IndxS(end)),'%4.3f') ') \n']);

@@ -25,9 +25,9 @@ state_remove=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columb
 State_Name=State_Name(~state_remove);
 
 
-load('Average_Risk_Poultry.mat','onward_transmission_poultry_farm_County','no_farms','w_AIC');
+load('Average_Risk_Dairy.mat','onward_transmission_dairy_farm_County','no_farms','w_AIC');
 
-avg_onward_transmission_County=onward_transmission_poultry_farm_County*w_AIC;
+avg_onward_transmission_County=onward_transmission_dairy_farm_County*w_AIC;
 
 figure('units','normalized','outerposition',[0.25 0.25 0.4 0.5]);
  ax1=usamap('conus');
@@ -40,7 +40,7 @@ geoshow(ax1, states,'Facecolor','none','LineWidth',0.5); hold on;
 
 subplot('Position',[0.85,0.035,0.03,0.94]);
 
-Title_Name={'Likelihood of onward transmission','after spillover from poultry farm'};
+Title_Name={'Likelihood of onward transmission','after spillover from dairy farm'};
 
 risk_measure=log10(avg_onward_transmission_County);
 C_Risk=[hex2rgb('#fff7f3');
@@ -90,4 +90,4 @@ geoshow(ax1, states,'Facecolor','none','LineWidth',1.5); hold on;
 
 ax1.Position=[-0.16,-0.15,1.2,1.2];
 
-print(gcf,['Supplementary_Figure_Poultry_Onward.png'],'-dpng','-r300');
+print(gcf,['Supplementary_Figure_Dairy_Onward.png'],'-dpng','-r300');

@@ -26,8 +26,9 @@ onward_transmission_poultry_farm_State=zeros(length(State_Name),length(par_est))
 post_outbreak_poultry_farm_State=zeros(length(State_Name),1001,length(par_est));
 post_spillover_poultry_farm_State=zeros(length(State_Name),76,length(par_est));
 
-post_outbreak_poultry_farm_County=zeros(height(US_County),5,length(par_est));
-post_spillover_poultry_farm_County=zeros(height(US_County),5,length(par_est));
+post_spillover_poultry_farm_County=zeros(height(US_County),76,length(par_est));
+post_outbreak_poultry_farm_County_CI=zeros(height(US_County),5,length(par_est));
+post_spillover_poultry_farm_County_CI=zeros(height(US_County),5,length(par_est));
 
 par_spillover=zeros(1,length(par_est));
 
@@ -127,27 +128,27 @@ for mm=1:length(par_est)
     spillover_poultry_farm_County(:,mm)=kappa_spillover.*outbreak_poultry_farm_County(:,mm);
     spillover_poultry_farm_State(:,mm)=kappa_spillover.*outbreak_poultry_farm_State(:,mm);
 
-    post_outbreak_poultry_farm_County(:,1,mm)=poissinv((0.025-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
-    post_outbreak_poultry_farm_County(:,2,mm)=poissinv((0.25-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
-    post_outbreak_poultry_farm_County(:,3,mm)=poissinv((0.5-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
-    post_outbreak_poultry_farm_County(:,4,mm)=poissinv((0.75-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
-    post_outbreak_poultry_farm_County(:,5,mm)=poissinv((0.975-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
+    post_outbreak_poultry_farm_County_CI(:,1,mm)=poissinv((0.025-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
+    post_outbreak_poultry_farm_County_CI(:,2,mm)=poissinv((0.25-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
+    post_outbreak_poultry_farm_County_CI(:,3,mm)=poissinv((0.5-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
+    post_outbreak_poultry_farm_County_CI(:,4,mm)=poissinv((0.75-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
+    post_outbreak_poultry_farm_County_CI(:,5,mm)=poissinv((0.975-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
 
     lb_z=p_inf_County>=0.025;
     ub_z=p_inf_County>=0.975;
-    post_outbreak_poultry_farm_County(lb_z,1,mm)=0;
-    post_outbreak_poultry_farm_County(ub_z,2,mm)=0;
+    post_outbreak_poultry_farm_County_CI(lb_z,1,mm)=0;
+    post_outbreak_poultry_farm_County_CI(ub_z,2,mm)=0;
 
-    post_spillover_poultry_farm_County(:,1,mm)=poissinv((0.025-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
-    post_spillover_poultry_farm_County(:,2,mm)=poissinv((0.25-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
-    post_spillover_poultry_farm_County(:,3,mm)=poissinv((0.5-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
-    post_spillover_poultry_farm_County(:,4,mm)=poissinv((0.75-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
-    post_spillover_poultry_farm_County(:,5,mm)=poissinv((0.975-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
+    post_spillover_poultry_farm_County_CI(:,1,mm)=poissinv((0.025-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
+    post_spillover_poultry_farm_County_CI(:,2,mm)=poissinv((0.25-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
+    post_spillover_poultry_farm_County_CI(:,3,mm)=poissinv((0.5-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
+    post_spillover_poultry_farm_County_CI(:,4,mm)=poissinv((0.75-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
+    post_spillover_poultry_farm_County_CI(:,5,mm)=poissinv((0.975-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
 
     lb_z=p_inf_County>=0.025;
     ub_z=p_inf_County>=0.975;
-    post_spillover_poultry_farm_County(lb_z,1,mm)=0;
-    post_spillover_poultry_farm_County(ub_z,2,mm)=0;
+    post_spillover_poultry_farm_County_CI(lb_z,1,mm)=0;
+    post_spillover_poultry_farm_County_CI(ub_z,2,mm)=0;
 
     for ii=0:1000
         if(ii==0)
@@ -164,8 +165,10 @@ for mm=1:length(par_est)
         end
         if(ii==0)
             post_spillover_poultry_farm_State(:,1+ii,mm)=z_state_spill(:)+(1-z_state_spill(:)).*nbinpdf(ii,k_state_spill(:),p_nb_state_spill(:));
+            post_spillover_poultry_farm_County(:,1+ii,mm)=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(ii,kappa_spillover.*mu_farm_County(:));
         else
             post_spillover_poultry_farm_State(:,1+ii,mm)=(1-z_state_spill(:)).*nbinpdf(ii,k_state_spill(:),p_nb_state_spill(:));
+            post_spillover_poultry_farm_County(:,1+ii,mm)=(1-p_inf_County(:)).*poisspdf(ii,kappa_spillover.*mu_farm_County(:));
         end
     end
 
@@ -181,7 +184,7 @@ for mm=1:length(par_est)
     spillover_risk_poultry_farm_State(:,mm)=1-(z_state_spill(:)+(1-z_state_spill(:)).*nbinpdf(0,k_state_spill(:),p_nb_state_spill(:)));
 end
 
-save('Average_Risk_Poultry.mat','par_spillover','no_farms','potential_outbreak_poultry_farm_County','post_outbreak_poultry_farm_County','post_spillover_poultry_farm_County','onward_transmission_poultry_farm_State','onward_transmission_poultry_farm_County','post_spillover_poultry_farm_State','post_outbreak_poultry_farm_State','w_AIC','State_Name','outbreak_poultry_farm_County','outbreak_risk_poultry_farm_County','spillover_poultry_farm_County','spillover_risk_poultry_farm_County','outbreak_poultry_farm_State','outbreak_risk_poultry_farm_State','spillover_poultry_farm_State','spillover_risk_poultry_farm_State');
+save('Average_Risk_Poultry.mat','par_spillover','no_farms','post_spillover_poultry_farm_County','potential_outbreak_poultry_farm_County','post_outbreak_poultry_farm_County_CI','post_spillover_poultry_farm_County_CI','onward_transmission_poultry_farm_State','onward_transmission_poultry_farm_County','post_spillover_poultry_farm_State','post_outbreak_poultry_farm_State','w_AIC','State_Name','outbreak_poultry_farm_County','outbreak_risk_poultry_farm_County','spillover_poultry_farm_County','spillover_risk_poultry_farm_County','outbreak_poultry_farm_State','outbreak_risk_poultry_farm_State','spillover_poultry_farm_State','spillover_risk_poultry_farm_State');
 
 
 

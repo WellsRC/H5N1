@@ -1,14 +1,13 @@
 clear;
 load([pwd '/Data/Data_US_County.mat'],'US_County');
-% load('Dairy_Models_Fit.mat',"par_est","w_AIC","Dairy_Model");
 
-load('Dairy_Models_Fit.mat')
+load('Dairy_Models_Refined_Fit.mat',"par_est","w_AIC","Dairy_Model")
 
 State_Name=unique(US_County.STATE_NAME);
 state_remove=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
 State_Name=State_Name(~state_remove);
 
-exposure_dairy_farm_County=zeros(height(US_County),length(par_est));
+potntial_outbreak_dairy_farm_County=zeros(height(US_County),length(par_est));
 
 outbreak_dairy_farm_County=zeros(height(US_County),length(par_est));
 outbreak_risk_dairy_farm_County=zeros(height(US_County),length(par_est));
@@ -26,6 +25,7 @@ onward_transmission_dairy_farm_State=zeros(length(State_Name),length(par_est));
 
 post_outbreak_dairy_farm_State=zeros(length(State_Name),2501,length(par_est));
 post_spillover_dairy_farm_State=zeros(length(State_Name),101,length(par_est));
+post_spillover_dairy_farm_County=zeros(height(US_County),101,length(par_est));
 
 k_onward_transmission=2.69;
 R0=0.05;
@@ -132,7 +132,7 @@ for mm=1:height(Dairy_Model)
         
     end
      
-    exposure_dairy_farm_County(:,mm)=(1-p_inf_County(:));
+    potntial_outbreak_dairy_farm_County(:,mm)=mu_farm_County(:);
 
     outbreak_dairy_farm_County(:,mm)=(1-p_inf_County(:)).*mu_farm_County(:);
     outbreak_dairy_farm_State(:,mm)=mu_farm_State;
@@ -151,14 +151,17 @@ for mm=1:height(Dairy_Model)
     
     
     for ii=0:100
-        if(ii>0)
-            onward_transmission_dairy_farm_County(:,mm)=onward_transmission_dairy_farm_County(:,mm)+(1-p_inf_County(:)).*poisspdf(ii,kappa_spillover.*mu_farm_County(:)).*(1-p_no_onward_transmission.^ii);
+        
+        if(ii>0)            
             onward_transmission_dairy_farm_State(:,mm)=onward_transmission_dairy_farm_State(:,mm)+(1-z_state_spill(:)).*nbinpdf(ii,k_spill_State(:),p_nb_state_spill(:)).*(1-p_no_onward_transmission.^ii);
+            onward_transmission_dairy_farm_County(:,mm)=onward_transmission_dairy_farm_County(:,mm)+(1-p_inf_County(:)).*poisspdf(ii,kappa_spillover.*mu_farm_County(:)).*(1-p_no_onward_transmission.^ii);
         end
         if(ii==0)
+            post_spillover_dairy_farm_County(:,1+ii,mm)=p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(ii,kappa_spillover.*mu_farm_County(:));
             post_spillover_dairy_farm_State(:,1+ii,mm)=z_state_spill(:)+(1-z_state_spill(:)).*nbinpdf(ii,k_spill_State(:),p_nb_state_spill(:)); 
         else
             post_spillover_dairy_farm_State(:,1+ii,mm)=(1-z_state_spill(:)).*nbinpdf(ii,k_spill_State(:),p_nb_state_spill(:)); 
+            post_spillover_dairy_farm_County(:,1+ii,mm)=(1-p_inf_County(:)).*poisspdf(ii,kappa_spillover.*mu_farm_County(:));
         end
     end
 
@@ -166,7 +169,7 @@ for mm=1:height(Dairy_Model)
     t_nan=isnan(outbreak_risk_dairy_farm_County(:,mm));
     outbreak_risk_dairy_farm_County(t_nan,mm)=0;
 
-    outbreak_risk_dairy_farm_State(:,mm)=1-nbinpdf(0,k_state(:),k_state(:)./(k_state(:)+mu_farm_State(:)));
+    outbreak_risk_dairy_farm_State(:,mm)=1-(z_state(:)+(1-z_state(:)).*nbinpdf(0,k_state(:),p_nb_state(:)));
     t_nan=isnan(outbreak_risk_dairy_farm_State(:,mm));
     outbreak_risk_dairy_farm_State(t_nan,mm)=0;
 
@@ -176,7 +179,7 @@ for mm=1:height(Dairy_Model)
 
     outbreak_dairy_farm_County(no_farms,mm)=NaN;
     
-    exposure_dairy_farm_County(no_farms,mm)=NaN;
+    potntial_outbreak_dairy_farm_County(no_farms,mm)=NaN;
 
     spillover_dairy_farm_County(no_farms,mm)=NaN;
     
@@ -185,4 +188,4 @@ for mm=1:height(Dairy_Model)
     spillover_risk_dairy_farm_County(no_farms,mm)=NaN;
 end
 
-save('Average_Risk_Dairy.mat','no_farms','par_spillover','onward_transmission_dairy_farm_County','onward_transmission_dairy_farm_State','post_spillover_dairy_farm_State','post_outbreak_dairy_farm_State','w_AIC','State_Name','exposure_dairy_farm_County','outbreak_dairy_farm_County','outbreak_risk_dairy_farm_County','spillover_dairy_farm_County','spillover_risk_dairy_farm_County','outbreak_dairy_farm_State','outbreak_risk_dairy_farm_State','spillover_dairy_farm_State','spillover_risk_dairy_farm_State');
+save('Average_Risk_Dairy.mat','post_spillover_dairy_farm_County','Affected_State_Farms','no_farms','par_spillover','onward_transmission_dairy_farm_County','onward_transmission_dairy_farm_State','post_spillover_dairy_farm_State','post_outbreak_dairy_farm_State','w_AIC','State_Name','potntial_outbreak_dairy_farm_County','outbreak_dairy_farm_County','outbreak_risk_dairy_farm_County','spillover_dairy_farm_County','spillover_risk_dairy_farm_County','outbreak_dairy_farm_State','outbreak_risk_dairy_farm_State','spillover_dairy_farm_State','spillover_risk_dairy_farm_State');

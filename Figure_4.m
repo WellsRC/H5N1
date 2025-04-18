@@ -1,26 +1,115 @@
-clear;
-clc;
-rng(5120410);
-load('Average_Risk_Poultry.mat','w_AIC','post_spillover_poultry_farm_State');
-w_AICp=cumsum(w_AIC);
-load('Average_Risk_Dairy.mat','w_AIC','post_spillover_dairy_farm_State');
-w_AICd=cumsum(w_AIC);
+close all;
+states = shaperead('usastatelo', 'UseGeoCoords', true);
+S=shaperead([pwd '/Shapefile/cb_2021_us_county_500k.shp'],'UseGeoCoords',true);
 
-r_p=rand(10^4,1);
-r_d=rand(10^4,1);
+US_County=readgeotable([pwd '/Shapefile/cb_2021_us_county_500k.shp']);
+US_County=US_County(:,[2 3 6 7 10 9 12 13]);
+Var_Name=US_County.Properties.VariableNames;
+Var_Name{end-1}='AREA_LAND';
+Var_Name{end}='AREA_WATER';
+US_County.Properties.VariableNames=Var_Name;
 
-f_indxp=zeros(10^4,1);
-f_indxd=zeros(10^4,1);
+[US_County,Indx]=sortrows(US_County,[1 2]);
 
-for ii=1:10^4
-    f_indxp(ii)=find(r_p(ii)<=w_AICp,1,"first");
-    f_indxd(ii)=find(r_d(ii)<=w_AICd,1,"first");
-end
+S=S(Indx);
 
-spill_dairy=post_spillover_dairy_farm_State(:,:,f_indxd);
-spill_poultry=post_spillover_poultry_farm_State(:,:,f_indxp);
+County_remove=strcmp("AK",US_County.STUSPS) | strcmp("HI",US_County.STUSPS) | strcmp("AS",US_County.STUSPS) | strcmp("GU",US_County.STUSPS) | strcmp("MP",US_County.STUSPS) | strcmp("PR",US_County.STUSPS) | strcmp("VI",US_County.STUSPS);
+S=S(~County_remove,:);
+
+NS=length(S);
+
+load([pwd '/Data/Data_US_County.mat'],'US_County');
+
+State_Name=unique(US_County.STATE_NAME);
+state_remove=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
+State_Name=State_Name(~state_remove);
+
+
+load('Average_Risk_Poultry.mat','post_spillover_poultry_farm_County','no_farms','w_AIC');
+spillover_Poultry=squeeze(post_spillover_poultry_farm_County(:,:,w_AIC==max(w_AIC)));
+Poultry_no_farms=no_farms;
+
+load('Average_Risk_Dairy.mat','post_spillover_dairy_farm_County','no_farms','w_AIC');
+spillover_dairy=squeeze(post_spillover_dairy_farm_County(:,:,w_AIC==max(w_AIC)));
+Dairy_no_farms=no_farms;
+
+no_farms=Poultry_no_farms & Dairy_no_farms;
+
+avg_onward_transmission_County=zeros(size(Dairy_no_farms));
+
 
 k_onward_transmission=2.69;
 R0=0.05;
 p_no_onward_transmission=nbinpdf(0,k_onward_transmission,k_onward_transmission./(k_onward_transmission+R0));
 
+NK=zeros(size(Dairy_no_farms));
+for pp=0:size(spillover_Poultry,2)-1
+    for dd=0:size(spillover_dairy,2)-1
+        NK=NK+(spillover_Poultry(:,pp+1).*spillover_dairy(:,dd+1));
+        avg_onward_transmission_County=avg_onward_transmission_County+(spillover_Poultry(:,pp+1).*spillover_dairy(:,dd+1)).*(1-p_no_onward_transmission.^(dd+pp));
+    end
+end
+avg_onward_transmission_County=avg_onward_transmission_County./NK;
+
+figure('units','normalized','outerposition',[0.25 0.25 0.4 0.5]);
+ ax1=usamap('conus');
+
+framem off; gridm off; mlabel off; plabel off;
+ax1.Position=[-0.3,0.4,0.6,0.6];
+
+states = shaperead('usastatelo', 'UseGeoCoords', true);
+geoshow(ax1, states,'Facecolor','none','LineWidth',0.5); hold on;
+
+subplot('Position',[0.85,0.035,0.03,0.94]);
+
+Title_Name={'Likelihood of onward transmission','after spillover from poultry or dairy farm'};
+
+risk_measure=log10(avg_onward_transmission_County);
+C_Risk=[hex2rgb('#fff7f3');
+hex2rgb('#fde0dd');
+hex2rgb('#fcc5c0');
+hex2rgb('#fa9fb5');
+hex2rgb('#f768a1');
+hex2rgb('#dd3497');
+hex2rgb('#ae017e');
+hex2rgb('#7a0177');
+hex2rgb('#49006a');];
+
+y_indx=linspace(-5,0,size(C_Risk,1));
+x_risk=y_indx;
+
+ x_indx=y_indx;
+ c_indx=linspace(y_indx(1),y_indx(end),1001);
+dx=c_indx(2)-c_indx(1);
+xlim([0 1]);
+ylim([y_indx(1) y_indx(end)+dx])
+ymin=0.75;
+dy=2/(1+sqrt(5));
+for ii=1:length(c_indx)
+    patch([0 0 dy dy],c_indx(ii)+[dx -dx -dx dx],interp1(x_risk,C_Risk,c_indx(ii)),'LineStyle','none');
+end
+
+patch([0 0 dy dy], [y_indx(1) y_indx(end)+dx y_indx(end)+dx y_indx(1)],'k','FaceAlpha',0,'LineWidth',2);
+
+yl_indx=[-5:0];
+for yy=1:length(yl_indx)
+    text(ymin,yl_indx(yy),['10^{' num2str(yl_indx(yy)) '}'],'Fontsize',16);            
+end
+
+text(ymin+3,-2.5,Title_Name,'HorizontalAlignment','center','Fontsize',18,'Rotation',270);
+
+axis off;  
+
+NS=length(S);
+CC_Risk=interp1(x_risk,C_Risk,risk_measure);
+
+CC_Risk(no_farms,:)=repmat([0.5 0.5 0.5],sum(no_farms),1);
+
+CM=makesymbolspec('Polygon',{'INDEX',[1 NS],'FaceColor',CC_Risk});
+geoshow(ax1,S,'SymbolSpec',CM,'LineStyle','None'); 
+geoshow(ax1, states,'Facecolor','none','LineWidth',1.5); hold on;
+
+
+ax1.Position=[-0.16,-0.15,1.2,1.2];
+
+print(gcf,['Figure_4.png'],'-dpng','-r300');

@@ -14,10 +14,15 @@ bin_farm=bin_farm(sum(bin_farm(:,7:10),2)>=1,:);
 bin_farm=flip(bin_farm(srt_indx,:));
 
 
-load('Dairy_Models_Fit.mat','par_est','L','AIC');
-L_old=flip(L);
-AIC_old=flip(AIC);
-Sub_Model_Fit=flip(par_est);
+% load('Dairy_Models_Fit.mat','par_est','L','AIC');
+% L_old=flip(L);
+% AIC_old=flip(AIC);
+% Sub_Model_Fit=flip(par_est);
+
+load('Dairy_Models_Refined_Fit.mat','par_est','L','AIC');
+L_old=L;
+AIC_old=AIC;
+Sub_Model_Fit=par_est;
 
 par_est=cell(size(bin_farm,1),1);
 L=zeros(size(bin_farm,1),1);

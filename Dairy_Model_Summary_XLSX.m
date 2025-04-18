@@ -4,7 +4,7 @@ clc;
 H5N1_Variable_v={'Light_Intensity','Waterfowl_Mallard','Waterfowl_Canada_Goose','Waterfowl_AGW_Teal','Waterfowl_N_Pintail','Temperature','Connectivity'};
 Other_Variables_v={'Inventory','Connectivity','Total_Operations','Cattle_Inventory_1_to_9','Cattle_Inventory_10_to_19','Cattle_Inventory_20_to_49','Cattle_Inventory_50_to_99','Cattle_Inventory_100_to_199','Cattle_Inventory_200_to_499','Cattle_Inventory_500_or_more'};
 
-load('Dairy_Models_Fit.mat')
+load('Dairy_Models_Refined_Fit.mat')
 
 Delta_AIC=AIC-min(AIC);
 
