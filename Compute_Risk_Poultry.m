@@ -24,9 +24,9 @@ onward_transmission_poultry_farm_County=zeros(height(US_County),length(par_est))
 onward_transmission_poultry_farm_State=zeros(length(State_Name),length(par_est));
 
 post_outbreak_poultry_farm_State=zeros(length(State_Name),1001,length(par_est));
-post_spillover_poultry_farm_State=zeros(length(State_Name),76,length(par_est));
+post_spillover_poultry_farm_State=zeros(length(State_Name),101,length(par_est));
 
-post_spillover_poultry_farm_County=zeros(height(US_County),76,length(par_est));
+post_spillover_poultry_farm_County=zeros(height(US_County),101,length(par_est));
 post_outbreak_poultry_farm_County_CI=zeros(height(US_County),5,length(par_est));
 post_spillover_poultry_farm_County_CI=zeros(height(US_County),5,length(par_est));
 
@@ -158,7 +158,7 @@ for mm=1:length(par_est)
         end
     end
     
-    for ii=0:75
+    for ii=0:100
         if(ii>0)
             onward_transmission_poultry_farm_County(:,mm)=onward_transmission_poultry_farm_County(:,mm)+(1-p_inf_County(:)).*poisspdf(ii,kappa_spillover.*mu_farm_County(:)).*(1-p_no_onward_transmission.^ii);
             onward_transmission_poultry_farm_State(:,mm)=onward_transmission_poultry_farm_State(:,mm)+(1-z_state_spill(:)).*nbinpdf(ii,k_state_spill(:),p_nb_state_spill(:)).*(1-p_no_onward_transmission.^ii);

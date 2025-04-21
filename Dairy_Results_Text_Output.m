@@ -4,6 +4,8 @@ rng(12500410)
 load([pwd '/Data/Data_US_County.mat'],'US_County');
 load('Average_Risk_Dairy.mat');
 
+Rawson_et_al=readtable('Rawson_et_al_2025.xlsx');
+
 US_County=US_County(~no_farms,[4 5]);
 
 avg_outbreak=outbreak_dairy_farm_County*w_AIC;
@@ -111,6 +113,8 @@ for ii=1:3
     fprintf(['Expectd number of outbreaks in ' State_Name{IndxS(ii)} ':' num2str(cc(1),'%3.1f') ' (95%% UR: ' num2str(cc(2),'%3.1f') char(8211) num2str(cc(3),'%3.1f') ') \n']);
 end
 
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Spill over
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -147,6 +151,7 @@ fprintf('\n');
 fprintf(['Numebr of states with no reported outbreaks: ' num2str(sum(Affected_State_Farms==0)) ' \n'])
 
 test=squeeze(post_outbreak_dairy_farm_State(:,1,:))*w_AIC;
+no_outbreak_state=test;
 test=test(Affected_State_Farms==0);
 
 fprintf(['Likelihood of ' num2str(sum(Affected_State_Farms==0)) ' states having no reported outbreaks: ' num2str(prod(test),'%3.2e') ' \n']);
@@ -158,3 +163,17 @@ State_Name_t=State_Name(Affected_State_Farms==0);
 
 fprintf(['State with the highest likelihood of having no reported outbreaks: ' State_Name_t{IndxS(1)} ' (' num2str(test(IndxS(1)),'%4.3f') ') \n']);
 fprintf(['State with the lowesr likelihood of having no reported outbreaks: ' State_Name_t{IndxS(end)} ' (' num2str(test(IndxS(end)),'%4.3f') ') \n']);
+
+rawson_outbreak_avg=zeros(size(avg_outbreak_state));
+rawson_outbreak_lb=zeros(size(avg_outbreak_state));
+rawson_outbreak_ub=zeros(size(avg_outbreak_state));
+rawson_no_outbreak=zeros(size(avg_outbreak_state));
+
+for ii=1:length(avg_outbreak_state)
+    tf=strcmp(Rawson_et_al.State,State_Name(ii));
+    rawson_outbreak_avg(ii)=Rawson_et_al.Mean_Outbreak(tf);
+    rawson_outbreak_lb(ii)=Rawson_et_al.Outbreak_LB(tf);
+    rawson_outbreak_ub(ii)=Rawson_et_al.Outbreak_UB(tf);
+    rawson_no_outbreak(ii)=Rawson_et_al.Probability_No_Outbreak(tf);
+end
+Table_Comp=table(State_Name,avg_outbreak_state,rawson_outbreak_avg,rawson_outbreak_lb,rawson_outbreak_ub,no_outbreak_state,rawson_no_outbreak);
