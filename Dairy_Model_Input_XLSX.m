@@ -2,6 +2,12 @@ clear;
 
 load([pwd '/Data/Data_US_County.mat'],'US_County');
 
+Flyway=cell(height(US_County),1);
+Flyway(US_County.ATLANTIC_FLYWAY==1)={'Atlantic'};
+Flyway(US_County.PACIFIC_FLYWAY==1)={'Pacific'};
+Flyway(US_County.CENTRAL_FLYWAY==1)={'Central'};
+Flyway(US_County.MISSISSIPPI_FLYWAY==1)={'Mississippi'};
+
 Number_of_Farms=US_County.TOTAL_DAIRY_OPERATIONS;
 H5N1_Farms = US_County.DAIRY_HPAI_OUTBREAK_KNOWN;
 H5N1_Farms_State=US_County.DAIRY_HPAI_OUTBREAK_UNKNOWN+US_County.DAIRY_HPAI_OUTBREAK_KNOWN;
@@ -39,6 +45,6 @@ GEOID=US_County.GEOID;
 County=US_County.NAME;
 State=US_County.STATE_NAME;
 
-T=table(State,County,GEOID,H5N1_Farms,H5N1_Farms_State,H5N1_Dairy_to_Human_State,Stopover_intensity,Mallard_population,Canada_Goose_population,AGW_Teal_population,N_Pintail_population,Temperature,Head_of_Cattle,Number_of_Farms,Operations_1_to_9,Operations_10_to_19,Operations_20_to_49,Operations_50_to_99,Operations_100_to_199,Operations_200_to_499,Operations_500_plus,Connectivity);
+T=table(State,County,GEOID,Flyway,H5N1_Farms,H5N1_Farms_State,H5N1_Dairy_to_Human_State,Stopover_intensity,Mallard_population,Canada_Goose_population,AGW_Teal_population,N_Pintail_population,Temperature,Head_of_Cattle,Number_of_Farms,Operations_1_to_9,Operations_10_to_19,Operations_20_to_49,Operations_50_to_99,Operations_100_to_199,Operations_200_to_499,Operations_500_plus,Connectivity);
 
 writetable(T,'H5N1_Dairy_Risk_Model.xlsx','Sheet','Model_Inputs');

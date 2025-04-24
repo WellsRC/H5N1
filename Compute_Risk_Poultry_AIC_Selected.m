@@ -125,10 +125,11 @@ mle_post_outbreak_poultry_farm_County_CI(:,3)=poissinv((0.5-p_inf_County(:))./(1
 mle_post_outbreak_poultry_farm_County_CI(:,4)=poissinv((0.75-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
 mle_post_outbreak_poultry_farm_County_CI(:,5)=poissinv((0.975-p_inf_County(:))./(1-p_inf_County(:)),mu_farm_County(:));
 
-lb_z=p_inf_County>=0.025;
-ub_z=p_inf_County>=0.975;
-mle_post_outbreak_poultry_farm_County_CI(lb_z,1)=0;
-mle_post_outbreak_poultry_farm_County_CI(ub_z,2)=0;
+mle_post_outbreak_poultry_farm_County_CI(p_inf_County>=0.025,1)=0;
+mle_post_outbreak_poultry_farm_County_CI(p_inf_County>=0.25,2)=0;
+mle_post_outbreak_poultry_farm_County_CI(p_inf_County>=0.5,3)=0;
+mle_post_outbreak_poultry_farm_County_CI(p_inf_County>=0.75,4)=0;
+mle_post_outbreak_poultry_farm_County_CI(p_inf_County>=0.975,5)=0;
 
 mle_post_spillover_poultry_farm_County_CI(:,1)=poissinv((0.025-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
 mle_post_spillover_poultry_farm_County_CI(:,2)=poissinv((0.25-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
@@ -136,10 +137,11 @@ mle_post_spillover_poultry_farm_County_CI(:,3)=poissinv((0.5-p_inf_County(:))./(
 mle_post_spillover_poultry_farm_County_CI(:,4)=poissinv((0.75-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
 mle_post_spillover_poultry_farm_County_CI(:,5)=poissinv((0.975-p_inf_County(:))./(1-p_inf_County(:)),kappa_spillover.*mu_farm_County(:));
 
-lb_z=p_inf_County>=0.025;
-ub_z=p_inf_County>=0.975;
-mle_post_spillover_poultry_farm_County_CI(lb_z,1)=0;
-mle_post_spillover_poultry_farm_County_CI(ub_z,2)=0;
+mle_post_spillover_poultry_farm_County_CI(p_inf_County>=0.025,1)=0;
+mle_post_spillover_poultry_farm_County_CI(p_inf_County>=0.25,2)=0;
+mle_post_spillover_poultry_farm_County_CI(p_inf_County>=0.5,3)=0;
+mle_post_spillover_poultry_farm_County_CI(p_inf_County>=0.75,4)=0;
+mle_post_spillover_poultry_farm_County_CI(p_inf_County>=0.975,5)=0;
 
 for ii=0:1000
     if(ii==0)

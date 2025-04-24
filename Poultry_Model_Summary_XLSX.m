@@ -124,4 +124,4 @@ T2=[table(Model) array2table(Variable_Included) array2table(Zero_Inflated) array
 T2.Properties.VariableNames=Variable_Names;
 
 T=[T2; T];
-writetable(T,'H5N1_Poultry_Risk_Model.xlsx','Sheet','Estimated_Coefficients');
+writetable(T,'H5N1_Poultry_Risk_Model.xlsx','Sheet','Estimated_Coefficients_Models');

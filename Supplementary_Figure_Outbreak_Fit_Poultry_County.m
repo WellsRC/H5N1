@@ -5,7 +5,7 @@ close all;
 load([pwd '/Data/Data_US_County.mat'],'US_County');
 
 State_Names=US_County.STATE_NAME;
-state_remove=strcmp(State_Names,"Alaska") | strcmp(State_Names,"District of Columbia");
+state_remove=strcmp(State_Names,"Alaska");
 State_Names=State_Names(~state_remove);
 
 UState_Names=unique(US_County.STATE_NAME);
@@ -22,10 +22,7 @@ for ss=1:length(Outbreak_State)
 end
 
 
-load('Average_Risk_Poultry.mat','post_outbreak_poultry_farm_County_CI','w_AIC');
-
-post_outbreak_poultry_farm_County_CI=post_outbreak_poultry_farm_County_CI(:,:,w_AIC==max(w_AIC));
-
+load('Poultry_Risk_AIC.mat','mle_post_outbreak_poultry_farm_County_CI');
 
 [Outbreak_State,R_Indx]=sort(Outbreak_State,'descend');
 UState_Names=UState_Names(R_Indx);
@@ -37,7 +34,7 @@ for pp=1:4
     for ii=1:nr(pp)
         for jj=1:3
             f_state=strcmp(UState_Names{jj+3.*(ii-1)+12.*(pp-1)},State_Names);
-            post_outbreak_County=post_outbreak_poultry_farm_County_CI(f_state,:);
+            post_outbreak_County=mle_post_outbreak_poultry_farm_County_CI(f_state,:);
             AfC=Affected_County_Farms(f_state);
             
             [AfC,SAFc]=sort(AfC,'descend');

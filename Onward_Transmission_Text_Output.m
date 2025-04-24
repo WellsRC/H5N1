@@ -1,4 +1,5 @@
 clear;
+clc;
 
 load([pwd '/Data/Data_US_County.mat'],'US_County');
 
@@ -27,6 +28,50 @@ md(2:3)=median_County_onward_95;
 
 fprintf(['Minimum number of onward transmission events  across all counties: ' num2str(lb(1),'%3.2e') ' (95%% UR: ' num2str(lb(2),'%3.2e') char(8211) num2str(lb(3),'%3.2e') ') \n']);
 fprintf(['Maximum number of onward transmission events  across all counties: ' num2str(ub(1),'%4.3f') ' (95%% UR: ' num2str(ub(2),'%4.3f') char(8211) num2str(ub(3),'%4.3f') ') \n']);
-fprintf(['Median number of onward transmission events  across all counties: ' num2str(md(1),'%3.2f') ' (95%% UR: ' num2str(md(2),'%3.2f') char(8211) num2str(md(3),'%3.2f') ') \n \n']);
+fprintf(['Median number of onward transmission events  across all counties: ' num2str(md(1),'%3.2e') ' (95%% UR: ' num2str(md(2),'%3.2e') char(8211) num2str(md(3),'%3.2e') ') \n \n']);
+
+f_c=find(mle_County_onward>0.01);
+
+for cc=1:length(f_c)
+    fprintf([ US_County.NAME{f_c(cc)} ', ' US_County.STATE_NAME{f_c(cc)} ' risk: ' num2str(mle_County_onward(f_c(cc)),'%4.3f') '(95%% UR:' num2str(County_onward_95(f_c(cc),1),'%4.3f') char(8211) num2str(County_onward_95(f_c(cc),2),'%4.3f') ') \n']);
+end
 
 
+fprintf(['Median proportion of onward transmission events  across all counties from dairy farms: ' num2str(median(mle_County_dairy_onward(~isnan(mle_County_dairy_onward))).*100,'%3.1f') '%% (95%% UR: ' num2str(100.*median_County_dairy_onward_95(1),'%3.1f') '%%' char(8211) num2str(100.*median_County_dairy_onward_95(2),'%3.1f') '%%) \n \n']);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Range of state outbreaks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+[~,indxs]=sort(mle_State_onward,'descend');
+
+fprintf([State_Name{indxs(1)} ' is the state with the highest risk: '  num2str(mle_State_onward(indxs(1)),'%4.3f') '(95%% UR:' num2str(State_onward_95(indxs(1),1),'%4.3f') char(8211) num2str(State_onward_95(indxs(1),2),'%4.3f') ') \n']);
+fprintf([State_Name{indxs(end)} ' is the state with the lowest risk: '  num2str(mle_State_onward(indxs(end)),'%4.3f') '(95%% UR:' num2str(State_onward_95(indxs(end),1),'%4.3f') char(8211) num2str(State_onward_95(indxs(end),2),'%4.3f') ') \n']);
+
+fprintf(['Top five highest risk states where risk exceeds ' num2str(num2str(mle_State_onward(indxs(5)),'%4.3f')) ': ' ]);
+
+for ii=1:5 
+    fprintf([State_Name{indxs(ii)} ', ']);
+end
+
+fprintf(['\n ']);
+
+fprintf(['Top five lowest risk states where risk below ' num2str(num2str(mle_State_onward(indxs(end-4)),'%4.3f')) ': ' ]);
+
+for ii=length(mle_State_onward)-4:length(mle_State_onward)
+    fprintf([State_Name{indxs(ii)} ', ']);
+end
+
+fprintf(['\n \n']);
+
+lb(1)=100.*min(mle_State_dairy_onward);
+ub(1)=100.*max(mle_State_dairy_onward);
+md(1)=100.*median(mle_State_dairy_onward);
+
+lb(2:3)=100.*min_State_dairy_onward_95;
+ub(2:3)=100.*max_State_dairy_onward_95;
+md(2:3)=100.*median_State_dairy_onward_95;
+
+fprintf(['Minimum proportion of onward transmission events  across all states from dairy: ' num2str(lb(1),'%3.1f') '%% (95%% UR: ' num2str(lb(2),'%3.1f') '%%' char(8211) num2str(lb(3),'%3.1f') '%%) \n']);
+fprintf(['Maximum proportion of onward transmission events  across all states from dairy: ' num2str(ub(1),'%3.1f') '%% (95%% UR: ' num2str(ub(2),'%3.1f') '%%' char(8211) num2str(ub(3),'%3.1f') '%%) \n']);
+fprintf(['Median proportion of onward transmission events  across all states from dairy: ' num2str(md(1),'%3.1f') '%% (95%% UR: ' num2str(md(2),'%3.1f') '%%' char(8211) num2str(md(3),'%3.1f') '%%) \n \n']);
