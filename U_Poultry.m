@@ -1,10 +1,10 @@
-clear;
-clc;
-
+% parpool(48)
 load('Poultry_Models_Refined_Fit.mat',"par_est","w_AIC",'Poultry_Model');
 
 Poultry_Model=Poultry_Model(w_AIC==max(w_AIC),:);
-par_est=par_est{w_AIC==max(w_AIC)};
+
+L_mle=Poultry_Model.L;
+par_mle=par_est{w_AIC==max(w_AIC)};
 
 [F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_par,logic_temperature] = Poultry_Covariates(Poultry_Model.Model_H5N1{1},Poultry_Model.Model_Farm{1});
 
@@ -19,49 +19,46 @@ end
 
 x_lb=[-1 -0.9 -0.04 -0.44 1.114 1.2298 1.095 1.3719 0.1273 -1.8334 -0.4569 -2];
 x_ub=[-0.7 -0.75 -0.015 -0.39 1.117 1.2302 1.0985 1.3729 0.1274 -1.8327 -0.4567 -1.5];
-L_samp=zeros(1,12*200);
-par_samp=0.*repmat(par_est,12.*200,1);
-opt=optimoptions('patternsearch','UseParallel',true,'FunctionTolerance',10^(-8),'PlotFcn',[],'MeshTolerance',10^(-12));
-for indx=1:length(x_lb)    
-    x0=flip(linspace(x_lb(indx),par_est(indx),101));
-    x0=x0(2:end);
-    for nn=1:100
-        if(nn==1)
-            p0=par_est(~ismember([1:length(par_est)],indx));
-        else
-            p0=par_temp;
+dx_lb=par_mle-x_lb;
+dx_ub=x_ub-par_mle;
+
+dx=2.*min(dx_ub,dx_lb);
+N_Samp=5000;
+L_samp=zeros(N_Samp,1);
+par_samp=zeros(N_Samp,length(x_lb));
+cc=0;
+while(cc<N_Samp)
+    p_old=par_mle;
+    burn_in=50;
+    for kk=1:1000
+        rv=randperm(length(x_lb));
+        for zz=1:length(x_lb)
+            r_int=rv(zz);
+            dp=dx(r_int).*(rand(1)-0.5);
+            p_new=p_old;
+            p_new(r_int)=p_new(r_int)+dp;
+            
+            if(p_new(r_int)>=lb(r_int) && p_new(r_int)<=ub(r_int))             
+                Lt=-Objective_Function_Poultry_Farm(p_new,F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_temperature);
+                if(rand(1)<=exp(Lt-L_mle)/(exp(Lt-L_mle)+1)) && burn_in<=0
+                    cc=cc+1;
+                    L_samp(cc)=Lt;
+                    par_samp(cc,:)=p_new;
+                    p_old=p_new;
+                    if(cc==N_Samp)
+                        break;
+                    end
+                elseif(rand(1)<=exp(Lt-L_mle)/(exp(Lt-L_mle)+1))
+                    p_old=p_new;
+                    burn_in=burn_in-1;
+                end
+            end
         end
-        [par_temp,L_samp(nn+200.*(indx-1))]=patternsearch(@(y)Objective_Function_Poultry_Farm_LP(indx,x0(nn),y,F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_temperature),p0,[],[],[],[],lb(~ismember([1:length(par_est)],indx)),ub(~ismember([1:length(par_est)],indx)),[],opt);
-        par_samp(nn+200.*(indx-1),indx)=x0(nn);
-        par_samp(nn+200.*(indx-1),~ismember([1:length(par_est)],indx))=par_temp;
+
+        if(cc==N_Samp)
+            break;
+        end
     end
 
-    x0=linspace(par_est(indx),x_ub(indx),101);
-    x0=x0(2:end);
-    for nn=101:200
-        if(nn==1)
-            p0=par_est(~ismember([1:length(par_est)],indx));
-        else
-            p0=par_temp;
-        end
-        [par_temp,L_samp(nn+200.*(indx-1))]=patternsearch(@(y)Objective_Function_Poultry_Farm_LP(indx,x0(nn-100),y,F_County,X_County,P_County,County_Farms,Affected_County_Farms,state_weight_matrix,State_Spillover_Events,logic_temperature),p0,[],[],[],[],lb(~ismember([1:length(par_est)],indx)),ub(~ismember([1:length(par_est)],indx)),[],opt);
-        par_samp(nn+200.*(indx-1),indx)=x0(nn-100);
-        par_samp(nn+200.*(indx-1),~ismember([1:length(par_est)],indx))=par_temp;
-    end
 end
-
-w=exp(L_samp-L_samp(1))./sum(exp(L_samp-L_samp(1)));
-
-samp_indx=zeros(10^3,1);
-r=rand(10^3,1);
-
-wc=cumsum(w);
-
-for jj=1:10^3
-    samp_indx(jj)=find(r(jj)<=wc,1,"first");
-end
-
-par_mle=par_samp(L_samp==max(L_samp),:);
-par_samp=par_samp(samp_indx,:);
-
-save('Uncertainty_AIC_Poultry_Model.mat','par_mle','par_samp','Poultry_Model')
+save('Uncertainty_AIC_Poultry_Model.mat','L_samp','par_samp','Poultry_Model','par_mle','L_mle')

@@ -1,84 +1,58 @@
 clear;
-
-
+clc;
 load([pwd '/Data/Data_US_County.mat'],'US_County');
-US_County=US_County(:,[5,4,3]);
-Filler=table({'N/A'},{'N/A'},{'Model_Weight'});
-Filler.Properties.VariableNames=US_County.Properties.VariableNames;
-US_County_temp=[Filler;US_County];
 
-load('Average_Risk_Poultry.mat','w_AIC','State_Name','outbreak_poultry_farm_County','outbreak_risk_poultry_farm_County','outbreak_layer_farm_County','outbreak_pullet_farm_County','outbreak_broiler_farm_County','outbreak_turkey_farm_County','outbreak_risk_layer_farm_County','outbreak_risk_pullet_farm_County','outbreak_risk_broiler_farm_County','outbreak_risk_turkey_farm_County','spillover_poultry_farm_County','spillover_risk_poultry_farm_County','outbreak_poultry_farm_State','outbreak_risk_poultry_farm_State','spillover_poultry_farm_State','spillover_risk_poultry_farm_State','outbreak_layer_farm_State','outbreak_pullet_farm_State','outbreak_broiler_farm_State','outbreak_turkey_farm_State','outbreak_risk_layer_farm_State','outbreak_risk_pullet_farm_State','outbreak_risk_broiler_farm_State','outbreak_risk_turkey_farm_State');
+State_Name=unique(US_County.STATE_NAME);
+state_remove=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
+State_Name=State_Name(~state_remove);
 
+load('Poultry_Risk_AIC.mat');
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Outbreaks
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-US_County=US_County_temp;
-temp_v=[1; outbreak_poultry_farm_County*w_AIC];
-US_County.Model_Average=temp_v;
+GEOID=US_County.GEOID;
+County=US_County.NAME;
+State=US_County.STATE_NAME;
 
-temp_v=[w_AIC'; outbreak_poultry_farm_County];
-temp_Table=array2table(temp_v);
+Outbreak=mle_outbreak_poultry_farm_County;
+Outbreak_95UR=outbreak_poultry_farm_County_95;
 
-for mm=1:length(w_AIC)
-    temp_Table.Properties.VariableNames{mm}=['Model_' num2str(mm)];
-end
+Outbreak_Risk=mle_outbreak_risk_poultry_farm_County;
+Outbreak_Risk_95UR=outbreak_risk_poultry_farm_County_95;
 
-US_County=[US_County temp_Table];
+Spillover=mle_spillover_poultry_farm_County;
+Spillover_95UR=spillover_poultry_farm_County_95;
 
-writetable(US_County,'H5N1_Poultry_Risk_Model.xlsx','Sheet','Outbreak');
+Spillover_Risk=mle_spillover_risk_poultry_farm_County;
+Spillover_Risk_95UR=spillover_risk_poultry_farm_County_95;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Outbreak Risk
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-US_County=US_County_temp;
-temp_v=[1; outbreak_risk_poultry_farm_County*w_AIC];
-US_County.Model_Average=temp_v;
+Onward_Transmission=mle_onward_transmission_poultry_farm_County;
+Onward_Transmission(isnan(Outbreak))=NaN;
+Onward_Transmission_95UR=onward_transmission_poultry_farm_County_95;
+Onward_Transmission_95UR(isnan(Outbreak),:)=NaN;
 
-temp_v=[w_AIC'; outbreak_risk_poultry_farm_County];
-temp_Table=array2table(temp_v);
+Poisson_Mean=mle_potential_outbreak_poultry_farm_County;
+Poisson_Mean_95UR=potential_outbreak_poultry_farm_County_95;
 
-for mm=1:length(w_AIC)
-    temp_Table.Properties.VariableNames{mm}=['Model_' num2str(mm)];
-end
+T=table(State,County,GEOID,Outbreak,Outbreak_95UR,Outbreak_Risk,Outbreak_Risk_95UR,Spillover,Spillover_95UR,Spillover_Risk,Spillover_Risk_95UR,Onward_Transmission,Onward_Transmission_95UR,Poisson_Mean,Poisson_Mean_95UR);
 
-US_County=[US_County temp_Table];
-
-writetable(US_County,'H5N1_Poultry_Risk_Model.xlsx','Sheet','Outbreak_Risk');
+writetable(T,'H5N1_Poultry_Risk_Model.xlsx','Sheet','County_Estimates');
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Spillover 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-US_County=US_County_temp;
-temp_v=[1; spillover_poultry_farm_County*w_AIC];
-US_County.Model_Average=temp_v;
+State=State_Name;
+Outbreak=mle_outbreak_poultry_farm_State;
+Outbreak_95UR=outbreak_poultry_farm_State_95;
 
-temp_v=[w_AIC'; spillover_poultry_farm_County];
-temp_Table=array2table(temp_v);
+Outbreak_Risk=mle_outbreak_risk_poultry_farm_State;
+Outbreak_Risk_95UR=outbreak_risk_poultry_farm_State_95;
 
-for mm=1:length(w_AIC)
-    temp_Table.Properties.VariableNames{mm}=['Model_' num2str(mm)];
-end
+Spillover=mle_spillover_poultry_farm_State;
+Spillover_95UR=spillover_poultry_farm_State_95;
 
-US_County=[US_County temp_Table];
+Spillover_Risk=mle_spillover_risk_poultry_farm_State;
+Spillover_Risk_95UR=spillover_risk_poultry_farm_State_95;
 
-writetable(US_County,'H5N1_Poultry_Risk_Model.xlsx','Sheet','Spillover');
+Onward_Transmission=mle_onward_transmission_poultry_farm_State;
+Onward_Transmission_95UR=onward_transmission_poultry_farm_State_95;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Spillover Risk
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-US_County=US_County_temp;
-temp_v=[1; spillover_risk_poultry_farm_County*w_AIC];
-US_County.Model_Average=temp_v;
+T=table(State,Outbreak,Outbreak_95UR,Outbreak_Risk,Outbreak_Risk_95UR,Spillover,Spillover_95UR,Spillover_Risk,Spillover_Risk_95UR,Onward_Transmission,Onward_Transmission_95UR);
 
-temp_v=[w_AIC'; spillover_risk_poultry_farm_County];
-temp_Table=array2table(temp_v);
-
-for mm=1:length(w_AIC)
-    temp_Table.Properties.VariableNames{mm}=['Model_' num2str(mm)];
-end
-
-US_County=[US_County temp_Table];
-
-writetable(US_County,'H5N1_Poultry_Risk_Model.xlsx','Sheet','Spillover_Risk');
+writetable(T,'H5N1_Poultry_Risk_Model.xlsx','Sheet','State_Estimates');

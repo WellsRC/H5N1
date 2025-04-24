@@ -27,29 +27,29 @@ state_remove=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columb
 State_Name=State_Name(~state_remove);
 
 if(strcmp(Var_Plot,'Dairy'))
-    load('Average_Risk_Dairy.mat','w_AIC','outbreak_dairy_farm_County','outbreak_risk_dairy_farm_County','spillover_risk_dairy_farm_County','outbreak_dairy_farm_State','spillover_risk_dairy_farm_State','State_Name');
-    avg_outbreak_farm_County=outbreak_dairy_farm_County*w_AIC;
-    avg_outbreak_risk_farm_County=outbreak_risk_dairy_farm_County*w_AIC;
-    avg_spillover_risk_farm_County=spillover_risk_dairy_farm_County*w_AIC;
+    load('Dairy_Risk_AIC.mat','mle_outbreak_dairy_farm_County','mle_outbreak_risk_dairy_farm_County','mle_spillover_risk_dairy_farm_County','mle_outbreak_dairy_farm_State','mle_spillover_risk_dairy_farm_State');
+    mle_outbreak_farm_County=mle_outbreak_dairy_farm_County;
+    mle_outbreak_risk_farm_County=mle_outbreak_risk_dairy_farm_County;
+    mle_spillover_risk_farm_County=mle_spillover_risk_dairy_farm_County;
 
-    avg_outbreak_risk_farm_State=outbreak_dairy_farm_State*w_AIC;
-    avg_spillover_risk_farm_State=spillover_risk_dairy_farm_State*w_AIC;
+    mle_outbreak_farm_State=mle_outbreak_dairy_farm_State;
+    mle_spillover_risk_farm_State=mle_spillover_risk_dairy_farm_State;
 
     farm_type='dairy';
 elseif(strcmp(Var_Plot,'Poultry')) 
-    load('Average_Risk_Poultry.mat','w_AIC','outbreak_poultry_farm_County','outbreak_risk_poultry_farm_County','spillover_risk_poultry_farm_County','outbreak_poultry_farm_State','spillover_risk_poultry_farm_State','State_Name');
-    avg_outbreak_farm_County=outbreak_poultry_farm_County*w_AIC;
-    avg_outbreak_risk_farm_County=outbreak_risk_poultry_farm_County*w_AIC;
-    avg_spillover_risk_farm_County=spillover_risk_poultry_farm_County*w_AIC;
+    load('Poultry_Risk_AIC.mat','mle_outbreak_poultry_farm_County','mle_outbreak_risk_poultry_farm_County','mle_spillover_risk_poultry_farm_County','mle_outbreak_poultry_farm_State','mle_spillover_risk_poultry_farm_State');
+    mle_outbreak_farm_County=mle_outbreak_poultry_farm_County;
+    mle_outbreak_risk_farm_County=mle_outbreak_risk_poultry_farm_County;
+    mle_spillover_risk_farm_County=mle_spillover_risk_poultry_farm_County;
 
-    avg_outbreak_risk_farm_State=outbreak_poultry_farm_State*w_AIC;
-    avg_spillover_risk_farm_State=spillover_risk_poultry_farm_State*w_AIC;
+    mle_outbreak_farm_State=mle_outbreak_poultry_farm_State;
+    mle_spillover_risk_farm_State=mle_spillover_risk_poultry_farm_State;
     farm_type='poultry';
 end
 
-state_nan=~isnan(avg_outbreak_risk_farm_State);
-avg_outbreak_risk_farm_State=avg_outbreak_risk_farm_State(state_nan);
-avg_spillover_risk_farm_State=avg_spillover_risk_farm_State(state_nan);
+state_nan=~isnan(mle_outbreak_farm_State);
+mle_outbreak_farm_State=mle_outbreak_farm_State(state_nan);
+mle_spillover_risk_farm_State=mle_spillover_risk_farm_State(state_nan);
 State_Name=State_Name(state_nan);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
@@ -98,7 +98,7 @@ for vv=1:4
             subplot('Position',[0.41,0.525,0.01,0.45]);
             Title_Name={['Expected number of outbreaks'],['among ' farm_type ' farms']};
             
-            risk_measure=avg_outbreak_farm_County;
+            risk_measure=mle_outbreak_farm_County;
             C_Risk=[hex2rgb('#ffffff');
                     hex2rgb('#f9BA32');
                     hex2rgb('#f16913');
@@ -108,7 +108,7 @@ for vv=1:4
             subplot('Position',[0.885,0.525,0.01,0.45]);
             Title_Name={['Outbreak risk for ' farm_type ' farms']};
 
-            risk_measure=avg_outbreak_risk_farm_County;
+            risk_measure=mle_outbreak_risk_farm_County;
 
             C_Risk=[1.0000    1.0000    1.0000
                 1.0000    0.7812    0.4975
@@ -121,7 +121,7 @@ for vv=1:4
             Title_Name={['Spillover risk to humans from ' farm_type ' farms']};
 
 
-            risk_measure=avg_spillover_risk_farm_County;
+            risk_measure=mle_spillover_risk_farm_County;
 
 
             C_Risk=[1.0000    1.0000    1.0000
@@ -133,9 +133,9 @@ for vv=1:4
         case 4
             state_filter=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
             State_Name=State_Name(~state_filter);
-            risk_measure_outbreak=avg_outbreak_risk_farm_State(~state_filter);
+            risk_measure_outbreak=mle_outbreak_farm_State(~state_filter);
             C_out=[0 0 0];
-            risk_measure_spillover=avg_spillover_risk_farm_State(~state_filter);
+            risk_measure_spillover=mle_spillover_risk_farm_State(~state_filter);
             C_spill=[0.7746    0.6583    0.5164];
             [~,indx_r]=sort(mean([risk_measure_outbreak risk_measure_spillover],2),'descend');
             risk_measure_outbreak=risk_measure_outbreak(indx_r);
@@ -153,12 +153,12 @@ for vv=1:4
 
         x_risk=linspace(0,ceil(100.*max(risk_measure))./100,size(C_Risk,1));
         c_indx=linspace(0,ceil(100.*max(risk_measure))./100,251);
-        if(length([x_risk(1):0.01:x_risk(end)])<=11)
-            y_indx=[x_risk(1):0.01:x_risk(end)];
-        elseif(length([x_risk(1):0.05:x_risk(end)])<=11)
-            y_indx=[x_risk(1):0.05:x_risk(end)];
-        elseif(length([x_risk(1):0.1:x_risk(end)])<=11)
-            y_indx=[x_risk(1):0.1:x_risk(end)];
+        if(length([x_risk(1):0.01:ceil(100.*x_risk(end))./100])<=11)
+            y_indx=[x_risk(1):0.01:ceil(100.*x_risk(end))./100];
+        elseif(length([x_risk(1):0.05:ceil(20.*x_risk(end))./20])<=11)
+            y_indx=[x_risk(1):0.05:ceil(20.*x_risk(end))./20];
+        elseif(length([x_risk(1):0.1:ceil(10.*x_risk(end))./10])<=11)
+            y_indx=[x_risk(1):0.1:ceil(10.*x_risk(end))./10];
         else
             y_indx=[x_risk(1):0.25:x_risk(end)];
         end

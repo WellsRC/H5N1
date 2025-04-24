@@ -22,11 +22,9 @@ for ss=1:length(Outbreak_State)
 end
 
 
-load('Average_Risk_Poultry.mat','post_outbreak_poultry_farm_County','w_AIC');
+load('Average_Risk_Poultry.mat','post_outbreak_poultry_farm_County_CI','w_AIC');
 
-post_outbreak_poultry_farm_County=post_outbreak_poultry_farm_County(:,:,w_AIC>10^(-4));
-w_AIC=w_AIC(w_AIC>10^(-4));
-w_AIC=w_AIC./sum(w_AIC);
+post_outbreak_poultry_farm_County_CI=post_outbreak_poultry_farm_County_CI(:,:,w_AIC==max(w_AIC));
 
 
 [Outbreak_State,R_Indx]=sort(Outbreak_State,'descend');
@@ -39,19 +37,15 @@ for pp=1:4
     for ii=1:nr(pp)
         for jj=1:3
             f_state=strcmp(UState_Names{jj+3.*(ii-1)+12.*(pp-1)},State_Names);
-            post_outbreak_County=post_outbreak_poultry_farm_County(f_state,:,:);
+            post_outbreak_County=post_outbreak_poultry_farm_County_CI(f_state,:);
             AfC=Affected_County_Farms(f_state);
             
-            [~,SAFc]=sort(squeeze(post_outbreak_County(:,2,:))*w_AIC,'descend');
-            post_outbreak_County=post_outbreak_County(SAFc,:,:);
-            AfC=AfC(SAFc);
+            [AfC,SAFc]=sort(AfC,'descend');
+            post_outbreak_County=post_outbreak_County(SAFc,:);
             subplot('Position',[0.065+0.32.*(jj-1) 0.77-0.24.*(ii-1) 0.29 0.2]);
             for cc=1:size(post_outbreak_County,1)
-                for mm=1:length(w_AIC)
-                    patch(cc+[-0.45 -0.45 0.45 0.45],[post_outbreak_County(cc,1,mm) post_outbreak_County(cc,5,mm) post_outbreak_County(cc,5,mm) post_outbreak_County(cc,1,mm)],hex2rgb('#011A27'),'FaceAlpha',w_AIC(mm)./4,'linestyle','none'); hold on;
-                    patch(cc+[-0.45 -0.45 0.45 0.45],[post_outbreak_County(cc,2,mm) post_outbreak_County(cc,4,mm) post_outbreak_County(cc,4,mm) post_outbreak_County(cc,2,mm)],hex2rgb('#011A27'),'FaceAlpha',w_AIC(mm)./4,'linestyle','none'); hold on;
-                end
-                % plot(cc+[-0.45 0.45],(squeeze(post_outbreak_County(cc,3,:))*w_AIC).*ones(1,2),'-','Colour',hex2rgb('#011A27'),'LineWidth',2);
+                patch(cc+[-0.45 -0.45 0.45 0.45],[post_outbreak_County(cc,1) post_outbreak_County(cc,5) post_outbreak_County(cc,5) post_outbreak_County(cc,1)],hex2rgb('#011A27'),'FaceAlpha',0.33,'linestyle','none'); hold on;                
+                plot(cc+[-0.45 0.45],(squeeze(post_outbreak_County(cc,3))).*ones(1,2),'-','Color',hex2rgb('#011A27'),'LineWidth',2);
             end
             scatter(1:size(post_outbreak_County,1),AfC,20,hex2rgb('#F0810F'),'filled');
             xlim([0.55 size(post_outbreak_County,1)+0.45]);
@@ -84,4 +78,5 @@ for pp=1:4
             title(UState_Names(jj+3.*(ii-1)+12.*(pp-1)))
         end
     end
+    print(gcf,['Model_Fit_Poultry_County_' num2str(pp) '.png'],'-dpng','-r300');
 end

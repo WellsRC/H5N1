@@ -5,6 +5,11 @@ H5N1_Variable_v={'Light_Intensity','Waterfowl_Mallard','Waterfowl_Canada_Goose',
 Other_Variables_v={'Turkey_Operations','Turkey_Inventory','Broiler_Operations','Broiler_Inventory','Layer_Operations','Layer_Inventory','Pullet_Operations','Pullet_Inventory'};
 
 load('Poultry_Models_Refined_Fit.mat')
+Poultry_Model=flip(Poultry_Model);
+AIC=flip(AIC);
+L=flip(L);
+par_est=flip(par_est);
+w_AIC=flip(w_AIC);
 
 Delta_AIC=AIC-min(AIC);
 
@@ -99,45 +104,21 @@ T=[table(Model) array2table(Variable_Included) array2table(Zero_Inflated) array2
 T.Properties.VariableNames=Variable_Names;
 
 Avg_V=(Variable_Included'*w_AIC)';
-Variable_Included=[Avg_V; NaN.*zeros(3,length(Avg_V))];
-Model=cell(4,1);
-Model{1}='Average';
-Model{2}='Median';
-Model{3}='2.5 Percentile';
-Model{4}='97.5 Percentile';
+Variable_Included=Avg_V;
+Model=cell(1,1);
+Model{1}='Weighted_Average';
 
 X_temp=table2array(T(:,12:34));
 X_temp(isnan(X_temp))=0;
-Zero_Inflated=NaN.*zeros(3,10);
-Outbreak_Model=NaN.*zeros(3,12);
-Spillover_per_Outbreak=zeros(3,1);
 
-Zero_Inflated(1,:)=w_AIC'*X_temp(:,1:10);
-Outbreak_Model(1,:)=w_AIC'*X_temp(:,11:22);
-Spillover_per_Outbreak(1)=w_AIC'*X_temp(:,23);
+Zero_Inflated=w_AIC'*X_temp(:,1:10);
+Outbreak_Model=w_AIC'*X_temp(:,11:22);
+Spillover_per_Outbreak=w_AIC'*X_temp(:,23);
 
-X_Samp=zeros(10^3,size(X_temp,2));
-r=rand(10^3,1);
-wc=cumsum(w_AIC);
-
-for ii=1:length(r)
-    X_Samp(ii,:)=X_temp(find(r(ii)<=wc,1,"first"),:);
-end
-
-Zero_Inflated(2,:)=prctile(X_Samp(:,1:10),50);
-Zero_Inflated(3,:)=prctile(X_Samp(:,1:10),2.5);
-Zero_Inflated(4,:)=prctile(X_Samp(:,1:10),97.5);
-
-Outbreak_Model(2,:)=prctile(X_Samp(:,11:22),50);
-Outbreak_Model(3,:)=prctile(X_Samp(:,11:22),2.5);
-Outbreak_Model(4,:)=prctile(X_Samp(:,11:22),97.5);
-
-Spillover_per_Outbreak(2:4)=prctile(X_Samp(:,23),[50 2.5 97.5]);
-
-L=NaN.*zeros(4,1);
-AIC=NaN.*zeros(4,1);
-Delta_AIC=NaN.*zeros(4,1);
-w_AIC=NaN.*zeros(4,1);
+L=NaN.*zeros(1,1);
+AIC=NaN.*zeros(1,1);
+Delta_AIC=NaN.*zeros(1,1);
+w_AIC=NaN.*zeros(1,1);
 
 T2=[table(Model) array2table(Variable_Included) array2table(Zero_Inflated) array2table(Outbreak_Model) table(Spillover_per_Outbreak,L,AIC,Delta_AIC,w_AIC)];
 T2.Properties.VariableNames=Variable_Names;

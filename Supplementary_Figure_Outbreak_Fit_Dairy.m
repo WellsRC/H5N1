@@ -10,7 +10,6 @@ State_Names=State_Names(~state_remove);
 
 clearvars US_County
 
-N_Samp=10^4;
 [F_County,X_County,P_County,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,state_weight_matrix,Dairy_Network,logic_connect,logic_connect_p,logic_par] =  Dairy_Covariates({},{},{});
 Outbreak_State=Affected_State_Farms;
 
@@ -28,7 +27,7 @@ for pp=1:4
     figure('units','normalized','outerposition',[0.2 0.06 0.8 1]);
     for ii=1:nr(pp)
         for jj=1:3
-            Outbreak_Post_State=squeeze(post_outbreak_dairy_farm_State(jj+3.*(ii-1)+12.*(pp-1),:,:))*w_AIC;
+            Outbreak_Post_State=squeeze(post_outbreak_dairy_farm_State(jj+3.*(ii-1)+12.*(pp-1),:,w_AIC==max(w_AIC)));
             subplot('Position',[0.025+0.3275.*(jj-1) 0.80-0.24.*(ii-1) 0.30 0.17]);
             bar([0:2500],Outbreak_Post_State,'FaceColor',hex2rgb('#011A27'));
             hold on

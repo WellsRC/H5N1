@@ -27,7 +27,7 @@ State_Name=State_Name(~state_remove);
 
 load('Average_Risk_Dairy.mat','onward_transmission_dairy_farm_County','no_farms','w_AIC');
 
-avg_onward_transmission_County=onward_transmission_dairy_farm_County*w_AIC;
+avg_onward_transmission_County=onward_transmission_dairy_farm_County(:,w_AIC==max(w_AIC));
 
 figure('units','normalized','outerposition',[0.25 0.25 0.4 0.5]);
  ax1=usamap('conus');
