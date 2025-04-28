@@ -25,9 +25,9 @@ state_remove=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columb
 State_Name=State_Name(~state_remove);
 
 
-load('Average_Risk_Dairy.mat','potntial_outbreak_dairy_farm_County','no_farms','w_AIC');
+load('Dairy_Risk_AIC.mat','mle_potntial_outbreak_dairy_farm_County','no_farms');
 
-potential_outbreak_County=potntial_outbreak_dairy_farm_County(:,w_AIC==max(w_AIC));
+potential_outbreak_County=mle_potntial_outbreak_dairy_farm_County;
 
 figure('units','normalized','outerposition',[0.25 0.25 0.4 0.5]);
  ax1=usamap('conus');

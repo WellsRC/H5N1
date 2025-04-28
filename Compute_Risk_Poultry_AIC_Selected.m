@@ -176,6 +176,15 @@ mle_outbreak_risk_poultry_farm_State(t_nan)=0;
 mle_spillover_risk_poultry_farm_County=1-(p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,kappa_spillover.*mu_farm_County(:)));
 mle_spillover_risk_poultry_farm_State=1-(z_state_spill(:)+(1-z_state_spill(:)).*nbinpdf(0,k_state_spill(:),p_nb_state_spill(:)));
 
+mle_outbreak_poultry_farm_County(no_farms)=NaN;
+
+mle_potntial_outbreak_poultry_farm_County(no_farms)=NaN;
+
+mle_spillover_poultry_farm_County(no_farms)=NaN;
+
+mle_outbreak_risk_poultry_farm_County(no_farms)=NaN;
+
+mle_spillover_risk_poultry_farm_County(no_farms)=NaN;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 % Uncertainty
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
@@ -306,6 +315,16 @@ for mm=1:N_Samp
 
     spillover_risk_poultry_farm_County(:,mm)=1-(p_inf_County(:)+(1-p_inf_County(:)).*poisspdf(0,kappa_spillover.*mu_farm_County(:)));
     spillover_risk_poultry_farm_State(:,mm)=1-(z_state_spill(:)+(1-z_state_spill(:)).*nbinpdf(0,k_state_spill(:),p_nb_state_spill(:)));
+
+    outbreak_poultry_farm_County(no_farms,mm)=NaN;
+    
+    potential_outbreak_poultry_farm_County(no_farms,mm)=NaN;
+
+    spillover_poultry_farm_County(no_farms,mm)=NaN;
+    
+    outbreak_risk_poultry_farm_County(no_farms,mm)=NaN;
+    
+    spillover_risk_poultry_farm_County(no_farms,mm)=NaN;
 end
 
 min_outbreaks=min(outbreak_poultry_farm_County(~no_farms,:),[],1);

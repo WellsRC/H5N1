@@ -24,45 +24,14 @@ State_Name=unique(US_County.STATE_NAME);
 state_remove=strcmp(State_Name,"Alaska") | strcmp(State_Name,"District of Columbia");
 State_Name=State_Name(~state_remove);
 
+load('Onward_Transmission.mat','mle_County_dairy_onward','mle_State_dairy_onward','mle_County_onward','mle_State_onward');
 
-load('Average_Risk_Poultry.mat','post_spillover_poultry_farm_County','post_spillover_poultry_farm_State','no_farms','w_AIC');
-spillover_Poultry_County=squeeze(post_spillover_poultry_farm_County(:,:,w_AIC==max(w_AIC)));
-spillover_Poultry_State=squeeze(post_spillover_poultry_farm_State(:,:,w_AIC==max(w_AIC)));
-Poultry_no_farms=no_farms;
+no_farms=isnan(mle_County_onward);
+avg_onward_transmission_County=mle_County_onward;
+avg_onward_transmission_Dairy_County=mle_County_dairy_onward;
+avg_onward_transmission_State=mle_State_onward;
+avg_onward_transmission_Dairy_State=mle_State_dairy_onward;
 
-load('Average_Risk_Dairy.mat','post_spillover_dairy_farm_County','post_spillover_dairy_farm_State','no_farms','w_AIC');
-spillover_dairy_County=squeeze(post_spillover_dairy_farm_County(:,:,w_AIC==max(w_AIC)));
-spillover_dairy_State=squeeze(post_spillover_dairy_farm_State(:,:,w_AIC==max(w_AIC)));
-Dairy_no_farms=no_farms;
-
-no_farms=Poultry_no_farms & Dairy_no_farms;
-
-avg_onward_transmission_County=zeros(size(Dairy_no_farms));
-avg_onward_transmission_Dairy_County=zeros(size(Dairy_no_farms));
-avg_onward_transmission_State=zeros(size(spillover_Poultry_State,1),1);
-avg_onward_transmission_Dairy_State=zeros(size(spillover_Poultry_State,1),1);
-
-
-k_onward_transmission=2.69;
-R0=0.05;
-p_no_onward_transmission=nbinpdf(0,k_onward_transmission,k_onward_transmission./(k_onward_transmission+R0));
-
-NK=zeros(size(Dairy_no_farms));
-NKS=zeros(size(spillover_Poultry_State,1),1);
-for pp=0:size(spillover_Poultry_County,2)-1
-    for dd=0:size(spillover_dairy_County,2)-1
-        NK=NK+(spillover_Poultry_County(:,pp+1).*spillover_dairy_County(:,dd+1));
-        NKS=NKS+(spillover_Poultry_State(:,pp+1).*spillover_dairy_State(:,dd+1));
-        avg_onward_transmission_County=avg_onward_transmission_County+(spillover_Poultry_County(:,pp+1).*spillover_dairy_County(:,dd+1)).*(1-p_no_onward_transmission.^(dd+pp));
-        avg_onward_transmission_Dairy_County=avg_onward_transmission_Dairy_County+(spillover_Poultry_County(:,pp+1).*spillover_dairy_County(:,dd+1)).*(1-p_no_onward_transmission.^(dd));
-        avg_onward_transmission_State=avg_onward_transmission_State+(spillover_Poultry_State(:,pp+1).*spillover_dairy_State(:,dd+1)).*(1-p_no_onward_transmission.^(dd+pp));
-        avg_onward_transmission_Dairy_State=avg_onward_transmission_Dairy_State+(spillover_Poultry_State(:,pp+1).*spillover_dairy_State(:,dd+1)).*(1-p_no_onward_transmission.^(dd));
-    end
-end
-avg_onward_transmission_County=avg_onward_transmission_County./NK;
-avg_onward_transmission_Dairy_County=avg_onward_transmission_Dairy_County./NK;
-avg_onward_transmission_State=avg_onward_transmission_State./NKS;
-avg_onward_transmission_Dairy_State=avg_onward_transmission_Dairy_State./NKS;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 % Figure 4
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
@@ -108,10 +77,10 @@ patch([0 0 dy dy], [y_indx(1) y_indx(end)+dx y_indx(end)+dx y_indx(1)],'k','Face
 
 yl_indx=[y_indx(1):y_indx(end)];
 for yy=1:length(yl_indx)
-    text(ymin,yl_indx(yy),['10^{' num2str(yl_indx(yy)) '}'],'Fontsize',11);            
+    text(ymin,yl_indx(yy),['10^{' num2str(yl_indx(yy)) '}'],'Fontsize',14);            
 end
 
-text(ymin+1.25,-2.5,Title_Name,'HorizontalAlignment','center','Fontsize',14,'Rotation',270);
+text(ymin+1.65,-2.5,Title_Name,'HorizontalAlignment','center','Fontsize',16,'Rotation',270);
 
 axis off;  
 
@@ -124,7 +93,7 @@ CM=makesymbolspec('Polygon',{'INDEX',[1 NS],'FaceColor',CC_Risk});
 geoshow(ax1,S,'SymbolSpec',CM,'LineStyle','None'); 
 geoshow(ax1, states,'Facecolor','none','LineWidth',1.5); hold on;
 
-subplot('Position',[0.75,0.085,0.24,0.905]);
+subplot('Position',[0.75,0.09,0.24,0.90]);
 
 
 [~,indxs]=sort(avg_onward_transmission_State,'ascend');
@@ -132,13 +101,13 @@ barh(State_Name(indxs),avg_onward_transmission_State(indxs),'FaceColor',hex2rgb(
 box off;
 set(gca,'LineWidth',2,'tickdir','out','Fontsize',11,'XTick',[0:0.1:0.5],'XMinorTick','on');
 
-xlabel({'Likelihood of onward transmission'},'Fontsize',14);
+xlabel({'Likelihood of onward transmission'},'Fontsize',16);
 text(-0.35,1.02,'B','Fontsize',28,'Units','normalized','VerticalAlignment','top','HorizontalAlignment','center');
 
 ax1.Position=[-0.29,-0.12,1.2,1.2];
 text(-3.075,1.02,'A','Fontsize',28,'Units','normalized','VerticalAlignment','top','HorizontalAlignment','center');
 
-print(gcf,['Figure_4.png'],'-dpng','-r300');
+print(gcf,['Figure_3.png'],'-dpng','-r300');
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 % % Supplmental Figure
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
@@ -157,7 +126,7 @@ subplot('Position',[0.61,0.035,0.02,0.94]);
 
 Title_Name={'Relative contribution of dairy to onward transmission'};
 
-risk_measure=(avg_onward_transmission_Dairy_County./avg_onward_transmission_County);
+risk_measure=(avg_onward_transmission_Dairy_County);
 C_Risk=[hex2rgb('#ffffff');
 hex2rgb('#f0f0f0');
 hex2rgb('#d9d9d9');
@@ -186,10 +155,10 @@ patch([0 0 dy dy], [y_indx(1) y_indx(end)+dx y_indx(end)+dx y_indx(1)],'k','Face
 
 yl_indx=[0:0.1:1];
 for yy=1:length(yl_indx)
-    text(ymin,yl_indx(yy),[num2str(yl_indx(yy))],'Fontsize',11);            
+    text(ymin,yl_indx(yy),[num2str(yl_indx(yy))],'Fontsize',14);            
 end
 
-text(ymin+1.25,0.5,Title_Name,'HorizontalAlignment','center','Fontsize',14,'Rotation',270);
+text(ymin+1.65,0.5,Title_Name,'HorizontalAlignment','center','Fontsize',16,'Rotation',270);
 
 axis off;  
 
@@ -202,58 +171,26 @@ CM=makesymbolspec('Polygon',{'INDEX',[1 NS],'FaceColor',CC_Risk});
 geoshow(ax1,S,'SymbolSpec',CM,'LineStyle','None'); 
 geoshow(ax1, states,'Facecolor','none','LineWidth',1.5); hold on;
 
-subplot('Position',[0.75,0.085,0.24,0.905]);
+subplot('Position',[0.75,0.09,0.24,0.90]);
 
 
 [~,indxs]=sort(avg_onward_transmission_State,'ascend');
-b=barh(State_Name(indxs),[avg_onward_transmission_Dairy_State(indxs) avg_onward_transmission_State(indxs)-avg_onward_transmission_Dairy_State(indxs)],'stacked','LineStyle','none');
+b=barh(State_Name(indxs),[avg_onward_transmission_State(indxs).*avg_onward_transmission_Dairy_State(indxs) avg_onward_transmission_State(indxs).*(1-avg_onward_transmission_Dairy_State(indxs))],'stacked','LineStyle','none');
 b(1).FaceColor=[0 0 0];
 b(2).FaceColor=[0.7 0.7 0.7];
 
 for ii=1:length(indxs)
-    p=avg_onward_transmission_Dairy_State(indxs(ii))./avg_onward_transmission_State(indxs(ii));
+    p=avg_onward_transmission_Dairy_State(indxs(ii));
     text(avg_onward_transmission_State(indxs(ii))+0.01,ii,[num2str(100.*p,'%3.1f') '%'],'VerticalAlignment','middle','HorizontalAlignment','left','FontSize',10);
 end
 box off;
 set(gca,'LineWidth',2,'tickdir','out','Fontsize',11,'XTick',[0:0.1:0.5],'XMinorTick','on');
-legend({'Dairy','Poultry'},'Location','southeast','Fontsize',11);
+legend({'Dairy','Poultry'},'Location','southeast','Fontsize',14);
 legend boxoff;
-xlabel({'Likelihood of onward transmission'},'Fontsize',14);
+xlabel({'Likelihood of onward transmission'},'Fontsize',16);
 text(-0.35,1.02,'B','Fontsize',28,'Units','normalized','VerticalAlignment','top','HorizontalAlignment','center');
 
 ax1.Position=[-0.29,-0.12,1.2,1.2];
 text(-3.075,1.02,'A','Fontsize',28,'Units','normalized','VerticalAlignment','top','HorizontalAlignment','center');
 
 print(gcf,['Supplemental_Figure_Dairy_Proportion.png'],'-dpng','-r300');
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-% Text output
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-fprintf(['Minimum likelihood of onward transmission: ' num2str(min(avg_onward_transmission_County(~no_farms)),'%3.2e') '\n'])
-fprintf(['Maximum likelihood of onward transmission: ' num2str(max(avg_onward_transmission_County),'%4.3f') '\n'])
-fprintf(['Median likelihood of onward transmission: ' num2str(median(avg_onward_transmission_County(~no_farms)),'%3.2e') '\n \n'])
-
-US_County=US_County(~no_farms,[4 5]);
-
-findx=find(avg_onward_transmission_County>0.01);
-
-for jj=1:length(findx)
-    fprintf(['County with onward transmission risk over 0.01: ' US_County.NAME{findx(jj)} ', ' US_County.STATE_NAME{findx(jj)}  ' (' num2str(avg_onward_transmission_County(findx(jj)),'%3.2f') ') \n']);
-end
-
-fprintf('\n');
-
-fprintf(['State with the maximum likelihood: ' State_Name{indxs(end)} ' (' num2str(avg_onward_transmission_State(indxs(end)),'%4.3f') ') \n']);
-fprintf(['State with the minimum likelihood: ' State_Name{indxs(1)} ' (' num2str(avg_onward_transmission_State(indxs(1)),'%4.3f') ') \n \n']);
-
-
-fprintf(['Numebr of states with the risk ovr 0.1: ' num2str(sum(avg_onward_transmission_State>0.1),'%3.2f') ' \n']);
-fprintf(['Numebr of states with the risk ovr 0.05: ' num2str(sum(avg_onward_transmission_State>0.05),'%3.2f') ' \n']);
-
-
-p_dairy=avg_onward_transmission_Dairy_State./avg_onward_transmission_State;
-
-
-fprintf(['Minumum dairy proportion: ' num2str(100.*min(p_dairy),'%3.2f') '%% \n'])
-fprintf(['Maximum dairy proportion: ' num2str(100.*max(p_dairy),'%3.2f') '%% \n'])
-fprintf(['Median dairy proportion: ' num2str(100.*median(p_dairy),'%3.2f') '%% \n'])

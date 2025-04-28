@@ -19,11 +19,11 @@ for ss=1:length(Outbreak_State)
 end
 
 
-load('Average_Risk_Poultry.mat','post_outbreak_poultry_farm_State','w_AIC');
+load('Poultry_Risk_AIC.mat','mle_post_outbreak_poultry_farm_State');
 
 
 [Outbreak_State,R_Indx]=sort(Outbreak_State,'descend');
-post_outbreak_poultry_farm_State=post_outbreak_poultry_farm_State(R_Indx,:,:);
+mle_post_outbreak_poultry_farm_State=mle_post_outbreak_poultry_farm_State(R_Indx,:);
 State_Names=State_Names(R_Indx);
 
 
@@ -32,7 +32,7 @@ for pp=1:4
     figure('units','normalized','outerposition',[0.2 0.06 0.8 1]);
     for ii=1:nr(pp)
         for jj=1:3
-            Outbreak_Post_State=squeeze(post_outbreak_poultry_farm_State(jj+3.*(ii-1)+12.*(pp-1),:,w_AIC==max(w_AIC)));
+            Outbreak_Post_State=squeeze(mle_post_outbreak_poultry_farm_State(jj+3.*(ii-1)+12.*(pp-1),:));
             subplot('Position',[0.025+0.3275.*(jj-1) 0.80-0.24.*(ii-1) 0.30 0.17]);
             bar([0:length(Outbreak_Post_State)-1],Outbreak_Post_State,'FaceColor',hex2rgb('#011A27'));
             hold on

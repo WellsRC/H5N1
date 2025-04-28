@@ -15,11 +15,11 @@ clearvars US_County
 Affected_County_Farms(isnan(Affected_County_Farms))=0;
 
 
-load('Average_Risk_Poultry.mat','post_spillover_poultry_farm_State','w_AIC');
+load('Poultry_Risk_AIC.mat','mle_post_spillover_poultry_farm_State');
 
 
 [State_Spillover_Events,R_Indx]=sort(State_Spillover_Events,'descend');
-post_spillover_poultry_farm_State=post_spillover_poultry_farm_State(R_Indx,:,:);
+mle_post_spillover_poultry_farm_State=mle_post_spillover_poultry_farm_State(R_Indx,:);
 State_Names=State_Names(R_Indx);
 
 nr=[4 4 4 4];
@@ -28,7 +28,7 @@ for pp=1:4
     figure('units','normalized','outerposition',[0.2 0.06 0.8 1]);
     for ii=1:nr(pp)
         for jj=1:3
-            Spillover_Post_State=squeeze(post_spillover_poultry_farm_State(jj+3.*(ii-1)+12.*(pp-1),:,w_AIC==max(w_AIC)));
+            Spillover_Post_State=squeeze(mle_post_spillover_poultry_farm_State(jj+3.*(ii-1)+12.*(pp-1),:));
             subplot('Position',[0.025+0.3275.*(jj-1) 0.80-0.24.*(ii-1) 0.30 0.17]);
             bar([0:75],Spillover_Post_State,'FaceColor',hex2rgb('#011A27'));
             hold on
