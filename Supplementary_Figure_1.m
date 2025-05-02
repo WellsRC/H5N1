@@ -159,7 +159,8 @@ end
 
 [~,~,~,County_Farms,Affected_County_Farms,State_Spillover_Events,Affected_State_Farms,state_weight_matrix,~,~,~,~,~]= Dairy_Covariates({},{},{});
 
-
+fprintf(['number of dairy outbreaks: ' num2str(sum(Affected_State_Farms)) '\n']);
+fprintf(['Number of states affected: ' num2str(sum(Affected_State_Farms>0)) '\n']);
 fprintf(['Maximum number of dairy outbreaks within a state:' num2str(max(Affected_State_Farms(Affected_State_Farms>0)),'%3.1f') '\n']);
 fprintf(['Minumum number of dairy outbreaks within a state:' num2str(min(Affected_State_Farms(Affected_State_Farms>0)),'%3.1f') '\n']);
 fprintf(['Median number of  dairy outbreaks within a state:' num2str(median(Affected_State_Farms(Affected_State_Farms>0)),'%3.1f') '\n']);

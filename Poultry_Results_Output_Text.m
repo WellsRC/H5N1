@@ -103,6 +103,7 @@ end
 
 mle_spillover_risk_poultry_farm_County=mle_spillover_risk_poultry_farm_County(~no_farms);
 spillover_risk_poultry_farm_County_95=spillover_risk_poultry_farm_County_95(~no_farms,:);
+
 [~,IndxS]=sort(mle_spillover_risk_poultry_farm_County,'descend');
 for ii=1:5
     fprintf(['County Rank ' num2str(ii) ' for spillover-risk: ' US_County.NAME{IndxS(ii)} ', ' US_County.STATE_NAME{IndxS(ii)}  ' (' num2str(mle_spillover_risk_poultry_farm_County(IndxS(ii)),'%3.2f') ':' num2str(spillover_risk_poultry_farm_County_95(IndxS(ii),1),'%3.2f') char(8211) num2str(spillover_risk_poultry_farm_County_95(IndxS(ii),2),'%3.2f') ') \n']);
